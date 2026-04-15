@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/app/nexo_scope.dart';
+import '../../../../core/integrations/lookups/exceptions/lookup_exceptions.dart';
+import '../../../../core/integrations/lookups/models/company_lookup_result.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../shared/components/actions/nexo_button.dart';
 import '../../../../shared/components/actions/nexo_icon_button.dart';
@@ -45,6 +47,8 @@ class _NewClientScreenState extends State<NewClientScreen> {
   ClientStatus _status = ClientStatus.active;
   _DanielChoice _danielChoice = _DanielChoice.no;
   bool _isSaving = false;
+  bool _isLookingUpCnpj = false;
+  bool _isLookingUpCep = false;
 
   String get _nameLabel {
     return _clientType == ClientType.pj ? 'Nome fantasia' : 'Nome completo';
@@ -134,6 +138,159 @@ class _NewClientScreenState extends State<NewClientScreen> {
     Navigator.of(context).pop(true);
   }
 
+  Future<void> _lookupCompany() async {
+    if (_clientType != ClientType.pj || _isLookingUpCnpj) {
+      return;
+    }
+
+    setState(() => _isLookingUpCnpj = true);
+
+    final autofill = NexoScope.of(context).clientAutofill;
+    try {
+      final result = await autofill.lookupCompanyByCnpj(_documentController.text);
+      _mergeCompanyAutofill(result);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dados da empresa preenchidos.')),
+      );
+    } on LookupValidationException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupNotFoundException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupRequestException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nao foi possivel buscar o CNPJ agora.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLookingUpCnpj = false);
+      }
+    }
+  }
+
+  Future<void> _lookupCep() async {
+    if (_isLookingUpCep) {
+      return;
+    }
+
+    setState(() => _isLookingUpCep = true);
+
+    final autofill = NexoScope.of(context).clientAutofill;
+    try {
+      final result = await autofill.lookupAddressByCep(_zipCodeController.text);
+      _mergeAddressAutofill(
+        zipCode: result.zipCode,
+        street: result.street,
+        neighborhood: result.neighborhood,
+        city: result.city,
+        stateCode: result.stateCode,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Endereco preenchido pelo CEP.')),
+      );
+    } on LookupValidationException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupNotFoundException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupRequestException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nao foi possivel buscar o CEP agora.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLookingUpCep = false);
+      }
+    }
+  }
+
+  void _mergeCompanyAutofill(CompanyLookupResult result) {
+    _setIfEmpty(_legalNameController, result.legalName);
+    _setIfEmpty(_nameController, result.tradeName);
+    _setIfEmpty(_phoneController, result.phone);
+    _mergeAddressAutofill(
+      zipCode: result.zipCode,
+      street: result.street,
+      neighborhood: result.neighborhood,
+      city: result.city,
+      stateCode: result.stateCode,
+    );
+  }
+
+  void _mergeAddressAutofill({
+    String? zipCode,
+    String? street,
+    String? neighborhood,
+    String? city,
+    String? stateCode,
+  }) {
+    _setIfEmpty(_zipCodeController, zipCode);
+    _setIfEmpty(_streetController, street);
+    _setIfEmpty(_neighborhoodController, neighborhood);
+    _setIfEmpty(_cityController, city);
+    _setIfEmpty(_stateCodeController, stateCode);
+  }
+
+  void _setIfEmpty(TextEditingController controller, String? value) {
+    final current = controller.text.trim();
+    final next = value?.trim() ?? '';
+    if (current.isNotEmpty || next.isEmpty) {
+      return;
+    }
+
+    controller.text = next;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,13 +356,30 @@ class _NewClientScreenState extends State<NewClientScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: NexoTextField(
-                          label: _documentLabel,
-                          hint: _clientType == ClientType.pj
-                              ? '00.000.000/0000-00'
-                              : '000.000.000-00',
-                          controller: _documentController,
-                          keyboardType: TextInputType.number,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            NexoTextField(
+                              label: _documentLabel,
+                              hint: _clientType == ClientType.pj
+                                  ? '00.000.000/0000-00'
+                                  : '000.000.000-00',
+                              controller: _documentController,
+                              keyboardType: TextInputType.number,
+                            ),
+                            if (_clientType == ClientType.pj) ...[
+                              const SizedBox(height: 8),
+                              NexoButton(
+                                label:
+                                    _isLookingUpCnpj ? 'Buscando...' : 'Buscar empresa',
+                                icon: Icons.search_rounded,
+                                variant: NexoButtonVariant.secondary,
+                                expanded: false,
+                                onPressed:
+                                    _isLookingUpCnpj || _isSaving ? null : _lookupCompany,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                       const SizedBox(width: NexoSpacing.md),
@@ -229,11 +403,25 @@ class _NewClientScreenState extends State<NewClientScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: NexoTextField(
-                          label: 'CEP',
-                          hint: '00000-000',
-                          controller: _zipCodeController,
-                          keyboardType: TextInputType.number,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            NexoTextField(
+                              label: 'CEP',
+                              hint: '00000-000',
+                              controller: _zipCodeController,
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 8),
+                            NexoButton(
+                              label: _isLookingUpCep ? 'Buscando...' : 'Buscar CEP',
+                              icon: Icons.location_searching_rounded,
+                              variant: NexoButtonVariant.secondary,
+                              expanded: false,
+                              onPressed:
+                                  _isLookingUpCep || _isSaving ? null : _lookupCep,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: NexoSpacing.md),

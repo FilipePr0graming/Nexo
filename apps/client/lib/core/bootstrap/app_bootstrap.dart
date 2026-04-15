@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../integrations/lookups/data_sources/cep_lookup_remote_data_source.dart';
+import '../integrations/lookups/data_sources/cnpj_lookup_remote_data_source.dart';
+import '../integrations/lookups/services/client_autofill_service.dart';
 import '../../features/clients/data/data_sources/clients_local_data_source.dart';
 import '../../features/clients/data/data_sources/clients_remote_data_source.dart';
 import '../../features/clients/data/repositories/clients_repository.dart';
@@ -49,8 +52,14 @@ class AppBootstrap {
       remoteDataSource: ExpensesRemoteDataSource(supabaseClient),
     );
 
+    final clientAutofillService = ClientAutofillService(
+      cnpjDataSource: CnpjLookupRemoteDataSource(),
+      cepDataSource: CepLookupRemoteDataSource(),
+    );
+
     final services = AppServices(
       clients: ClientsService(clientsRepository),
+      clientAutofill: clientAutofillService,
       sales: SalesService(salesRepository),
       expenses: ExpensesService(expensesRepository),
       supabaseEnabled: AppEnvironment.hasSupabase,
