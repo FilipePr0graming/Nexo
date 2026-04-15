@@ -1,0 +1,27 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.venv/
+**/*.egg-info/
+apps/api/*.db
+apps/api/backups/
+
+# Flutter and Dart
+**/.dart_tool/
+**/build/
+**/.flutter-plugins-dependencies
+**/.pub/
+**/.pub-cache/
+apps/client/windows/flutter/ephemeral/
+
+# Local-only configuration
+apps/client/supabase/dart_define.local.json
