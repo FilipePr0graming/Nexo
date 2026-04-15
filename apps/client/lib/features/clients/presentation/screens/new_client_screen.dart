@@ -9,11 +9,32 @@ import '../../../../shared/components/app/nexo_header.dart';
 import '../../../../shared/components/inputs/nexo_segmented_field.dart';
 import '../../../../shared/components/inputs/nexo_select_field.dart';
 import '../../../../shared/components/inputs/nexo_text_field.dart';
+import '../../data/lookup_exception.dart';
+import '../../models/address_lookup_result.dart';
 import '../../models/client_model.dart';
+import '../../models/company_lookup_result.dart';
 
 enum _DanielChoice {
   no,
   yes,
+}
+
+enum _AutofillField {
+  document,
+  name,
+  legalName,
+  phone,
+  zipCode,
+  street,
+  neighborhood,
+  city,
+  stateCode,
+}
+
+enum _MergeOutcome {
+  applied,
+  preservedManual,
+  unchanged,
 }
 
 class NewClientScreen extends StatefulWidget {
@@ -40,11 +61,16 @@ class _NewClientScreenState extends State<NewClientScreen> {
       TextEditingController(text: 'SP');
   final TextEditingController _notesController = TextEditingController();
 
+  final Set<_AutofillField> _dirtyFields = <_AutofillField>{};
+
   ClientType _clientType = ClientType.pf;
   ClientBillingType _billingType = ClientBillingType.oneOff;
   ClientStatus _status = ClientStatus.active;
   _DanielChoice _danielChoice = _DanielChoice.no;
   bool _isSaving = false;
+  bool _isLookingUpCompany = false;
+  bool _isLookingUpZipCode = false;
+  bool _isApplyingLookup = false;
 
   String get _nameLabel {
     return _clientType == ClientType.pj ? 'Nome fantasia' : 'Nome completo';
@@ -52,6 +78,12 @@ class _NewClientScreenState extends State<NewClientScreen> {
 
   String get _documentLabel {
     return _clientType == ClientType.pj ? 'CNPJ' : 'CPF';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _registerDirtyTracking();
   }
 
   @override
@@ -76,6 +108,30 @@ class _NewClientScreenState extends State<NewClientScreen> {
     super.dispose();
   }
 
+  void _registerDirtyTracking() {
+    _observe(_documentController, _AutofillField.document);
+    _observe(_nameController, _AutofillField.name);
+    _observe(_legalNameController, _AutofillField.legalName);
+    _observe(_phoneController, _AutofillField.phone);
+    _observe(_zipCodeController, _AutofillField.zipCode);
+    _observe(_streetController, _AutofillField.street);
+    _observe(_neighborhoodController, _AutofillField.neighborhood);
+    _observe(_cityController, _AutofillField.city);
+    _observe(_stateCodeController, _AutofillField.stateCode);
+  }
+
+  void _observe(
+    TextEditingController controller,
+    _AutofillField field,
+  ) {
+    controller.addListener(() {
+      if (_isApplyingLookup) {
+        return;
+      }
+      _dirtyFields.add(field);
+    });
+  }
+
   Future<void> _pickStatus() async {
     final selected = await NexoOptionSheet.show(
       context,
@@ -92,6 +148,229 @@ class _NewClientScreenState extends State<NewClientScreen> {
       _status =
           ClientStatus.values.firstWhere((value) => value.label == selected);
     });
+  }
+
+  Future<void> _lookupCompany() async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isLookingUpCompany = true);
+
+    try {
+      final result = await NexoScope.of(context)
+          .clientAutofill
+          .lookupCompany(_documentController.text);
+      final feedback = _applyCompanyLookup(result);
+      if (!mounted) {
+        return;
+      }
+      _showLookupFeedback(
+        successMessage: feedback,
+      );
+    } on LookupException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showLookupFeedback(errorMessage: error.message);
+    } finally {
+      if (mounted) {
+        setState(() => _isLookingUpCompany = false);
+      }
+    }
+  }
+
+  Future<void> _lookupZipCode() async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isLookingUpZipCode = true);
+
+    try {
+      final result = await NexoScope.of(context)
+          .clientAutofill
+          .lookupAddress(_zipCodeController.text);
+      final feedback = _applyZipCodeLookup(result);
+      if (!mounted) {
+        return;
+      }
+      _showLookupFeedback(
+        successMessage: feedback,
+      );
+    } on LookupException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showLookupFeedback(errorMessage: error.message);
+    } finally {
+      if (mounted) {
+        setState(() => _isLookingUpZipCode = false);
+      }
+    }
+  }
+
+  String _applyCompanyLookup(CompanyLookupResult result) {
+    var applied = 0;
+    var preserved = 0;
+
+    void merge(
+      TextEditingController controller,
+      _AutofillField field,
+      String? value,
+    ) {
+      switch (_mergeValue(controller, field, value)) {
+        case _MergeOutcome.applied:
+          applied += 1;
+          break;
+        case _MergeOutcome.preservedManual:
+          preserved += 1;
+          break;
+        case _MergeOutcome.unchanged:
+          break;
+      }
+    }
+
+    _runLookupUpdate(() {
+      merge(_documentController, _AutofillField.document, result.cnpj);
+      merge(_legalNameController, _AutofillField.legalName, result.legalName);
+      merge(_nameController, _AutofillField.name, result.tradeName);
+      merge(_phoneController, _AutofillField.phone, result.phone);
+      merge(_zipCodeController, _AutofillField.zipCode, result.zipCode);
+      merge(_streetController, _AutofillField.street, result.street);
+      merge(
+        _neighborhoodController,
+        _AutofillField.neighborhood,
+        result.neighborhood,
+      );
+      merge(_cityController, _AutofillField.city, result.city);
+      merge(_stateCodeController, _AutofillField.stateCode, result.stateCode);
+    });
+
+    return _buildFeedbackMessage(
+      foundLabel: 'Empresa encontrada.',
+      applied: applied,
+      preserved: preserved,
+    );
+  }
+
+  String _applyZipCodeLookup(AddressLookupResult result) {
+    var applied = 0;
+    var preserved = 0;
+
+    void merge(
+      TextEditingController controller,
+      _AutofillField field,
+      String? value,
+    ) {
+      switch (_mergeValue(controller, field, value)) {
+        case _MergeOutcome.applied:
+          applied += 1;
+          break;
+        case _MergeOutcome.preservedManual:
+          preserved += 1;
+          break;
+        case _MergeOutcome.unchanged:
+          break;
+      }
+    }
+
+    _runLookupUpdate(() {
+      merge(_zipCodeController, _AutofillField.zipCode, result.zipCode);
+      merge(_streetController, _AutofillField.street, result.street);
+      merge(
+        _neighborhoodController,
+        _AutofillField.neighborhood,
+        result.neighborhood,
+      );
+      merge(_cityController, _AutofillField.city, result.city);
+      merge(_stateCodeController, _AutofillField.stateCode, result.stateCode);
+    });
+
+    return _buildFeedbackMessage(
+      foundLabel: 'CEP encontrado.',
+      applied: applied,
+      preserved: preserved,
+    );
+  }
+
+  _MergeOutcome _mergeValue(
+    TextEditingController controller,
+    _AutofillField field,
+    String? nextValue,
+  ) {
+    final candidate = nextValue?.trim() ?? '';
+    if (candidate.isEmpty) {
+      return _MergeOutcome.unchanged;
+    }
+
+    final current = controller.text.trim();
+    final wasEditedManually = _dirtyFields.contains(field);
+    final currentDigits = _digitsOnly(current);
+    final candidateDigits = _digitsOnly(candidate);
+
+    if ((field == _AutofillField.document || field == _AutofillField.zipCode) &&
+        currentDigits.isNotEmpty &&
+        currentDigits == candidateDigits) {
+      if (current == candidate) {
+        return _MergeOutcome.unchanged;
+      }
+
+      controller.text = candidate;
+      return _MergeOutcome.applied;
+    }
+
+    if (current.isNotEmpty && wasEditedManually) {
+      return _MergeOutcome.preservedManual;
+    }
+
+    if (current == candidate) {
+      return _MergeOutcome.unchanged;
+    }
+
+    controller.text = candidate;
+    return _MergeOutcome.applied;
+  }
+
+  void _runLookupUpdate(VoidCallback action) {
+    _isApplyingLookup = true;
+    try {
+      action();
+    } finally {
+      _isApplyingLookup = false;
+    }
+  }
+
+  static String _digitsOnly(String value) {
+    return value.replaceAll(RegExp(r'\D'), '');
+  }
+
+  String _buildFeedbackMessage({
+    required String foundLabel,
+    required int applied,
+    required int preserved,
+  }) {
+    if (applied == 0 && preserved > 0) {
+      return '$foundLabel Mantive os campos que voce ja preencheu.';
+    }
+
+    if (applied > 0 && preserved > 0) {
+      return '$foundLabel Atualizei os campos vazios e mantive os dados manuais.';
+    }
+
+    if (applied > 0) {
+      return '$foundLabel Dados preenchidos automaticamente.';
+    }
+
+    return '$foundLabel Os dados ja estavam preenchidos.';
+  }
+
+  void _showLookupFeedback({
+    String? successMessage,
+    String? errorMessage,
+  }) {
+    final text = errorMessage ?? successMessage;
+    if (text == null || text.isEmpty) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(text)),
+    );
   }
 
   Future<void> _save() async {
@@ -196,28 +475,46 @@ class _NewClientScreenState extends State<NewClientScreen> {
                     ),
                   ],
                   const SizedBox(height: NexoSpacing.lg),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: NexoTextField(
-                          label: _documentLabel,
-                          hint: _clientType == ClientType.pj
-                              ? '00.000.000/0000-00'
-                              : '000.000.000-00',
-                          controller: _documentController,
-                          keyboardType: TextInputType.number,
+                  if (_clientType == ClientType.pj) ...[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: NexoTextField(
+                            label: _documentLabel,
+                            hint: '00.000.000/0000-00',
+                            controller: _documentController,
+                            keyboardType: TextInputType.number,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: NexoSpacing.md),
-                      Expanded(
-                        child: NexoTextField(
-                          label: 'Telefone',
-                          hint: '(00) 00000-0000',
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                        const SizedBox(width: NexoSpacing.md),
+                        NexoButton(
+                          label: _isLookingUpCompany
+                              ? 'Buscando...'
+                              : 'Buscar empresa',
+                          variant: NexoButtonVariant.secondary,
+                          expanded: false,
+                          onPressed: _isLookingUpCompany || _isSaving
+                              ? null
+                              : _lookupCompany,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ] else ...[
+                    NexoTextField(
+                      label: _documentLabel,
+                      hint: '000.000.000-00',
+                      controller: _documentController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoTextField(
+                    label: 'Telefone',
+                    hint: '(00) 00000-0000',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: NexoSpacing.lg),
                   NexoTextField(
@@ -227,8 +524,10 @@ class _NewClientScreenState extends State<NewClientScreen> {
                   ),
                   const SizedBox(height: NexoSpacing.lg),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
+                        flex: 3,
                         child: NexoTextField(
                           label: 'CEP',
                           hint: '00000-000',
@@ -237,13 +536,14 @@ class _NewClientScreenState extends State<NewClientScreen> {
                         ),
                       ),
                       const SizedBox(width: NexoSpacing.md),
-                      Expanded(
-                        child: NexoTextField(
-                          label: 'UF',
-                          hint: 'SP',
-                          controller: _stateCodeController,
-                          keyboardType: TextInputType.text,
-                        ),
+                      NexoButton(
+                        label:
+                            _isLookingUpZipCode ? 'Buscando...' : 'Buscar CEP',
+                        variant: NexoButtonVariant.secondary,
+                        expanded: false,
+                        onPressed: _isLookingUpZipCode || _isSaving
+                            ? null
+                            : _lookupZipCode,
                       ),
                     ],
                   ),
@@ -289,10 +589,26 @@ class _NewClientScreenState extends State<NewClientScreen> {
                     ],
                   ),
                   const SizedBox(height: NexoSpacing.lg),
-                  NexoTextField(
-                    label: 'Complemento',
-                    hint: 'Opcional',
-                    controller: _addressComplementController,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: NexoTextField(
+                          label: 'UF',
+                          hint: 'SP',
+                          controller: _stateCodeController,
+                          keyboardType: TextInputType.text,
+                        ),
+                      ),
+                      const SizedBox(width: NexoSpacing.md),
+                      Expanded(
+                        flex: 3,
+                        child: NexoTextField(
+                          label: 'Complemento',
+                          hint: 'Opcional',
+                          controller: _addressComplementController,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: NexoSpacing.lg),
                   NexoSelectField(
@@ -360,7 +676,8 @@ class _NewClientScreenState extends State<NewClientScreen> {
                 child: NexoButton(
                   label: 'Cancelar',
                   variant: NexoButtonVariant.secondary,
-                  onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                  onPressed:
+                      _isSaving ? null : () => Navigator.of(context).pop(),
                 ),
               ),
               const SizedBox(width: NexoSpacing.md),

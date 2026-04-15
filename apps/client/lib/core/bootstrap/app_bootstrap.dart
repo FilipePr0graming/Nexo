@@ -3,7 +3,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/clients/data/data_sources/clients_local_data_source.dart';
 import '../../features/clients/data/data_sources/clients_remote_data_source.dart';
+import '../../features/clients/data/data_sources/address_lookup_remote_data_source.dart';
+import '../../features/clients/data/data_sources/company_lookup_remote_data_source.dart';
+import '../../features/clients/data/repositories/client_autofill_repository.dart';
 import '../../features/clients/data/repositories/clients_repository.dart';
+import '../../features/clients/services/client_autofill_service.dart';
 import '../../features/clients/services/clients_service.dart';
 import '../../features/finance/data/data_sources/expenses_local_data_source.dart';
 import '../../features/finance/data/data_sources/expenses_remote_data_source.dart';
@@ -39,6 +43,11 @@ class AppBootstrap {
       remoteDataSource: ClientsRemoteDataSource(supabaseClient),
     );
 
+    final clientAutofillRepository = ClientAutofillRepository(
+      companyDataSource: CompanyLookupRemoteDataSource(),
+      addressDataSource: AddressLookupRemoteDataSource(),
+    );
+
     final salesRepository = SalesRepository(
       localDataSource: SalesLocalDataSource(localStore),
       remoteDataSource: SalesRemoteDataSource(supabaseClient),
@@ -51,6 +60,7 @@ class AppBootstrap {
 
     final services = AppServices(
       clients: ClientsService(clientsRepository),
+      clientAutofill: ClientAutofillService(clientAutofillRepository),
       sales: SalesService(salesRepository),
       expenses: ExpensesService(expensesRepository),
       supabaseEnabled: AppEnvironment.hasSupabase,
