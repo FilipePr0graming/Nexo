@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/app/nexo_scope.dart';
+import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../core/utils/date_label_utils.dart';
 import '../../../../core/utils/money_utils.dart';
@@ -39,8 +40,8 @@ class FinanceScreen extends StatelessWidget {
               DateLabelUtils.isInCurrentMonth(sale.movementDate.toLocal(), now),
         );
         final monthlyExpenses = expensesService.expenses.where(
-          (expense) =>
-              DateLabelUtils.isInCurrentMonth(expense.expenseDate.toLocal(), now),
+          (expense) => DateLabelUtils.isInCurrentMonth(
+              expense.expenseDate.toLocal(), now),
         );
 
         final totalIn = monthlySales.fold<double>(
@@ -102,14 +103,14 @@ class FinanceScreen extends StatelessWidget {
               const NexoSectionHeader(title: 'Registrar agora'),
               const SizedBox(height: NexoSpacing.md),
               NexoQuickActionCard(
-                icon: Icons.add_card_rounded,
+                icon: NexoIcons.newSale,
                 title: 'Nova venda',
                 caption: 'Abrir formulario rapido de venda.',
                 onTap: onNewSale,
               ),
               const SizedBox(height: NexoSpacing.sm),
               NexoQuickActionCard(
-                icon: Icons.receipt_long_rounded,
+                icon: NexoIcons.newExpense,
                 title: 'Novo gasto',
                 caption: 'Abrir formulario rapido de gasto.',
                 onTap: onNewExpense,
@@ -129,7 +130,8 @@ class FinanceScreen extends StatelessWidget {
                       .take(6)
                       .map(
                         (movement) => Padding(
-                          padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+                          padding:
+                              const EdgeInsets.only(bottom: NexoSpacing.sm),
                           child: NexoMovementListItem(
                             title: movement.title,
                             subtitle:

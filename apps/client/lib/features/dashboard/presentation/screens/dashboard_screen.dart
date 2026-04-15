@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/app/nexo_scope.dart';
+import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../core/utils/date_label_utils.dart';
 import '../../../../core/utils/money_utils.dart';
@@ -45,7 +46,9 @@ class DashboardScreen extends StatelessWidget {
             .where((sale) => sale.status == SaleStatus.received)
             .toList(growable: false);
         final pendingSales = sales
-            .where((sale) => sale.status == SaleStatus.pending || sale.status == SaleStatus.late)
+            .where((sale) =>
+                sale.status == SaleStatus.pending ||
+                sale.status == SaleStatus.late)
             .toList(growable: false);
         final businessExpenses = expenses
             .where((expense) => expense.scope == ExpenseScope.business)
@@ -58,21 +61,25 @@ class DashboardScreen extends StatelessWidget {
               0,
               (total, sale) => total + sale.ownerAmount,
             ) -
-            businessExpenses.fold<double>(0, (total, expense) => total + expense.amount);
-        final personalBalance =
-            -personalExpenses.fold<double>(0, (total, expense) => total + expense.amount);
+            businessExpenses.fold<double>(
+                0, (total, expense) => total + expense.amount);
+        final personalBalance = -personalExpenses.fold<double>(
+            0, (total, expense) => total + expense.amount);
         final totalBalance = businessBalance + personalBalance;
 
         final receivedToday = receivedSales
-            .where((sale) => DateLabelUtils.isSameDay(sale.movementDate.toLocal(), now))
+            .where((sale) =>
+                DateLabelUtils.isSameDay(sale.movementDate.toLocal(), now))
             .fold<double>(0, (total, sale) => total + sale.ownerAmount);
-        final pendingAmount =
-            pendingSales.fold<double>(0, (total, sale) => total + sale.ownerAmount);
+        final pendingAmount = pendingSales.fold<double>(
+            0, (total, sale) => total + sale.ownerAmount);
         final monthlyExpenses = expenses
-            .where((expense) => DateLabelUtils.isInCurrentMonth(expense.expenseDate.toLocal(), now))
+            .where((expense) => DateLabelUtils.isInCurrentMonth(
+                expense.expenseDate.toLocal(), now))
             .fold<double>(0, (total, expense) => total + expense.amount);
         final danielThisMonth = sales
-            .where((sale) => DateLabelUtils.isInCurrentMonth(sale.movementDate.toLocal(), now))
+            .where((sale) => DateLabelUtils.isInCurrentMonth(
+                sale.movementDate.toLocal(), now))
             .fold<double>(0, (total, sale) => total + sale.danielValue);
 
         final alerts = _buildAlerts(sales, expenses);
@@ -82,7 +89,7 @@ class DashboardScreen extends StatelessWidget {
           title: 'Hoje',
           subtitle: 'Visao imediata do que entrou, saiu e ficou pendente.',
           trailing: NexoIconButton(
-            icon: Icons.refresh_rounded,
+            icon: NexoIcons.refresh,
             tooltip: 'Atualizar',
             onPressed: () {
               salesService.refresh();
@@ -131,19 +138,19 @@ class DashboardScreen extends StatelessWidget {
               _QuickActionsGrid(
                 children: [
                   NexoQuickActionCard(
-                    icon: Icons.add_card_rounded,
+                    icon: NexoIcons.newSale,
                     title: 'Nova venda',
                     caption: 'Registrar entrada com comissao.',
                     onTap: onNewSale,
                   ),
                   NexoQuickActionCard(
-                    icon: Icons.receipt_long_rounded,
+                    icon: NexoIcons.newExpense,
                     title: 'Novo gasto',
                     caption: 'Lancar gasto em poucos toques.',
                     onTap: onNewExpense,
                   ),
                   NexoQuickActionCard(
-                    icon: Icons.people_alt_rounded,
+                    icon: NexoIcons.clients,
                     title: 'Clientes',
                     caption: 'Abrir lista e cadastrar novo cliente.',
                     onTap: onOpenClients,
@@ -164,7 +171,8 @@ class DashboardScreen extends StatelessWidget {
                   children: alerts
                       .map(
                         (alert) => Padding(
-                          padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+                          padding:
+                              const EdgeInsets.only(bottom: NexoSpacing.sm),
                           child: NexoAlertCard(
                             title: alert.title,
                             message: alert.message,
@@ -188,7 +196,8 @@ class DashboardScreen extends StatelessWidget {
                   children: movements
                       .map(
                         (movement) => Padding(
-                          padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+                          padding:
+                              const EdgeInsets.only(bottom: NexoSpacing.sm),
                           child: NexoMovementListItem(
                             title: movement.title,
                             subtitle: movement.subtitle,
@@ -200,10 +209,13 @@ class DashboardScreen extends StatelessWidget {
                       )
                       .toList(growable: false),
                 ),
-              if (salesService.errorMessage != null || expensesService.errorMessage != null) ...[
+              if (salesService.errorMessage != null ||
+                  expensesService.errorMessage != null) ...[
                 const SizedBox(height: NexoSpacing.lg),
                 Text(
-                  salesService.errorMessage ?? expensesService.errorMessage ?? '',
+                  salesService.errorMessage ??
+                      expensesService.errorMessage ??
+                      '',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -220,13 +232,16 @@ class DashboardScreen extends StatelessWidget {
   ) {
     final alerts = <_DashboardAlert>[];
 
-    final lateSales = sales.where((sale) => sale.status == SaleStatus.late).toList();
+    final lateSales =
+        sales.where((sale) => sale.status == SaleStatus.late).toList();
     final pendingSales =
         sales.where((sale) => sale.status == SaleStatus.pending).toList();
     final mixedExpenses = expenses.where((expense) {
       final account = expense.accountName.toLowerCase();
-      return (expense.scope == ExpenseScope.business && account.contains('pessoal')) ||
-          (expense.scope == ExpenseScope.personal && account.contains('empresa'));
+      return (expense.scope == ExpenseScope.business &&
+              account.contains('pessoal')) ||
+          (expense.scope == ExpenseScope.personal &&
+              account.contains('empresa'));
     }).toList();
 
     if (lateSales.isNotEmpty || pendingSales.isNotEmpty) {
@@ -264,7 +279,8 @@ class DashboardScreen extends StatelessWidget {
         );
       }
 
-      final topEntry = revenueByPlatform.entries.fold<MapEntry<String, double>?>(
+      final topEntry =
+          revenueByPlatform.entries.fold<MapEntry<String, double>?>(
         null,
         (best, current) {
           if (best == null || current.value > best.value) {

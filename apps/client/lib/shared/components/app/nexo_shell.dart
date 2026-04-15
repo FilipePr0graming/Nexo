@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/nexo_colors.dart';
+import '../../../core/design_system/nexo_icons.dart';
 import '../../../core/design_system/nexo_radius.dart';
 import '../../../core/design_system/nexo_spacing.dart';
 import '../../../features/clients/presentation/screens/clients_screen.dart';
@@ -123,7 +124,7 @@ class _NexoShellState extends State<NexoShell> {
           padding: const EdgeInsets.only(bottom: NexoSpacing.md),
           child: NexoButton(
             label: 'Registrar',
-            icon: Icons.add_rounded,
+            icon: NexoIcons.add,
             onPressed: _openQuickActions,
             expanded: false,
           ),
@@ -132,25 +133,26 @@ class _NexoShellState extends State<NexoShell> {
           children: [
             NavigationRail(
               selectedIndex: _currentIndex,
-              onDestinationSelected: (index) => setState(() => _currentIndex = index),
+              onDestinationSelected: (index) =>
+                  setState(() => _currentIndex = index),
               backgroundColor: NexoColors.surface,
               indicatorColor: NexoColors.surfaceElevated,
               labelType: NavigationRailLabelType.all,
               destinations: const [
                 NavigationRailDestination(
-                  icon: Icon(Icons.grid_view_rounded),
+                  icon: Icon(NexoIcons.dashboard),
                   label: Text('Hoje'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.people_alt_rounded),
+                  icon: Icon(NexoIcons.clients),
                   label: Text('Clientes'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.payments_rounded),
+                  icon: Icon(NexoIcons.finance),
                   label: Text('Financeiro'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.insert_chart_outlined_rounded),
+                  icon: Icon(NexoIcons.reports),
                   label: Text('Relatorios'),
                 ),
               ],
@@ -181,7 +183,7 @@ class _NexoShellState extends State<NexoShell> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
-        child: const Icon(Icons.add_rounded),
+        child: const Icon(NexoIcons.add),
       ),
       bottomNavigationBar: BottomAppBar(
         color: NexoColors.surface,
@@ -197,7 +199,7 @@ class _NexoShellState extends State<NexoShell> {
                 Expanded(
                   child: _BottomNavItem(
                     label: 'Hoje',
-                    icon: Icons.grid_view_rounded,
+                    icon: NexoIcons.dashboard,
                     selected: _currentIndex == 0,
                     onTap: () => setState(() => _currentIndex = 0),
                   ),
@@ -205,7 +207,7 @@ class _NexoShellState extends State<NexoShell> {
                 Expanded(
                   child: _BottomNavItem(
                     label: 'Clientes',
-                    icon: Icons.people_alt_rounded,
+                    icon: NexoIcons.clients,
                     selected: _currentIndex == 1,
                     onTap: () => setState(() => _currentIndex = 1),
                   ),
@@ -214,7 +216,7 @@ class _NexoShellState extends State<NexoShell> {
                 Expanded(
                   child: _BottomNavItem(
                     label: 'Financeiro',
-                    icon: Icons.payments_rounded,
+                    icon: NexoIcons.finance,
                     selected: _currentIndex == 2,
                     onTap: () => setState(() => _currentIndex = 2),
                   ),
@@ -222,7 +224,7 @@ class _NexoShellState extends State<NexoShell> {
                 Expanded(
                   child: _BottomNavItem(
                     label: 'Relatorios',
-                    icon: Icons.insert_chart_outlined_rounded,
+                    icon: NexoIcons.reports,
                     selected: _currentIndex == 3,
                     onTap: () => setState(() => _currentIndex = 3),
                   ),
@@ -264,7 +266,8 @@ class _BottomNavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+              style:
+                  Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
             ),
           ],
         ),

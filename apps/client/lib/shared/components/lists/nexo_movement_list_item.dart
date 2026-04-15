@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/nexo_colors.dart';
+import '../../../core/design_system/nexo_icons.dart';
 import '../../../core/design_system/nexo_spacing.dart';
 import '../../../core/design_system/nexo_typography.dart';
 import 'nexo_list_tile_card.dart';
@@ -50,7 +51,7 @@ class NexoMovementListItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
         ),
         child: Icon(
-          isExpense ? Icons.north_east_rounded : Icons.south_west_rounded,
+          isExpense ? NexoIcons.expense : NexoIcons.income,
           size: 18,
           color: NexoColors.ink,
         ),
@@ -58,4 +59,3 @@ class NexoMovementListItem extends StatelessWidget {
     );
   }
 }
-

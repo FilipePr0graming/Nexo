@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/nexo_colors.dart';
+import '../../../core/design_system/nexo_icons.dart';
 import '../../../core/design_system/nexo_spacing.dart';
 
 class NexoQuickActionSheet extends StatelessWidget {
@@ -42,21 +43,21 @@ class NexoQuickActionSheet extends StatelessWidget {
             ),
             const SizedBox(height: NexoSpacing.lg),
             _SheetAction(
-              icon: Icons.add_card_rounded,
+              icon: NexoIcons.newSale,
               title: 'Nova venda',
               subtitle: 'Registrar uma entrada com liquido e comissao.',
               onTap: onNewSale,
             ),
             const SizedBox(height: NexoSpacing.sm),
             _SheetAction(
-              icon: Icons.receipt_long_rounded,
+              icon: NexoIcons.newExpense,
               title: 'Novo gasto',
               subtitle: 'Lancar um gasto pessoal ou da empresa.',
               onTap: onNewExpense,
             ),
             const SizedBox(height: NexoSpacing.sm),
             _SheetAction(
-              icon: Icons.person_add_alt_1_rounded,
+              icon: NexoIcons.newClient,
               title: 'Novo cliente',
               subtitle: 'Cadastrar um contato novo e ligar depois com vendas.',
               onTap: onNewClient,
