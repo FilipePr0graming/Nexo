@@ -413,6 +413,159 @@ class _NewClientScreenState extends State<NewClientScreen> {
     Navigator.of(context).pop(true);
   }
 
+  Future<void> _lookupCompany() async {
+    if (_clientType != ClientType.pj || _isLookingUpCnpj) {
+      return;
+    }
+
+    setState(() => _isLookingUpCnpj = true);
+
+    final autofill = NexoScope.of(context).clientAutofill;
+    try {
+      final result = await autofill.lookupCompanyByCnpj(_documentController.text);
+      _mergeCompanyAutofill(result);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dados da empresa preenchidos.')),
+      );
+    } on LookupValidationException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupNotFoundException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupRequestException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nao foi possivel buscar o CNPJ agora.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLookingUpCnpj = false);
+      }
+    }
+  }
+
+  Future<void> _lookupCep() async {
+    if (_isLookingUpCep) {
+      return;
+    }
+
+    setState(() => _isLookingUpCep = true);
+
+    final autofill = NexoScope.of(context).clientAutofill;
+    try {
+      final result = await autofill.lookupAddressByCep(_zipCodeController.text);
+      _mergeAddressAutofill(
+        zipCode: result.zipCode,
+        street: result.street,
+        neighborhood: result.neighborhood,
+        city: result.city,
+        stateCode: result.stateCode,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Endereco preenchido pelo CEP.')),
+      );
+    } on LookupValidationException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupNotFoundException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } on LookupRequestException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nao foi possivel buscar o CEP agora.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLookingUpCep = false);
+      }
+    }
+  }
+
+  void _mergeCompanyAutofill(CompanyLookupResult result) {
+    _setIfEmpty(_legalNameController, result.legalName);
+    _setIfEmpty(_nameController, result.tradeName);
+    _setIfEmpty(_phoneController, result.phone);
+    _mergeAddressAutofill(
+      zipCode: result.zipCode,
+      street: result.street,
+      neighborhood: result.neighborhood,
+      city: result.city,
+      stateCode: result.stateCode,
+    );
+  }
+
+  void _mergeAddressAutofill({
+    String? zipCode,
+    String? street,
+    String? neighborhood,
+    String? city,
+    String? stateCode,
+  }) {
+    _setIfEmpty(_zipCodeController, zipCode);
+    _setIfEmpty(_streetController, street);
+    _setIfEmpty(_neighborhoodController, neighborhood);
+    _setIfEmpty(_cityController, city);
+    _setIfEmpty(_stateCodeController, stateCode);
+  }
+
+  void _setIfEmpty(TextEditingController controller, String? value) {
+    final current = controller.text.trim();
+    final next = value?.trim() ?? '';
+    if (current.isNotEmpty || next.isEmpty) {
+      return;
+    }
+
+    controller.text = next;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
