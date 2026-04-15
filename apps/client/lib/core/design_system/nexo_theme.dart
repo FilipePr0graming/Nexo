@@ -8,11 +8,11 @@ import 'nexo_typography.dart';
 abstract final class NexoTheme {
   static ThemeData light() {
     const colorScheme = ColorScheme(
-      brightness: Brightness.light,
-      primary: NexoColors.ink,
-      onPrimary: Colors.white,
+      brightness: Brightness.dark,
+      primary: NexoColors.accent,
+      onPrimary: Colors.black,
       secondary: NexoColors.accent,
-      onSecondary: Colors.white,
+      onSecondary: Colors.black,
       error: NexoColors.error,
       onError: Colors.white,
       surface: NexoColors.surface,
@@ -28,7 +28,7 @@ abstract final class NexoTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
       fontFamily: NexoTypography.sans,
       scaffoldBackgroundColor: NexoColors.canvas,
       colorScheme: colorScheme,
@@ -50,7 +50,7 @@ abstract final class NexoTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: NexoColors.surface,
+        fillColor: NexoColors.surfaceElevated,
         hintStyle: const TextStyle(color: NexoColors.inkLow),
         labelStyle: const TextStyle(color: NexoColors.inkMedium),
         contentPadding: const EdgeInsets.symmetric(
@@ -70,8 +70,10 @@ abstract final class NexoTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: NexoColors.ink,
-        contentTextStyle: NexoTypography.textTheme().bodyMedium?.copyWith(color: Colors.white),
+        backgroundColor: NexoColors.surfaceElevated,
+        contentTextStyle: NexoTypography.textTheme().bodyMedium?.copyWith(
+          color: NexoColors.ink,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(NexoRadius.md),
         ),
@@ -79,8 +81,8 @@ abstract final class NexoTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 52),
-          backgroundColor: NexoColors.ink,
-          foregroundColor: Colors.white,
+          backgroundColor: NexoColors.accent,
+          foregroundColor: Colors.black,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: NexoSpacing.lg),
           shape: RoundedRectangleBorder(
@@ -124,8 +126,8 @@ abstract final class NexoTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: NexoColors.surfaceElevated,
-        selectedColor: NexoColors.ink,
-        secondarySelectedColor: NexoColors.ink,
+        selectedColor: NexoColors.accent,
+        secondarySelectedColor: NexoColors.accent,
         disabledColor: NexoColors.surfaceMuted,
         side: const BorderSide(color: NexoColors.border),
         shape: RoundedRectangleBorder(
@@ -142,7 +144,7 @@ abstract final class NexoTheme {
           fontFamily: NexoTypography.sans,
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Colors.white,
+          color: Colors.black,
         ),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
@@ -152,12 +154,12 @@ abstract final class NexoTheme {
           ),
           backgroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
-                ? NexoColors.ink
+                ? NexoColors.accent
                 : NexoColors.surface,
           ),
           foregroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
-                ? Colors.white
+                ? Colors.black
                 : NexoColors.ink,
           ),
           textStyle: const WidgetStatePropertyAll(

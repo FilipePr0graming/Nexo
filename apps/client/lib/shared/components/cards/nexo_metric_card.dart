@@ -20,14 +20,14 @@ class NexoMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NexoCard(
-      backgroundColor: NexoColors.surface,
+      backgroundColor: NexoColors.surfaceElevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: NexoColors.inkLow,
+                  color: NexoColors.inkMedium,
                 ),
           ),
           const SizedBox(height: NexoSpacing.sm),
@@ -43,7 +43,9 @@ class NexoMetricCard extends StatelessWidget {
             const SizedBox(height: NexoSpacing.sm),
             Text(
               footnote!,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: NexoColors.inkLow,
+                  ),
             ),
           ],
         ],

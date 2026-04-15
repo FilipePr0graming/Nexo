@@ -12,7 +12,9 @@ import '../../../features/finance/presentation/screens/new_expense_screen.dart';
 import '../../../features/finance/presentation/screens/new_sale_screen.dart';
 import '../../../features/reports/presentation/screens/reports_screen.dart';
 import '../actions/nexo_button.dart';
+import 'nexo_background.dart';
 import 'nexo_quick_action_sheet.dart';
+import 'nexo_sidebar.dart';
 
 class NexoShell extends StatefulWidget {
   const NexoShell({super.key});
@@ -129,56 +131,37 @@ class _NexoShellState extends State<NexoShell> {
             expanded: false,
           ),
         ),
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _currentIndex = index),
-              backgroundColor: NexoColors.surface,
-              indicatorColor: NexoColors.surfaceElevated,
-              labelType: NavigationRailLabelType.all,
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(NexoIcons.dashboard),
-                  label: Text('Hoje'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(NexoIcons.clients),
-                  label: Text('Clientes'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(NexoIcons.finance),
-                  label: Text('Financeiro'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(NexoIcons.reports),
-                  label: Text('Relatorios'),
-                ),
-              ],
-            ),
-            const VerticalDivider(width: 1),
-            Expanded(
-              child: IndexedStack(
-                index: _currentIndex,
-                children: pages,
+        body: NexoBackground(
+          child: Row(
+            children: [
+              NexoSidebar(
+                selectedIndex: _currentIndex,
+                onSelected: (index) => setState(() => _currentIndex = index),
               ),
-            ),
-          ],
+              Expanded(
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: pages,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
+      body: NexoBackground(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: pages,
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: _openQuickActions,
-        backgroundColor: NexoColors.ink,
-        foregroundColor: Colors.white,
+        backgroundColor: NexoColors.accent,
+        foregroundColor: Colors.black,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
@@ -186,7 +169,7 @@ class _NexoShellState extends State<NexoShell> {
         child: const Icon(NexoIcons.add),
       ),
       bottomNavigationBar: BottomAppBar(
-        color: NexoColors.surface,
+        color: NexoColors.surface.withValues(alpha: 0.92),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: const CircularNotchedRectangle(),
