@@ -127,30 +127,40 @@ class _NexoQuickCalculatorSheetState extends State<NexoQuickCalculatorSheet> {
           const SizedBox(height: NexoSpacing.md),
           NexoCard(
             padding: const EdgeInsets.all(NexoSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _expression.isEmpty ? '0' : _expression,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          letterSpacing: -0.2,
-                        ),
+            child: SizedBox(
+              height: 88,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _expression.isEmpty ? '0' : _expression,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            letterSpacing: -0.2,
+                          ),
+                    ),
                   ),
-                ),
-                if (_preview != null) ...[
                   const SizedBox(height: NexoSpacing.xs),
-                  Text(
-                    _preview!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: NexoColors.inkLow,
-                        ),
+                  SizedBox(
+                    height: 18,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        _preview ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: NexoColors.inkLow,
+                            ),
+                      ),
+                    ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
           const SizedBox(height: NexoSpacing.md),
