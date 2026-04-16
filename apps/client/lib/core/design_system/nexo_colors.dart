@@ -14,8 +14,14 @@ abstract final class NexoColors {
   static const Color border = Color(0xFF2A3146);
   static const Color divider = Color(0xFF20263A);
 
-  static const Color accent = Color(0xFFB97A53);
-  static const Color accentSoft = Color(0xFFDDBBA6);
+  static const Color accent = Color(0xFF4FD1C5);
+  static const Color accentSoft = Color(0xFFA7F3D0);
+  static const Color accentBlue = Color(0xFF5AA7FF);
+  static const Color accentBlueSoft = Color(0xFFB9D7FF);
+
+  static const Color gradientGreen = Color(0xFF4FD1C5);
+  static const Color gradientBlue = Color(0xFF5AA7FF);
+  static const Color gradientDeep = Color(0xFF0B2A2A);
 
   static const Color success = Color(0xFF166534);
   static const Color successSoft = Color(0xFFF0FDF4);

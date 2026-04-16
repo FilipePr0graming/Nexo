@@ -214,51 +214,70 @@ class _NexoShellState extends State<NexoShell> {
         ),
         child: const Icon(NexoIcons.add),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: NexoColors.surface.withValues(alpha: 0.92),
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        shape: const CircularNotchedRectangle(),
-        child: SizedBox(
-          height: 72,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: NexoSpacing.sm),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _BottomNavItem(
-                    label: 'Hoje',
-                    icon: NexoIcons.dashboard,
-                    selected: _currentIndex == 0,
-                    onTap: () => setState(() => _currentIndex = 0),
-                  ),
-                ),
-                Expanded(
-                  child: _BottomNavItem(
-                    label: 'Clientes',
-                    icon: NexoIcons.clients,
-                    selected: _currentIndex == 1,
-                    onTap: () => setState(() => _currentIndex = 1),
-                  ),
-                ),
-                const SizedBox(width: 56),
-                Expanded(
-                  child: _BottomNavItem(
-                    label: 'Financeiro',
-                    icon: NexoIcons.finance,
-                    selected: _currentIndex == 2,
-                    onTap: () => setState(() => _currentIndex = 2),
-                  ),
-                ),
-                Expanded(
-                  child: _BottomNavItem(
-                    label: 'Relatorios',
-                    icon: NexoIcons.reports,
-                    selected: _currentIndex == 3,
-                    onTap: () => setState(() => _currentIndex = 3),
-                  ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            NexoSpacing.md,
+            0,
+            NexoSpacing.md,
+            NexoSpacing.md,
+          ),
+          child: Container(
+            height: 76,
+            decoration: BoxDecoration(
+              color: NexoColors.surface.withValues(alpha: 0.82),
+              borderRadius: BorderRadius.circular(NexoRadius.xl),
+              border: Border.all(
+                color: NexoColors.border.withValues(alpha: 0.55),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x55000000),
+                  blurRadius: 26,
+                  offset: Offset(0, 18),
                 ),
               ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _BottomNavItem(
+                      label: 'Hoje',
+                      icon: NexoIcons.dashboard,
+                      selected: _currentIndex == 0,
+                      onTap: () => setState(() => _currentIndex = 0),
+                    ),
+                  ),
+                  Expanded(
+                    child: _BottomNavItem(
+                      label: 'Clientes',
+                      icon: NexoIcons.clients,
+                      selected: _currentIndex == 1,
+                      onTap: () => setState(() => _currentIndex = 1),
+                    ),
+                  ),
+                  const SizedBox(width: 62),
+                  Expanded(
+                    child: _BottomNavItem(
+                      label: 'Financeiro',
+                      icon: NexoIcons.finance,
+                      selected: _currentIndex == 2,
+                      onTap: () => setState(() => _currentIndex = 2),
+                    ),
+                  ),
+                  Expanded(
+                    child: _BottomNavItem(
+                      label: 'Relatorios',
+                      icon: NexoIcons.reports,
+                      selected: _currentIndex == 3,
+                      onTap: () => setState(() => _currentIndex = 3),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

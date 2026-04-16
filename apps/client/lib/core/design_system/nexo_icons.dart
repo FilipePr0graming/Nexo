@@ -18,4 +18,12 @@ abstract final class NexoIcons {
 
   static const IconData income = Icons.call_received_rounded;
   static const IconData expense = Icons.call_made_rounded;
+
+  static const IconData bell = Icons.notifications_outlined;
+  static const IconData settings = Icons.settings_outlined;
+  static const IconData eye = Icons.visibility_outlined;
+  static const IconData wallet = Icons.account_balance_wallet_outlined;
+  static const IconData cash = Icons.payments_outlined;
+  static const IconData chart = Icons.show_chart;
+  static const IconData calendar = Icons.calendar_today_outlined;
 }

@@ -50,53 +50,77 @@ class NexoBalanceHeroCard extends StatelessWidget {
           tint: const Color(0xFF0E1018),
           borderColor: NexoColors.border.withValues(alpha: 0.65),
           padding: const EdgeInsets.all(NexoSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: NexoColors.inkMedium,
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(NexoRadius.hero),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0x264FD1C5),
+                          Color(0x1A5AA7FF),
+                          Color(0x000E1018),
+                        ],
+                        stops: [0.0, 0.55, 1.0],
+                      ),
                     ),
-              ),
-              const SizedBox(height: NexoSpacing.sm),
-              ShaderMask(
-                shaderCallback: (rect) {
-                  return const LinearGradient(
-                    colors: [
-                      Color(0xFFFFFFFF),
-                      Color(0xFFD7DAE8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ).createShader(rect);
-                },
-                child: Text(
-                  balance,
-                  style: NexoTypography.monoStyle(
-                    size: 40,
-                    height: 1.08,
-                    weight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -1.2,
                   ),
                 ),
               ),
-              const SizedBox(height: NexoSpacing.xl),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _HeroMetric(
-                      label: primaryLabel,
-                      value: primaryValue,
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: NexoColors.inkMedium,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: NexoSpacing.sm),
+                  ShaderMask(
+                    shaderCallback: (rect) {
+                      return const LinearGradient(
+                        colors: [
+                          Color(0xFFEAF2FF),
+                          Color(0xFFFFFFFF),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(rect);
+                    },
+                    child: Text(
+                      balance,
+                      style: NexoTypography.monoStyle(
+                        size: 40,
+                        height: 1.08,
+                        weight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -1.2,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: NexoSpacing.md),
-                  Expanded(
-                    child: _HeroMetric(
-                      label: secondaryLabel,
-                      value: secondaryValue,
-                    ),
+                  const SizedBox(height: NexoSpacing.xl),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _HeroMetric(
+                          label: primaryLabel,
+                          value: primaryValue,
+                        ),
+                      ),
+                      const SizedBox(width: NexoSpacing.md),
+                      Expanded(
+                        child: _HeroMetric(
+                          label: secondaryLabel,
+                          value: secondaryValue,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -12,6 +12,7 @@ class NexoCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(NexoSpacing.lg),
     this.onTap,
     this.backgroundColor,
+    this.gradient,
     this.borderColor,
     this.radius = NexoRadius.lg,
     this.boxShadow,
@@ -21,6 +22,7 @@ class NexoCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
   final Color? backgroundColor;
+  final Gradient? gradient;
   final Color? borderColor;
   final double radius;
   final List<BoxShadow>? boxShadow;
@@ -28,7 +30,10 @@ class NexoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decoration = BoxDecoration(
-      color: (backgroundColor ?? NexoColors.surface).withValues(alpha: 0.95),
+      color: gradient == null
+          ? (backgroundColor ?? NexoColors.surface).withValues(alpha: 0.95)
+          : null,
+      gradient: gradient,
       borderRadius: BorderRadius.circular(radius),
       border: Border.all(
         color: (borderColor ?? NexoColors.border).withValues(alpha: 0.85),
