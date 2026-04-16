@@ -4,7 +4,6 @@ import '../../../core/design_system/nexo_colors.dart';
 import '../../../core/design_system/nexo_radius.dart';
 import '../../../core/design_system/nexo_spacing.dart';
 import '../actions/nexo_hoverable.dart';
-import 'nexo_glass_card.dart';
 
 class NexoCard extends StatelessWidget {
   const NexoCard({
@@ -28,16 +27,37 @@ class NexoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final decoration = BoxDecoration(
+      color: (backgroundColor ?? NexoColors.surface).withValues(alpha: 0.95),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: (borderColor ?? NexoColors.border).withValues(alpha: 0.85),
+      ),
+      boxShadow: boxShadow ?? const [
+        BoxShadow(
+          color: Color(0x40000000),
+          blurRadius: 12,
+          offset: Offset(0, 6),
+        ),
+      ],
+    );
+
     return NexoHoverable(
       enabled: onTap != null,
       onTap: onTap,
-      child: NexoGlassCard(
-        radius: radius,
-        tint: backgroundColor ?? NexoColors.surface,
-        borderColor: borderColor,
-        boxShadow: boxShadow,
-        padding: padding,
-        child: child,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(radius),
+          child: DecoratedBox(
+            decoration: decoration,
+            child: Padding(
+              padding: padding,
+              child: child,
+            ),
+          ),
+        ),
       ),
     );
   }

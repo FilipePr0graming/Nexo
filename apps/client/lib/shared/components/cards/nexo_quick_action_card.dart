@@ -28,18 +28,11 @@ class NexoQuickActionCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: NexoColors.surfaceElevated.withValues(alpha: 0.9),
+              color: NexoColors.surfaceElevated.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: NexoColors.border.withValues(alpha: 0.7),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: NexoColors.accent.withValues(alpha: 0.14),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ],
             ),
             child: Icon(icon, size: 20),
           ),

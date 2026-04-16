@@ -32,7 +32,7 @@ class NexoSidebar extends StatelessWidget {
           radius: NexoRadius.xl,
           blurSigma: 16,
           tint: const Color(0xFF0E1018),
-          borderColor: NexoColors.border.withValues(alpha: 0.6),
+          borderColor: NexoColors.border.withValues(alpha: 0.35),
           padding: const EdgeInsets.all(NexoSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,8 +83,8 @@ class _SidebarHeader extends StatelessWidget {
           height: 38,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(NexoRadius.md),
-            color: NexoColors.surfaceElevated.withValues(alpha: 0.9),
-            border: Border.all(color: NexoColors.border.withValues(alpha: 0.7)),
+            color: NexoColors.surfaceElevated.withValues(alpha: 0.7),
+            border: Border.all(color: NexoColors.border.withValues(alpha: 0.55)),
           ),
           child: const Icon(NexoIcons.dashboard, size: 18),
         ),
@@ -120,9 +120,9 @@ class _SidebarItem extends StatelessWidget {
     final highlight = selected
         ? BoxDecoration(
             borderRadius: BorderRadius.circular(NexoRadius.md),
-            color: NexoColors.surfaceElevated.withValues(alpha: 0.75),
+            color: NexoColors.surfaceElevated.withValues(alpha: 0.62),
             border: Border.all(
-              color: NexoColors.border.withValues(alpha: 0.9),
+              color: NexoColors.border.withValues(alpha: 0.55),
             ),
           )
         : BoxDecoration(
@@ -132,7 +132,7 @@ class _SidebarItem extends StatelessWidget {
     final content = Container(
       padding: const EdgeInsets.symmetric(
         horizontal: NexoSpacing.md,
-        vertical: 12,
+        vertical: 11,
       ),
       decoration: highlight,
       child: Row(
@@ -157,7 +157,7 @@ class _SidebarItem extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: NexoHoverable(
         onTap: onTap,
         child: content,

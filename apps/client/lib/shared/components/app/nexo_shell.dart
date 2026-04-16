@@ -142,32 +142,17 @@ class _NexoShellState extends State<NexoShell> {
 
     if (isDesktop) {
       return Scaffold(
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: NexoSpacing.md),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FloatingActionButton.small(
-                heroTag: 'calc_fab',
-                onPressed: _openCalculator,
-                backgroundColor: NexoColors.surfaceElevated.withValues(alpha: 0.94),
-                foregroundColor: NexoColors.ink,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  side: BorderSide(color: NexoColors.border.withValues(alpha: 0.85)),
-                ),
-                child: const Icon(NexoIcons.calculator, size: 20),
-              ),
-              const SizedBox(width: NexoSpacing.sm),
-              NexoButton(
-                label: 'Registrar',
-                icon: NexoIcons.add,
-                onPressed: _openQuickActions,
-                expanded: false,
-              ),
-            ],
+        floatingActionButton: FloatingActionButton.small(
+          heroTag: 'calc_fab',
+          onPressed: _openCalculator,
+          backgroundColor: NexoColors.surfaceElevated.withValues(alpha: 0.94),
+          foregroundColor: NexoColors.ink,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: NexoColors.border.withValues(alpha: 0.85)),
           ),
+          child: const Icon(NexoIcons.calculator, size: 20),
         ),
         body: NexoBackground(
           child: Row(
@@ -189,41 +174,45 @@ class _NexoShellState extends State<NexoShell> {
     }
 
     return Scaffold(
-      body: NexoBackground(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: pages,
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
+      body: Stack(
         children: [
-          FloatingActionButton.small(
-            heroTag: 'calc_fab_mobile',
-            onPressed: _openCalculator,
-            backgroundColor: NexoColors.surfaceElevated.withValues(alpha: 0.94),
-            foregroundColor: NexoColors.ink,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-              side: BorderSide(color: NexoColors.border.withValues(alpha: 0.85)),
+          NexoBackground(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: pages,
             ),
-            child: const Icon(NexoIcons.calculator, size: 20),
           ),
-          const SizedBox(height: NexoSpacing.sm),
-          FloatingActionButton(
-            heroTag: 'register_fab_mobile',
-            onPressed: _openQuickActions,
-            backgroundColor: NexoColors.accent,
-            foregroundColor: Colors.black,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+          Positioned(
+            right: NexoSpacing.md,
+            bottom: 88,
+            child: FloatingActionButton.small(
+              heroTag: 'calc_fab_mobile',
+              onPressed: _openCalculator,
+              backgroundColor:
+                  NexoColors.surfaceElevated.withValues(alpha: 0.94),
+              foregroundColor: NexoColors.ink,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side:
+                    BorderSide(color: NexoColors.border.withValues(alpha: 0.85)),
+              ),
+              child: const Icon(NexoIcons.calculator, size: 20),
             ),
-            child: const Icon(NexoIcons.add),
           ),
         ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'register_fab_mobile',
+        onPressed: _openQuickActions,
+        backgroundColor: NexoColors.accent,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Icon(NexoIcons.add),
       ),
       bottomNavigationBar: BottomAppBar(
         color: NexoColors.surface.withValues(alpha: 0.92),

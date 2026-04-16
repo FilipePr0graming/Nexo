@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/app/nexo_scope.dart';
+import '../../../../core/design_system/nexo_colors.dart';
 import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../core/utils/date_label_utils.dart';
@@ -9,6 +10,7 @@ import '../../../../shared/components/actions/nexo_icon_button.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
 import '../../../../shared/components/cards/nexo_alert_card.dart';
 import '../../../../shared/components/cards/nexo_balance_hero_card.dart';
+import '../../../../shared/components/cards/nexo_card.dart';
 import '../../../../shared/components/cards/nexo_empty_state_card.dart';
 import '../../../../shared/components/cards/nexo_metric_card.dart';
 import '../../../../shared/components/cards/nexo_quick_action_card.dart';
@@ -84,6 +86,7 @@ class DashboardScreen extends StatelessWidget {
 
         final alerts = _buildAlerts(sales, expenses);
         final movements = _buildRecentMovements(sales, expenses);
+        final isDesktop = MediaQuery.sizeOf(context).width >= 1024;
 
         return NexoPageScaffold(
           title: 'Hoje',
@@ -99,36 +102,98 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NexoBalanceHeroCard(
-                title: 'Saldo geral',
-                balance: MoneyUtils.format(totalBalance),
-                primaryLabel: 'Empresa',
-                primaryValue: MoneyUtils.format(businessBalance),
-                secondaryLabel: 'Pessoal',
-                secondaryValue: MoneyUtils.format(personalBalance),
-              ),
-              const SizedBox(height: NexoSpacing.xl),
-              _MetricsGrid(
+              if (isDesktop)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: NexoBalanceHeroCard(
+                        title: 'Saldo geral',
+                        balance: MoneyUtils.format(totalBalance),
+                        primaryLabel: 'Empresa',
+                        primaryValue: MoneyUtils.format(businessBalance),
+                        secondaryLabel: 'Pessoal',
+                        secondaryValue: MoneyUtils.format(personalBalance),
+                      ),
+                    ),
+                    const SizedBox(width: NexoSpacing.lg),
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          _DashboardStatCard(
+                            label: 'Recebido hoje',
+                            value: MoneyUtils.format(receivedToday),
+                            footnote: 'Liquido confirmado',
+                            size: _DashboardStatSize.primary,
+                          ),
+                          const SizedBox(height: NexoSpacing.md),
+                          _DashboardStatCard(
+                            label: 'A receber',
+                            value: MoneyUtils.format(pendingAmount),
+                            footnote: 'Pendencias registradas',
+                            size: _DashboardStatSize.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  children: [
+                    NexoBalanceHeroCard(
+                      title: 'Saldo geral',
+                      balance: MoneyUtils.format(totalBalance),
+                      primaryLabel: 'Empresa',
+                      primaryValue: MoneyUtils.format(businessBalance),
+                      secondaryLabel: 'Pessoal',
+                      secondaryValue: MoneyUtils.format(personalBalance),
+                    ),
+                    const SizedBox(height: NexoSpacing.lg),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _DashboardStatCard(
+                            label: 'Recebido hoje',
+                            value: MoneyUtils.format(receivedToday),
+                            footnote: 'Liquido confirmado',
+                            size: _DashboardStatSize.primary,
+                          ),
+                        ),
+                        const SizedBox(width: NexoSpacing.md),
+                        Expanded(
+                          child: _DashboardStatCard(
+                            label: 'A receber',
+                            value: MoneyUtils.format(pendingAmount),
+                            footnote: 'Pendencias registradas',
+                            size: _DashboardStatSize.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              const SizedBox(height: NexoSpacing.lg),
+              Row(
                 children: [
-                  NexoMetricCard(
-                    label: 'Recebido hoje',
-                    value: MoneyUtils.format(receivedToday),
-                    footnote: 'Liquido confirmado',
+                  Expanded(
+                    child: _DashboardStatCard(
+                      label: 'Gastos do mes',
+                      value: MoneyUtils.format(monthlyExpenses),
+                      footnote: 'Empresa + pessoal',
+                      size: _DashboardStatSize.secondary,
+                    ),
                   ),
-                  NexoMetricCard(
-                    label: 'A receber',
-                    value: MoneyUtils.format(pendingAmount),
-                    footnote: 'Pendencias registradas',
-                  ),
-                  NexoMetricCard(
-                    label: 'Gastos do mes',
-                    value: MoneyUtils.format(monthlyExpenses),
-                    footnote: 'Empresa + pessoal',
-                  ),
-                  NexoMetricCard(
-                    label: 'Daniel',
-                    value: MoneyUtils.format(danielThisMonth),
-                    footnote: 'Comissao no periodo',
+                  const SizedBox(width: NexoSpacing.md),
+                  Expanded(
+                    child: _DashboardStatCard(
+                      label: 'Daniel',
+                      value: MoneyUtils.format(danielThisMonth),
+                      footnote: 'Comissao no periodo',
+                      size: _DashboardStatSize.secondary,
+                    ),
                   ),
                 ],
               ),
@@ -334,6 +399,62 @@ class DashboardScreen extends StatelessWidget {
 
     movements.sort((left, right) => right.date.compareTo(left.date));
     return movements.take(6).toList(growable: false);
+  }
+}
+
+enum _DashboardStatSize {
+  primary,
+  secondary,
+}
+
+class _DashboardStatCard extends StatelessWidget {
+  const _DashboardStatCard({
+    required this.label,
+    required this.value,
+    required this.footnote,
+    required this.size,
+  });
+
+  final String label;
+  final String value;
+  final String footnote;
+  final _DashboardStatSize size;
+
+  @override
+  Widget build(BuildContext context) {
+    final labelStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: NexoColors.inkMedium,
+          fontWeight: FontWeight.w600,
+        );
+
+    final valueStyle = switch (size) {
+      _DashboardStatSize.primary => Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.6,
+          ),
+      _DashboardStatSize.secondary => Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
+          ),
+    };
+
+    final footnoteStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: NexoColors.inkLow,
+        );
+
+    return NexoCard(
+      padding: const EdgeInsets.all(NexoSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: labelStyle),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(value, style: valueStyle),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(footnote, style: footnoteStyle),
+        ],
+      ),
+    );
   }
 }
 
