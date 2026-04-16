@@ -16,10 +16,10 @@ class NexoBackground extends StatelessWidget {
       decoration: const BoxDecoration(
         color: NexoColors.canvas,
         gradient: RadialGradient(
-          center: Alignment(-0.2, -0.9),
-          radius: 1.25,
+          center: Alignment(-0.35, -0.85),
+          radius: 1.35,
           colors: [
-            Color(0x1AC77B3A),
+            Color(0x0DB87444),
             Color(0x0007080D),
           ],
           stops: [0.0, 1.0],

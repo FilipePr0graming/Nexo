@@ -7,6 +7,7 @@ abstract final class NexoIcons {
   static const IconData clients = Icons.group_rounded;
   static const IconData finance = Icons.account_balance_wallet_rounded;
   static const IconData reports = Icons.insert_chart_outlined_rounded;
+  static const IconData calculator = Icons.calculate_rounded;
 
   static const IconData add = Icons.add_rounded;
   static const IconData refresh = Icons.autorenew_rounded;

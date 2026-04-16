@@ -15,7 +15,7 @@ class NexoGlassCard extends StatelessWidget {
     this.radius = NexoRadius.lg,
     this.tint,
     this.borderColor,
-    this.blurSigma = 18,
+    this.blurSigma = 14,
     this.boxShadow,
   });
 
@@ -31,10 +31,10 @@ class NexoGlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decoration = BoxDecoration(
-      color: (tint ?? NexoColors.surface).withValues(alpha: 0.72),
+      color: (tint ?? NexoColors.surface).withValues(alpha: 0.62),
       borderRadius: BorderRadius.circular(radius),
       border: Border.all(
-        color: (borderColor ?? NexoColors.border).withValues(alpha: 0.75),
+        color: (borderColor ?? NexoColors.border).withValues(alpha: 0.65),
       ),
       boxShadow: boxShadow ?? NexoShadows.subtle,
     );

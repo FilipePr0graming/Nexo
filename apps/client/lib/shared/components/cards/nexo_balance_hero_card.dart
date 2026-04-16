@@ -35,8 +35,8 @@ class NexoBalanceHeroCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(NexoRadius.hero),
                 boxShadow: [
                   BoxShadow(
-                    color: NexoColors.accent.withValues(alpha: 0.18),
-                    blurRadius: 52,
+                    color: NexoColors.accent.withValues(alpha: 0.10),
+                    blurRadius: 42,
                     offset: const Offset(0, 18),
                   ),
                 ],
@@ -65,7 +65,7 @@ class NexoBalanceHeroCard extends StatelessWidget {
                   return const LinearGradient(
                     colors: [
                       Color(0xFFFFFFFF),
-                      Color(0xFFF3D1B8),
+                      Color(0xFFD7DAE8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,

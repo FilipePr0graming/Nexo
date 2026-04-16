@@ -13,6 +13,7 @@ import '../../../features/finance/presentation/screens/new_sale_screen.dart';
 import '../../../features/reports/presentation/screens/reports_screen.dart';
 import '../actions/nexo_button.dart';
 import 'nexo_background.dart';
+import 'nexo_quick_calculator_sheet.dart';
 import 'nexo_quick_action_sheet.dart';
 import 'nexo_sidebar.dart';
 
@@ -42,6 +43,25 @@ class _NexoShellState extends State<NexoShell> {
       ),
       const ReportsScreen(),
     ];
+  }
+
+  Future<void> _openCalculator() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: NexoColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(NexoRadius.xl),
+      ),
+      builder: (context) {
+        return const FractionallySizedBox(
+          heightFactor: 0.92,
+          child: NexoQuickCalculatorSheet(),
+        );
+      },
+    );
   }
 
   Future<void> _openQuickActions() async {
@@ -124,11 +144,29 @@ class _NexoShellState extends State<NexoShell> {
       return Scaffold(
         floatingActionButton: Padding(
           padding: const EdgeInsets.only(bottom: NexoSpacing.md),
-          child: NexoButton(
-            label: 'Registrar',
-            icon: NexoIcons.add,
-            onPressed: _openQuickActions,
-            expanded: false,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'calc_fab',
+                onPressed: _openCalculator,
+                backgroundColor: NexoColors.surfaceElevated.withValues(alpha: 0.94),
+                foregroundColor: NexoColors.ink,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  side: BorderSide(color: NexoColors.border.withValues(alpha: 0.85)),
+                ),
+                child: const Icon(NexoIcons.calculator, size: 20),
+              ),
+              const SizedBox(width: NexoSpacing.sm),
+              NexoButton(
+                label: 'Registrar',
+                icon: NexoIcons.add,
+                onPressed: _openQuickActions,
+                expanded: false,
+              ),
+            ],
           ),
         ),
         body: NexoBackground(
@@ -158,15 +196,34 @@ class _NexoShellState extends State<NexoShell> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openQuickActions,
-        backgroundColor: NexoColors.accent,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: const Icon(NexoIcons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'calc_fab_mobile',
+            onPressed: _openCalculator,
+            backgroundColor: NexoColors.surfaceElevated.withValues(alpha: 0.94),
+            foregroundColor: NexoColors.ink,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(color: NexoColors.border.withValues(alpha: 0.85)),
+            ),
+            child: const Icon(NexoIcons.calculator, size: 20),
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          FloatingActionButton(
+            heroTag: 'register_fab_mobile',
+            onPressed: _openQuickActions,
+            backgroundColor: NexoColors.accent,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Icon(NexoIcons.add),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomAppBar(
         color: NexoColors.surface.withValues(alpha: 0.92),

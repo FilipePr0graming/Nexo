@@ -30,8 +30,8 @@ class NexoSidebar extends StatelessWidget {
         width: 220,
         child: NexoGlassCard(
           radius: NexoRadius.xl,
-          blurSigma: 20,
-          tint: const Color(0xFF0C0E16),
+          blurSigma: 16,
+          tint: const Color(0xFF0E1018),
           borderColor: NexoColors.border.withValues(alpha: 0.6),
           padding: const EdgeInsets.all(NexoSpacing.md),
           child: Column(
@@ -120,16 +120,9 @@ class _SidebarItem extends StatelessWidget {
     final highlight = selected
         ? BoxDecoration(
             borderRadius: BorderRadius.circular(NexoRadius.md),
-            gradient: LinearGradient(
-              colors: [
-                NexoColors.accent.withValues(alpha: 0.18),
-                NexoColors.accent.withValues(alpha: 0.06),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+            color: NexoColors.surfaceElevated.withValues(alpha: 0.75),
             border: Border.all(
-              color: NexoColors.accent.withValues(alpha: 0.22),
+              color: NexoColors.border.withValues(alpha: 0.9),
             ),
           )
         : BoxDecoration(
@@ -182,14 +175,14 @@ class _SidebarHint extends StatelessWidget {
       padding: const EdgeInsets.all(NexoSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(NexoRadius.lg),
-        color: NexoColors.surfaceElevated.withValues(alpha: 0.55),
+        color: NexoColors.surfaceElevated.withValues(alpha: 0.42),
         border: Border.all(color: NexoColors.border.withValues(alpha: 0.6)),
       ),
       child: Text(
         'Atalhos: use o botao Registrar para criar venda, gasto ou cliente.',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: NexoColors.inkLow,
-            ),
+          color: NexoColors.inkLow,
+        ),
       ),
     );
   }

@@ -126,8 +126,8 @@ abstract final class NexoTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: NexoColors.surfaceElevated,
-        selectedColor: NexoColors.accent,
-        secondarySelectedColor: NexoColors.accent,
+        selectedColor: NexoColors.surfaceElevated,
+        secondarySelectedColor: NexoColors.surfaceElevated,
         disabledColor: NexoColors.surfaceMuted,
         side: const BorderSide(color: NexoColors.border),
         shape: RoundedRectangleBorder(
@@ -144,7 +144,7 @@ abstract final class NexoTheme {
           fontFamily: NexoTypography.sans,
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Colors.black,
+          color: NexoColors.ink,
         ),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
@@ -154,12 +154,12 @@ abstract final class NexoTheme {
           ),
           backgroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
-                ? NexoColors.accent
+                ? NexoColors.surfaceElevated
                 : NexoColors.surface,
           ),
           foregroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
-                ? Colors.black
+                ? NexoColors.inkHigh
                 : NexoColors.ink,
           ),
           textStyle: const WidgetStatePropertyAll(
