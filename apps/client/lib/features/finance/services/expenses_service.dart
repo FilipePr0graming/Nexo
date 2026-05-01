@@ -34,6 +34,7 @@ class ExpensesService extends ChangeNotifier {
     notifyListeners();
 
     await refresh();
+    await createMissingRecurringExpenses();
   }
 
   Future<void> refresh() async {
@@ -99,6 +100,49 @@ class ExpensesService extends ChangeNotifier {
     }
   }
 
+  Future<int> createMissingRecurringExpenses({DateTime? now}) async {
+    final today = now ?? DateTime.now();
+    final weekLimit = today.add(const Duration(days: 7));
+    final recurringGroups = <String, List<ExpenseModel>>{};
+
+    for (final expense in _expenses) {
+      if (expense.recurrence == null) {
+        continue;
+      }
+
+      recurringGroups
+          .putIfAbsent(_recurringKey(expense), () => <ExpenseModel>[])
+          .add(expense);
+    }
+
+    var created = 0;
+    for (final group in recurringGroups.values) {
+      group
+          .sort((left, right) => right.expenseDate.compareTo(left.expenseDate));
+      final baseExpense = group.first;
+      final nextDate = _nextExpenseDate(baseExpense);
+
+      if (nextDate.isAfter(weekLimit) || _hasExpenseForDay(group, nextDate)) {
+        continue;
+      }
+
+      await createExpense(
+        title: baseExpense.title,
+        category: baseExpense.category,
+        subcategory: baseExpense.subcategory,
+        amount: baseExpense.amount,
+        scope: baseExpense.scope,
+        accountName: baseExpense.accountName,
+        expenseDate: nextDate.toUtc(),
+        recurrence: baseExpense.recurrence,
+        notes: 'Conta gerada automaticamente pela recorrencia.',
+      );
+      created += 1;
+    }
+
+    return created;
+  }
+
   int _sortByDate(ExpenseModel left, ExpenseModel right) {
     return right.expenseDate.compareTo(left.expenseDate);
   }
@@ -117,5 +161,49 @@ class ExpensesService extends ChangeNotifier {
 
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+
+  static String _recurringKey(ExpenseModel expense) {
+    return [
+      expense.title.trim().toLowerCase(),
+      expense.category.trim().toLowerCase(),
+      expense.scope.name,
+      expense.accountName.trim().toLowerCase(),
+      expense.recurrence,
+      expense.amount.toStringAsFixed(2),
+    ].join('|');
+  }
+
+  static DateTime _nextExpenseDate(ExpenseModel expense) {
+    final months = expense.recurrence == 'annual' ? 12 : 1;
+    return _addMonths(expense.expenseDate.toLocal(), months);
+  }
+
+  static DateTime _addMonths(DateTime date, int months) {
+    final targetMonth = date.month + months;
+    final targetYear = date.year + ((targetMonth - 1) ~/ 12);
+    final normalizedMonth = ((targetMonth - 1) % 12) + 1;
+    final maxDay = DateTime(targetYear, normalizedMonth + 1, 0).day;
+    final targetDay = date.day > maxDay ? maxDay : date.day;
+
+    return DateTime(
+      targetYear,
+      normalizedMonth,
+      targetDay,
+      date.hour,
+      date.minute,
+      date.second,
+      date.millisecond,
+      date.microsecond,
+    );
+  }
+
+  static bool _hasExpenseForDay(List<ExpenseModel> expenses, DateTime date) {
+    return expenses.any((expense) {
+      final expenseDate = expense.expenseDate.toLocal();
+      return expenseDate.year == date.year &&
+          expenseDate.month == date.month &&
+          expenseDate.day == date.day;
+    });
   }
 }

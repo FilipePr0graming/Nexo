@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 
 abstract final class NexoColors {
-  static const Color canvas = Color(0xFF07080D);
-  static const Color surface = Color(0xFF10121A);
-  static const Color surfaceElevated = Color(0xFF141827);
-  static const Color surfaceMuted = Color(0xFF0C0E16);
+  static const Color canvas = Color(0xFFF7F6F3);
+  static const Color surface = Color(0xFFF9F9F7);
+  static const Color surfaceElevated = Color(0xFFFFFCF7);
+  static const Color surfaceMuted = Color(0xFFF0EFEB);
 
-  static const Color ink = Color(0xFFF6F7FB);
-  static const Color inkHigh = Color(0xFFFFFFFF);
-  static const Color inkMedium = Color(0xFFB7BBD0);
-  static const Color inkLow = Color(0xFF878CA3);
+  static const Color ink = Color(0xFF1A1C1B);
+  static const Color inkHigh = Color(0xFF101211);
+  static const Color inkMedium = Color(0xFF534438);
+  static const Color inkLow = Color(0xFF857466);
 
-  static const Color border = Color(0xFF262A3A);
-  static const Color divider = Color(0xFF1C2030);
+  static const Color border = Color(0xFFD8C3B2);
+  static const Color divider = Color(0xFFE8E3DD);
 
-  static const Color accent = Color(0xFFC77B3A);
+  static const Color accent = Color(0xFF894D00);
+  static const Color accentSoft = Color(0xFFFFDCC0);
+  static const Color teal = Color(0xFF006579);
 
   static const Color success = Color(0xFF166534);
   static const Color successSoft = Color(0xFFF0FDF4);

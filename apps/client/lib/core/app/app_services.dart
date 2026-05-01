@@ -22,11 +22,14 @@ class AppServices {
   final bool supabaseEnabled;
 
   Future<void> initialize() async {
+    await clients.initialize();
     await Future.wait<void>([
-      clients.initialize(),
       sales.initialize(),
       expenses.initialize(),
     ]);
+    await sales.createMissingRecurringChargesForClients(
+      clients: clients.clients,
+    );
   }
 
   void dispose() {

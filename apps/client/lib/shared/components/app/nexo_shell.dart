@@ -7,10 +7,9 @@ import '../../../core/design_system/nexo_spacing.dart';
 import '../../../features/clients/presentation/screens/clients_screen.dart';
 import '../../../features/clients/presentation/screens/new_client_screen.dart';
 import '../../../features/dashboard/presentation/screens/dashboard_screen.dart';
-import '../../../features/finance/presentation/screens/finance_screen.dart';
+import '../../../features/final_ui/presentation/screens/final_pages.dart';
 import '../../../features/finance/presentation/screens/new_expense_screen.dart';
 import '../../../features/finance/presentation/screens/new_sale_screen.dart';
-import '../../../features/reports/presentation/screens/reports_screen.dart';
 import '../actions/nexo_button.dart';
 import 'nexo_background.dart';
 import 'nexo_quick_action_sheet.dart';
@@ -31,16 +30,26 @@ class _NexoShellState extends State<NexoShell> {
       DashboardScreen(
         onNewSale: _openNewSale,
         onNewExpense: _openNewExpense,
-        onOpenClients: () => setState(() => _currentIndex = 1),
+        onOpenClients: () => setState(() => _currentIndex = 3),
+      ),
+      const CasaScreen(),
+      EmpresaScreen(
+        onNewSale: _openNewSale,
+        onNewExpense: _openNewExpense,
       ),
       ClientsScreen(
         onNewClient: _openNewClient,
       ),
-      FinanceScreen(
-        onNewSale: _openNewSale,
-        onNewExpense: _openNewExpense,
-      ),
-      const ReportsScreen(),
+      ProjetosScreen(onNewSale: _openNewSale),
+      RecebimentosScreen(onNewSale: _openNewSale),
+      DespesasScreen(onNewExpense: _openNewExpense),
+      const ParceirosScreen(),
+      const AssinaturasScreen(),
+      const PlanejamentoScreen(),
+      const MetasScreen(),
+      const InteligenciaScreen(),
+      const AnotacoesScreen(),
+      const ConfiguracoesScreen(),
     ];
   }
 
@@ -108,7 +117,7 @@ class _NexoShellState extends State<NexoShell> {
     );
 
     if (created == true && mounted) {
-      setState(() => _currentIndex = 1);
+      setState(() => _currentIndex = 3);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cliente salvo.')),
       );
@@ -161,7 +170,7 @@ class _NexoShellState extends State<NexoShell> {
       floatingActionButton: FloatingActionButton(
         onPressed: _openQuickActions,
         backgroundColor: NexoColors.accent,
-        foregroundColor: Colors.black,
+        foregroundColor: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
@@ -191,25 +200,25 @@ class _NexoShellState extends State<NexoShell> {
                   child: _BottomNavItem(
                     label: 'Clientes',
                     icon: NexoIcons.clients,
-                    selected: _currentIndex == 1,
-                    onTap: () => setState(() => _currentIndex = 1),
+                    selected: _currentIndex == 3,
+                    onTap: () => setState(() => _currentIndex = 3),
                   ),
                 ),
                 const SizedBox(width: 56),
                 Expanded(
                   child: _BottomNavItem(
-                    label: 'Financeiro',
-                    icon: NexoIcons.finance,
+                    label: 'Empresa',
+                    icon: NexoIcons.company,
                     selected: _currentIndex == 2,
                     onTap: () => setState(() => _currentIndex = 2),
                   ),
                 ),
                 Expanded(
                   child: _BottomNavItem(
-                    label: 'Relatorios',
-                    icon: NexoIcons.reports,
-                    selected: _currentIndex == 3,
-                    onTap: () => setState(() => _currentIndex = 3),
+                    label: 'Planejar',
+                    icon: NexoIcons.planning,
+                    selected: _currentIndex == 9,
+                    onTap: () => setState(() => _currentIndex = 9),
                   ),
                 ),
               ],

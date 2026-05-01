@@ -21,7 +21,10 @@ class _NexoHoverableState extends State<NexoHoverable> {
   bool _hovered = false;
 
   bool get _canHover {
-    return widget.enabled && (kIsWeb || defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS);
+    return widget.enabled &&
+        (kIsWeb ||
+            defaultTargetPlatform != TargetPlatform.android &&
+                defaultTargetPlatform != TargetPlatform.iOS);
   }
 
   @override

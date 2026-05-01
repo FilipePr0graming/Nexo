@@ -54,17 +54,36 @@ class ClientDetailScreen extends StatelessWidget {
         }
 
         final sales = _salesForClient(client, salesService.sales);
-        final totalSold = sales.fold<double>(
+        final totalBought = sales.fold<double>(
           0,
-          (total, sale) => total + sale.ownerAmount,
+          (total, sale) => total + sale.grossAmount,
         );
+        final totalPaid = sales
+            .where((sale) => sale.status == SaleStatus.received)
+            .fold<double>(
+              0,
+              (total, sale) => total + sale.netAmount,
+            );
+        final totalProfit = sales
+            .where((sale) => sale.status == SaleStatus.received)
+            .fold<double>(
+              0,
+              (total, sale) => total + sale.ownerAmount,
+            );
         final totalOpen = sales
             .where(
               (sale) =>
                   sale.status == SaleStatus.pending ||
                   sale.status == SaleStatus.late,
             )
-            .fold<double>(0, (total, sale) => total + sale.ownerAmount);
+            .fold<double>(
+              0,
+              (total, sale) => total + sale.ownerAmount,
+            );
+        final totalDaniel = sales.fold<double>(
+          0,
+          (total, sale) => total + sale.danielValue,
+        );
 
         final subtitleParts = <String>[
           client.clientType.label,
@@ -147,25 +166,32 @@ class ClientDetailScreen extends StatelessWidget {
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 720;
                   final soldCard = NexoMetricCard(
-                    label: 'Total vendido',
-                    value: MoneyUtils.format(totalSold),
-                    footnote: 'Historico liquido do cliente',
+                    label: 'Comprou',
+                    value: MoneyUtils.format(totalBought),
+                    footnote: 'Valor bruto registrado',
                   );
                   final openCard = NexoMetricCard(
-                    label: 'Em aberto',
+                    label: 'Falta pagar',
                     value: MoneyUtils.format(totalOpen),
-                    footnote: 'Vendas pendentes ou atrasadas',
+                    footnote: 'Pendente ou atrasado',
                   );
                   final countCard = NexoMetricCard(
-                    label: 'Vendas',
-                    value: sales.length.toString(),
-                    footnote: 'Servicos ja registrados',
+                    label: 'Lucro total',
+                    value: MoneyUtils.format(totalProfit),
+                    footnote: 'O que ficou para voce',
+                  );
+                  final paidCard = NexoMetricCard(
+                    label: 'Ja pagou',
+                    value: MoneyUtils.format(totalPaid),
+                    footnote: 'Dinheiro confirmado',
                   );
 
                   if (isWide) {
                     return Row(
                       children: [
                         Expanded(child: soldCard),
+                        const SizedBox(width: NexoSpacing.md),
+                        Expanded(child: paidCard),
                         const SizedBox(width: NexoSpacing.md),
                         Expanded(child: openCard),
                         const SizedBox(width: NexoSpacing.md),
@@ -177,6 +203,8 @@ class ClientDetailScreen extends StatelessWidget {
                   return Column(
                     children: [
                       soldCard,
+                      const SizedBox(height: NexoSpacing.md),
+                      paidCard,
                       const SizedBox(height: NexoSpacing.md),
                       openCard,
                       const SizedBox(height: NexoSpacing.md),
@@ -208,7 +236,9 @@ class ClientDetailScreen extends StatelessWidget {
                         'Projeto ${sale.projectGroup!.trim()}',
                       if (sale.serviceStage?.trim().isNotEmpty == true)
                         'Etapa ${sale.serviceStage!.trim()}',
-                      'Liquido ${MoneyUtils.format(sale.ownerAmount)}',
+                      'Pago ${MoneyUtils.format(sale.netAmount)}',
+                      if (sale.danielValue > 0)
+                        'Daniel ${MoneyUtils.format(sale.danielValue)}',
                     ];
 
                     return Padding(
@@ -238,6 +268,16 @@ class ClientDetailScreen extends StatelessWidget {
                     );
                   }).toList(growable: false),
                 ),
+              if (totalDaniel > 0) ...[
+                const SizedBox(height: NexoSpacing.xl),
+                NexoCard(
+                  child: _InfoRow(
+                    label: 'Daniel',
+                    value:
+                        'Este cliente gerou ${MoneyUtils.format(totalDaniel)} para pagar manualmente ao socio.',
+                  ),
+                ),
+              ],
             ],
           ),
         );

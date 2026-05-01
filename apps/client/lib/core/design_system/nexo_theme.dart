@@ -8,11 +8,11 @@ import 'nexo_typography.dart';
 abstract final class NexoTheme {
   static ThemeData light() {
     const colorScheme = ColorScheme(
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       primary: NexoColors.accent,
-      onPrimary: Colors.black,
+      onPrimary: Colors.white,
       secondary: NexoColors.accent,
-      onSecondary: Colors.black,
+      onSecondary: Colors.white,
       error: NexoColors.error,
       onError: Colors.white,
       surface: NexoColors.surface,
@@ -28,7 +28,7 @@ abstract final class NexoTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       fontFamily: NexoTypography.sans,
       scaffoldBackgroundColor: NexoColors.canvas,
       colorScheme: colorScheme,
@@ -64,7 +64,7 @@ abstract final class NexoTheme {
         focusedErrorBorder: border(NexoColors.error),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: NexoColors.surface,
+        backgroundColor: NexoColors.surfaceElevated,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
       ),
@@ -82,7 +82,7 @@ abstract final class NexoTheme {
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 52),
           backgroundColor: NexoColors.accent,
-          foregroundColor: Colors.black,
+          foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: NexoSpacing.lg),
           shape: RoundedRectangleBorder(
@@ -144,7 +144,7 @@ abstract final class NexoTheme {
           fontFamily: NexoTypography.sans,
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Colors.black,
+          color: Colors.white,
         ),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
@@ -159,7 +159,7 @@ abstract final class NexoTheme {
           ),
           foregroundColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
-                ? Colors.black
+                ? Colors.white
                 : NexoColors.ink,
           ),
           textStyle: const WidgetStatePropertyAll(

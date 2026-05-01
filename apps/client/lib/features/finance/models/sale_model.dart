@@ -63,6 +63,63 @@ class SaleModel {
 
   DateTime get movementDate => receivedDate ?? saleDate;
 
+  SaleModel copyWith({
+    String? id,
+    String? clientId,
+    String? clientName,
+    String? serviceName,
+    String? projectGroup,
+    String? serviceStage,
+    double? grossAmount,
+    String? platform,
+    String? paymentMethod,
+    int? installments,
+    DateTime? saleDate,
+    DateTime? expectedDate,
+    DateTime? receivedDate,
+    SaleStatus? status,
+    String? notes,
+    double? platformFee,
+    double? paymentFee,
+    double? netAmount,
+    String? origin,
+    bool? hasDanielParticipation,
+    double? danielPercent,
+    double? danielValue,
+    double? ownerAmount,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return SaleModel(
+      id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
+      clientName: clientName ?? this.clientName,
+      serviceName: serviceName ?? this.serviceName,
+      projectGroup: projectGroup ?? this.projectGroup,
+      serviceStage: serviceStage ?? this.serviceStage,
+      grossAmount: grossAmount ?? this.grossAmount,
+      platform: platform ?? this.platform,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      installments: installments ?? this.installments,
+      saleDate: saleDate ?? this.saleDate,
+      expectedDate: expectedDate ?? this.expectedDate,
+      receivedDate: receivedDate ?? this.receivedDate,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      platformFee: platformFee ?? this.platformFee,
+      paymentFee: paymentFee ?? this.paymentFee,
+      netAmount: netAmount ?? this.netAmount,
+      origin: origin ?? this.origin,
+      hasDanielParticipation:
+          hasDanielParticipation ?? this.hasDanielParticipation,
+      danielPercent: danielPercent ?? this.danielPercent,
+      danielValue: danielValue ?? this.danielValue,
+      ownerAmount: ownerAmount ?? this.ownerAmount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory SaleModel.fromJson(Map<String, dynamic> json) {
     return SaleModel(
       id: json['id'] as String,

@@ -5,7 +5,6 @@ import '../../../core/design_system/nexo_icons.dart';
 import '../../../core/design_system/nexo_radius.dart';
 import '../../../core/design_system/nexo_spacing.dart';
 import '../actions/nexo_hoverable.dart';
-import '../cards/nexo_glass_card.dart';
 
 class NexoSidebar extends StatelessWidget {
   const NexoSidebar({
@@ -19,6 +18,23 @@ class NexoSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final items = const [
+      _SidebarDestination(NexoIcons.dashboard, 'Hoje'),
+      _SidebarDestination(NexoIcons.home, 'Casa'),
+      _SidebarDestination(NexoIcons.company, 'Empresa'),
+      _SidebarDestination(NexoIcons.clients, 'Clientes'),
+      _SidebarDestination(NexoIcons.projects, 'Projetos'),
+      _SidebarDestination(NexoIcons.receipts, 'Recebimentos'),
+      _SidebarDestination(NexoIcons.expenses, 'Despesas'),
+      _SidebarDestination(NexoIcons.partners, 'Parceiros'),
+      _SidebarDestination(NexoIcons.subscriptions, 'Assinaturas'),
+      _SidebarDestination(NexoIcons.planning, 'Planejamento'),
+      _SidebarDestination(NexoIcons.goals, 'Metas'),
+      _SidebarDestination(NexoIcons.intelligence, 'Inteligencia'),
+      _SidebarDestination(NexoIcons.notes, 'Anotacoes'),
+      _SidebarDestination(NexoIcons.settings, 'Configuracoes'),
+    ];
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         NexoSpacing.md,
@@ -27,43 +43,34 @@ class NexoSidebar extends StatelessWidget {
         NexoSpacing.md,
       ),
       child: SizedBox(
-        width: 220,
-        child: NexoGlassCard(
-          radius: NexoRadius.xl,
-          blurSigma: 20,
-          tint: const Color(0xFF0C0E16),
-          borderColor: NexoColors.border.withValues(alpha: 0.6),
+        width: 252,
+        child: Container(
+          decoration: BoxDecoration(
+            color: NexoColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(NexoRadius.xl),
+            border: Border.all(color: NexoColors.divider),
+          ),
           padding: const EdgeInsets.all(NexoSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SidebarHeader(),
+              const _SidebarHeader(),
               const SizedBox(height: NexoSpacing.lg),
-              _SidebarItem(
-                icon: NexoIcons.dashboard,
-                label: 'Hoje',
-                selected: selectedIndex == 0,
-                onTap: () => onSelected(0),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return _SidebarItem(
+                      icon: item.icon,
+                      label: item.label,
+                      selected: selectedIndex == index,
+                      onTap: () => onSelected(index),
+                    );
+                  },
+                ),
               ),
-              _SidebarItem(
-                icon: NexoIcons.clients,
-                label: 'Clientes',
-                selected: selectedIndex == 1,
-                onTap: () => onSelected(1),
-              ),
-              _SidebarItem(
-                icon: NexoIcons.finance,
-                label: 'Financeiro',
-                selected: selectedIndex == 2,
-                onTap: () => onSelected(2),
-              ),
-              _SidebarItem(
-                icon: NexoIcons.reports,
-                label: 'Relatorios',
-                selected: selectedIndex == 3,
-                onTap: () => onSelected(3),
-              ),
-              const Spacer(),
               const _SidebarHint(),
             ],
           ),
@@ -74,6 +81,8 @@ class NexoSidebar extends StatelessWidget {
 }
 
 class _SidebarHeader extends StatelessWidget {
+  const _SidebarHeader();
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -83,17 +92,21 @@ class _SidebarHeader extends StatelessWidget {
           height: 38,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(NexoRadius.md),
-            color: NexoColors.surfaceElevated.withValues(alpha: 0.9),
-            border: Border.all(color: NexoColors.border.withValues(alpha: 0.7)),
+            color: NexoColors.accent,
           ),
-          child: const Icon(NexoIcons.dashboard, size: 18),
+          child: const Icon(
+            NexoIcons.dashboard,
+            size: 18,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(width: NexoSpacing.sm),
         Expanded(
           child: Text(
             'Nexo',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  letterSpacing: -0.2,
+                  color: NexoColors.inkHigh,
+                  fontWeight: FontWeight.w800,
                 ),
           ),
         ),
@@ -120,17 +133,14 @@ class _SidebarItem extends StatelessWidget {
     final highlight = selected
         ? BoxDecoration(
             borderRadius: BorderRadius.circular(NexoRadius.md),
-            gradient: LinearGradient(
-              colors: [
-                NexoColors.accent.withValues(alpha: 0.18),
-                NexoColors.accent.withValues(alpha: 0.06),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            border: Border.all(
-              color: NexoColors.accent.withValues(alpha: 0.22),
-            ),
+            color: NexoColors.surfaceElevated,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F1A1C1B),
+                blurRadius: 16,
+                offset: Offset(0, 8),
+              ),
+            ],
           )
         : BoxDecoration(
             borderRadius: BorderRadius.circular(NexoRadius.md),
@@ -147,7 +157,7 @@ class _SidebarItem extends StatelessWidget {
           Icon(
             icon,
             size: 18,
-            color: selected ? NexoColors.inkHigh : NexoColors.inkMedium,
+            color: selected ? NexoColors.accent : NexoColors.inkLow,
           ),
           const SizedBox(width: NexoSpacing.sm),
           Expanded(
@@ -155,7 +165,7 @@ class _SidebarItem extends StatelessWidget {
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: selected ? NexoColors.inkHigh : NexoColors.inkMedium,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                   ),
             ),
           ),
@@ -182,15 +192,22 @@ class _SidebarHint extends StatelessWidget {
       padding: const EdgeInsets.all(NexoSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(NexoRadius.lg),
-        color: NexoColors.surfaceElevated.withValues(alpha: 0.55),
-        border: Border.all(color: NexoColors.border.withValues(alpha: 0.6)),
+        color: NexoColors.surfaceElevated,
+        border: Border.all(color: NexoColors.divider),
       ),
       child: Text(
-        'Atalhos: use o botao Registrar para criar venda, gasto ou cliente.',
+        'Atalhos: use Registrar para criar venda, gasto ou cliente.',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: NexoColors.inkLow,
             ),
       ),
     );
   }
+}
+
+class _SidebarDestination {
+  const _SidebarDestination(this.icon, this.label);
+
+  final IconData icon;
+  final String label;
 }

@@ -1,0 +1,1312 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/app/nexo_scope.dart';
+import '../../../../core/design_system/nexo_colors.dart';
+import '../../../../core/design_system/nexo_icons.dart';
+import '../../../../core/design_system/nexo_radius.dart';
+import '../../../../core/design_system/nexo_spacing.dart';
+import '../../../../core/models/life_finance_summary.dart';
+import '../../../../core/services/life_finance_service.dart';
+import '../../../../core/utils/date_label_utils.dart';
+import '../../../../core/utils/money_utils.dart';
+import '../../../../features/clients/models/client_model.dart';
+import '../../../../features/finance/models/expense_model.dart';
+import '../../../../features/finance/models/sale_model.dart';
+import '../../../../shared/components/app/nexo_page_scaffold.dart';
+import '../../../../shared/components/cards/nexo_card.dart';
+import '../../../../shared/components/cards/nexo_empty_state_card.dart';
+
+class CasaScreen extends StatelessWidget {
+  const CasaScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        final personalExpenses = data.expenses
+            .where((expense) => expense.scope == ExpenseScope.personal)
+            .toList(growable: false);
+        final byCategory = _sumExpensesByCategory(personalExpenses);
+        final monthlyTotal = _sum(personalExpenses.map((item) => item.amount));
+        final safeToday = data.summary.freeMoney - data.summary.toPay7Days;
+
+        return NexoPageScaffold(
+          title: 'Casa',
+          subtitle: 'Vida pessoal, familia e gastos da casa.',
+          child: _TwoColumnStage(
+            left: [
+              _HeroAmount(
+                eyebrow: 'Saldo da casa',
+                value: MoneyUtils.format(-monthlyTotal),
+                message: safeToday > 0
+                    ? 'Voce pode gastar ${MoneyUtils.format(safeToday)} hoje sem apertar a semana.'
+                    : 'Melhor nao comprar isso agora. O caixa esta justo.',
+              ),
+              _SectionTitle('Gastos por categoria'),
+              if (byCategory.isEmpty)
+                const NexoEmptyStateCard(
+                  title: 'Sem gastos pessoais',
+                  message: 'Lance gastos da casa para acompanhar aqui.',
+                )
+              else
+                _ResponsiveCards(
+                  children: byCategory.entries
+                      .map(
+                        (entry) => _KpiCard(
+                          icon: _categoryIcon(entry.key),
+                          label: entry.key,
+                          value: MoneyUtils.format(entry.value),
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
+              _SectionTitle('Ultimas movimentacoes'),
+              _MovementList(expenses: personalExpenses.take(6).toList()),
+            ],
+            right: [
+              _GoalCard(goal: data.summary.goal),
+              _InsightPanel(
+                title: 'Separacao real',
+                lines: [
+                  if (data.summary.housePaidByCompany > 0)
+                    'A empresa bancou ${MoneyUtils.format(data.summary.housePaidByCompany)} da casa. Corrija isso para ver o lucro real.'
+                  else
+                    'Casa e empresa estao separadas nos registros atuais.',
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class EmpresaScreen extends StatelessWidget {
+  const EmpresaScreen({
+    super.key,
+    required this.onNewSale,
+    required this.onNewExpense,
+  });
+
+  final VoidCallback onNewSale;
+  final VoidCallback onNewExpense;
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        final businessExpenses = data.expenses
+            .where((expense) => expense.scope == ExpenseScope.business)
+            .toList(growable: false);
+        final received = data.sales
+            .where((sale) => sale.status == SaleStatus.received)
+            .toList(growable: false);
+
+        return NexoPageScaffold(
+          title: 'Empresa',
+          subtitle: 'Caixa, lucro, entradas e saidas da operacao.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ResponsiveCards(
+                children: [
+                  _KpiCard(
+                    icon: NexoIcons.receipts,
+                    label: 'Faturamento total',
+                    value: MoneyUtils.format(data.summary.confirmedEntries),
+                    large: true,
+                    highlighted: true,
+                  ),
+                  _KpiCard(
+                    icon: NexoIcons.finance,
+                    label: 'Lucro real',
+                    value: MoneyUtils.format(data.summary.realProfit),
+                    footnote: 'Depois de gastos e parceiros',
+                  ),
+                  _KpiCard(
+                    icon: NexoIcons.expenses,
+                    label: 'Gastos da empresa',
+                    value: MoneyUtils.format(data.summary.businessExpenses),
+                  ),
+                ],
+              ),
+              const SizedBox(height: NexoSpacing.x2l),
+              _TwoColumnStage(
+                left: [
+                  _SectionHeaderAction(
+                    title: 'Entradas',
+                    actionLabel: 'Adicionar',
+                    onPressed: onNewSale,
+                  ),
+                  _SaleList(sales: received.take(5).toList(growable: false)),
+                ],
+                right: [
+                  _SectionHeaderAction(
+                    title: 'Saidas',
+                    actionLabel: 'Adicionar',
+                    onPressed: onNewExpense,
+                  ),
+                  _MovementList(expenses: businessExpenses.take(6).toList()),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ProjetosScreen extends StatelessWidget {
+  const ProjetosScreen({super.key, required this.onNewSale});
+
+  final VoidCallback onNewSale;
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        final projects = _projectSummaries(data.sales);
+        final portfolio = _sum(projects.map((item) => item.total));
+        final pending = _sum(projects.map((item) => item.openAmount));
+
+        return NexoPageScaffold(
+          title: 'Projetos',
+          subtitle: 'Servicos vendidos, progresso de pagamento e pendencias.',
+          trailing: FilledButton.icon(
+            onPressed: onNewSale,
+            icon: const Icon(NexoIcons.add),
+            label: const Text('Novo projeto'),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ResponsiveCards(
+                children: [
+                  _KpiCard(
+                    icon: NexoIcons.projects,
+                    label: 'Valor em carteira',
+                    value: MoneyUtils.format(portfolio),
+                    highlighted: true,
+                  ),
+                  _KpiCard(
+                    icon: NexoIcons.projects,
+                    label: 'Projetos ativos',
+                    value: projects.length.toString(),
+                  ),
+                  _KpiCard(
+                    icon: NexoIcons.receipts,
+                    label: 'Recebimento pendente',
+                    value: MoneyUtils.format(pending),
+                  ),
+                ],
+              ),
+              const SizedBox(height: NexoSpacing.x2l),
+              _SectionTitle('Projetos em andamento'),
+              if (projects.isEmpty)
+                NexoEmptyStateCard(
+                  title: 'Nenhum projeto ainda',
+                  message: 'Registre uma venda para criar o primeiro projeto.',
+                  buttonLabel: 'Novo projeto',
+                  onPressed: onNewSale,
+                )
+              else
+                _ResponsiveCards(
+                  children: projects
+                      .map((project) => _ProjectCard(project: project))
+                      .toList(growable: false),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class RecebimentosScreen extends StatelessWidget {
+  const RecebimentosScreen({super.key, required this.onNewSale});
+
+  final VoidCallback onNewSale;
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        return NexoPageScaffold(
+          title: 'Recebimentos',
+          subtitle: 'Entradas de dinheiro, taxas e status de pagamento.',
+          trailing: FilledButton.icon(
+            onPressed: onNewSale,
+            icon: const Icon(NexoIcons.add),
+            label: const Text('Receber'),
+          ),
+          child: _SaleList(sales: data.sales),
+        );
+      },
+    );
+  }
+}
+
+class DespesasScreen extends StatelessWidget {
+  const DespesasScreen({super.key, required this.onNewExpense});
+
+  final VoidCallback onNewExpense;
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        return NexoPageScaffold(
+          title: 'Despesas',
+          subtitle: 'Contas pagas, contas futuras e gastos recorrentes.',
+          trailing: FilledButton.icon(
+            onPressed: onNewExpense,
+            icon: const Icon(NexoIcons.add),
+            label: const Text('Nova despesa'),
+          ),
+          child: _MovementList(expenses: data.expenses),
+        );
+      },
+    );
+  }
+}
+
+class ParceirosScreen extends StatelessWidget {
+  const ParceirosScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        final partner = data.summary.partner;
+        final progress = partner.totalToPay <= 0
+            ? 0.0
+            : (partner.paid / partner.totalToPay).clamp(0, 1).toDouble();
+
+        return NexoPageScaffold(
+          title: 'Parceiros',
+          subtitle: 'Daniel e repasses por projeto.',
+          child: _TwoColumnStage(
+            left: [
+              _HeroAmount(
+                eyebrow: 'Daniel',
+                value: MoneyUtils.format(partner.totalToPay),
+                message:
+                    '${(progress * 100).round()}% pago. Falta ${MoneyUtils.format(partner.remaining)}.',
+              ),
+              _ProgressCard(
+                title: 'Progresso de pagamento',
+                progress: progress,
+                leftLabel: 'Pago',
+                leftValue: MoneyUtils.format(partner.paid),
+                rightLabel: 'Pendente',
+                rightValue: MoneyUtils.format(partner.remaining),
+              ),
+            ],
+            right: [
+              _SectionTitle('Por projeto'),
+              if (partner.projects.isEmpty)
+                const NexoEmptyStateCard(
+                  title: 'Sem repasse aberto',
+                  message: 'Vendas com Daniel aparecem aqui automaticamente.',
+                )
+              else
+                ...partner.projects.map(
+                  (item) => _LedgerTile(
+                    icon: NexoIcons.partners,
+                    title: '${item.clientName} - ${item.projectName}',
+                    subtitle: DateLabelUtils.dayLabel(item.date),
+                    value: MoneyUtils.format(item.amount),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AssinaturasScreen extends StatelessWidget {
+  const AssinaturasScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      includeClients: true,
+      builder: (context, data) {
+        final recurringExpenses =
+            data.expenses.where((item) => item.recurrence != null).toList();
+        final recurringClients = data.clients
+            .where((client) => client.billingType != ClientBillingType.oneOff)
+            .toList();
+
+        return NexoPageScaffold(
+          title: 'Assinaturas',
+          subtitle: 'Recorrencias mensais e anuais da casa e da empresa.',
+          child: _TwoColumnStage(
+            left: [
+              _SectionTitle('Clientes recorrentes'),
+              if (recurringClients.isEmpty)
+                const NexoEmptyStateCard(
+                  title: 'Nenhum cliente recorrente',
+                  message: 'Clientes mensais ou anuais aparecem aqui.',
+                )
+              else
+                ...recurringClients.map(
+                  (client) => _LedgerTile(
+                    icon: NexoIcons.subscriptions,
+                    title: client.name,
+                    subtitle: client.billingType.label,
+                    value: client.status.label,
+                  ),
+                ),
+            ],
+            right: [
+              _SectionTitle('Gastos recorrentes'),
+              if (recurringExpenses.isEmpty)
+                const NexoEmptyStateCard(
+                  title: 'Nenhuma conta recorrente',
+                  message: 'Marque recorrencia ao criar uma despesa.',
+                )
+              else
+                ...recurringExpenses.map(
+                  (expense) => _LedgerTile(
+                    icon: NexoIcons.expenses,
+                    title: expense.title,
+                    subtitle:
+                        expense.recurrence == 'annual' ? 'Anual' : 'Mensal',
+                    value: MoneyUtils.format(expense.amount),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class PlanejamentoScreen extends StatelessWidget {
+  const PlanejamentoScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        final lastForecast = data.summary.forecasts.last;
+        return NexoPageScaffold(
+          title: 'Planejamento',
+          subtitle: 'Previsao financeira para os proximos dias.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HeroAmount(
+                eyebrow: 'Resultado futuro',
+                value: MoneyUtils.format(lastForecast.projectedMoney),
+                message: lastForecast.message,
+              ),
+              const SizedBox(height: NexoSpacing.x2l),
+              _ResponsiveCards(
+                children: data.summary.forecasts
+                    .map(
+                      (forecast) => _KpiCard(
+                        icon: NexoIcons.planning,
+                        label: '${forecast.days} dias',
+                        value: MoneyUtils.format(forecast.projectedMoney),
+                        footnote:
+                            'Entram ${MoneyUtils.format(forecast.toReceive)} | saem ${MoneyUtils.format(forecast.toPay)}',
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+              const SizedBox(height: NexoSpacing.x2l),
+              _TwoColumnStage(
+                left: [
+                  _SectionTitle('Dinheiro que vai entrar'),
+                  _SaleList(sales: data.summary.upcomingReceipts),
+                ],
+                right: [
+                  _SectionTitle('Contas e compromissos'),
+                  _MovementList(expenses: data.summary.upcomingBills),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class MetasScreen extends StatelessWidget {
+  const MetasScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        return NexoPageScaffold(
+          title: 'Metas',
+          subtitle: 'Guardar dinheiro com previsao clara.',
+          child: _GoalCard(goal: data.summary.goal),
+        );
+      },
+    );
+  }
+}
+
+class InteligenciaScreen extends StatelessWidget {
+  const InteligenciaScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _FinancePageBuilder(
+      builder: (context, data) {
+        return NexoPageScaffold(
+          title: 'Inteligencia',
+          subtitle: 'Recomendacoes baseadas nos dados reais do Nexo.',
+          maxWidth: 900,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bom dia. Aqui esta o seu panorama de hoje.',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: NexoColors.accent,
+                    ),
+              ),
+              const SizedBox(height: NexoSpacing.x2l),
+              ...data.summary.todayActions.map(
+                (item) => _InsightCard(
+                  icon: _priorityIcon(item.priority),
+                  title: item.title,
+                  message: item.message,
+                ),
+              ),
+              ...data.summary.alerts.map(
+                (alert) => _InsightCard(
+                  icon: NexoIcons.intelligence,
+                  title: alert.title,
+                  message: alert.message,
+                ),
+              ),
+              _PromptBar(summary: data.summary),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AnotacoesScreen extends StatelessWidget {
+  const AnotacoesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const NexoPageScaffold(
+      title: 'Anotacoes',
+      subtitle: 'Observacoes importantes para nao perder contexto.',
+      child: NexoEmptyStateCard(
+        title: 'Anotacoes ainda nao conectadas',
+        message:
+            'A tabela notes existe no Supabase. Quando o servico local for criado, esta tela passa a listar e salvar observacoes.',
+      ),
+    );
+  }
+}
+
+class ConfiguracoesScreen extends StatelessWidget {
+  const ConfiguracoesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const NexoPageScaffold(
+      title: 'Configuracoes',
+      subtitle: 'Usuarios, integrações e regras do sistema.',
+      child: NexoEmptyStateCard(
+        title: 'Sistema conectado',
+        message:
+            'Supabase, cache local e regras financeiras continuam ativos. Ajustes de usuarios entram aqui sem alterar o schema.',
+      ),
+    );
+  }
+}
+
+class _FinanceData {
+  const _FinanceData({
+    required this.sales,
+    required this.expenses,
+    required this.clients,
+    required this.summary,
+  });
+
+  final List<SaleModel> sales;
+  final List<ExpenseModel> expenses;
+  final List<ClientModel> clients;
+  final LifeFinanceSummary summary;
+}
+
+class _FinancePageBuilder extends StatelessWidget {
+  const _FinancePageBuilder({
+    required this.builder,
+    this.includeClients = false,
+  });
+
+  final Widget Function(BuildContext context, _FinanceData data) builder;
+  final bool includeClients;
+
+  @override
+  Widget build(BuildContext context) {
+    final services = NexoScope.of(context);
+    return AnimatedBuilder(
+      animation: includeClients
+          ? Listenable.merge(
+              [services.sales, services.expenses, services.clients])
+          : Listenable.merge([services.sales, services.expenses]),
+      builder: (context, _) {
+        final sales = services.sales.sales;
+        final expenses = services.expenses.expenses;
+        return builder(
+          context,
+          _FinanceData(
+            sales: sales,
+            expenses: expenses,
+            clients: services.clients.clients,
+            summary: LifeFinanceService.summarize(
+              sales: sales,
+              expenses: expenses,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TwoColumnStage extends StatelessWidget {
+  const _TwoColumnStage({
+    required this.left,
+    required this.right,
+  });
+
+  final List<Widget> left;
+  final List<Widget> right;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 860) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [...left, ...right].withSpacing(NexoSpacing.lg),
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: left.withSpacing(NexoSpacing.lg),
+              ),
+            ),
+            const SizedBox(width: NexoSpacing.x2l),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: right.withSpacing(NexoSpacing.lg),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ResponsiveCards extends StatelessWidget {
+  const _ResponsiveCards({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth >= 980
+            ? (constraints.maxWidth - (NexoSpacing.md * 2)) / 3
+            : constraints.maxWidth >= 640
+                ? (constraints.maxWidth - NexoSpacing.md) / 2
+                : constraints.maxWidth;
+        return Wrap(
+          spacing: NexoSpacing.md,
+          runSpacing: NexoSpacing.md,
+          children: children
+              .map((child) => SizedBox(width: width, child: child))
+              .toList(growable: false),
+        );
+      },
+    );
+  }
+}
+
+class _HeroAmount extends StatelessWidget {
+  const _HeroAmount({
+    required this.eyebrow,
+    required this.value,
+    required this.message,
+  });
+
+  final String eyebrow;
+  final String value;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      backgroundColor: NexoColors.accentSoft,
+      borderColor: NexoColors.accent.withValues(alpha: 0.08),
+      padding: const EdgeInsets.all(NexoSpacing.x2l),
+      radius: NexoRadius.hero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            eyebrow.toUpperCase(),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: NexoColors.inkMedium,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: 48,
+                  color: NexoColors.inkHigh,
+                ),
+          ),
+          const SizedBox(height: NexoSpacing.md),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: NexoColors.inkMedium,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KpiCard extends StatelessWidget {
+  const _KpiCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.footnote,
+    this.large = false,
+    this.highlighted = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? footnote;
+  final bool large;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      backgroundColor:
+          highlighted ? NexoColors.accentSoft : NexoColors.surfaceElevated,
+      borderColor: NexoColors.border.withValues(alpha: 0.18),
+      radius: NexoRadius.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: NexoColors.accent),
+          const SizedBox(height: NexoSpacing.lg),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: NexoSpacing.xs),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontSize: large ? 34 : 24,
+                  color: NexoColors.inkHigh,
+                ),
+          ),
+          if (footnote != null) ...[
+            const SizedBox(height: NexoSpacing.sm),
+            Text(footnote!, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(title, style: Theme.of(context).textTheme.headlineMedium);
+  }
+}
+
+class _SectionHeaderAction extends StatelessWidget {
+  const _SectionHeaderAction({
+    required this.title,
+    required this.actionLabel,
+    required this.onPressed,
+  });
+
+  final String title;
+  final String actionLabel;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _SectionTitle(title)),
+        TextButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(NexoIcons.add, size: 16),
+          label: Text(actionLabel),
+        ),
+      ],
+    );
+  }
+}
+
+class _SaleList extends StatelessWidget {
+  const _SaleList({required this.sales});
+
+  final List<SaleModel> sales;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sales.isEmpty) {
+      return const NexoEmptyStateCard(
+        title: 'Nenhum recebimento',
+        message: 'Registros aparecem aqui quando houver vendas.',
+      );
+    }
+
+    return Column(
+      children: sales
+          .map(
+            (sale) => _LedgerTile(
+              icon: NexoIcons.receipts,
+              title: sale.clientName,
+              subtitle: '${sale.serviceName} | ${sale.status.label}',
+              value: MoneyUtils.format(sale.ownerAmount),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+}
+
+class _MovementList extends StatelessWidget {
+  const _MovementList({required this.expenses});
+
+  final List<ExpenseModel> expenses;
+
+  @override
+  Widget build(BuildContext context) {
+    if (expenses.isEmpty) {
+      return const NexoEmptyStateCard(
+        title: 'Nada registrado',
+        message: 'Quando houver gastos, eles aparecem aqui.',
+      );
+    }
+
+    return Column(
+      children: expenses
+          .map(
+            (expense) => _LedgerTile(
+              icon: _categoryIcon(expense.category),
+              title: expense.title,
+              subtitle: '${expense.category} | ${expense.scope.label}',
+              value: '- ${MoneyUtils.format(expense.amount)}',
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+}
+
+class _LedgerTile extends StatelessWidget {
+  const _LedgerTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+      child: NexoCard(
+        backgroundColor: NexoColors.surfaceElevated,
+        borderColor: NexoColors.border.withValues(alpha: 0.18),
+        padding: const EdgeInsets.all(NexoSpacing.md),
+        radius: NexoRadius.xl,
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: NexoColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(NexoRadius.md),
+              ),
+              child: Icon(icon, color: NexoColors.inkMedium, size: 20),
+            ),
+            const SizedBox(width: NexoSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: NexoSpacing.xxs),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+            const SizedBox(width: NexoSpacing.md),
+            Text(value, style: Theme.of(context).textTheme.titleSmall),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GoalCard extends StatelessWidget {
+  const _GoalCard({required this.goal});
+
+  final GoalSummary goal;
+
+  @override
+  Widget build(BuildContext context) {
+    final forecast = switch (goal.monthsToReach) {
+      0 => 'Meta batida',
+      null => 'Sem previsao',
+      final months => '$months mes(es)',
+    };
+
+    return NexoCard(
+      radius: NexoRadius.xl,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(goal.title, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: NexoSpacing.lg),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(NexoRadius.pill),
+            child: LinearProgressIndicator(
+              value: goal.progress,
+              minHeight: 10,
+              backgroundColor: NexoColors.surfaceMuted,
+              color: NexoColors.accent,
+            ),
+          ),
+          const SizedBox(height: NexoSpacing.md),
+          _ValueLine('Guardado', MoneyUtils.format(goal.saved)),
+          _ValueLine('Meta', MoneyUtils.format(goal.target)),
+          _ValueLine('Previsao', forecast),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressCard extends StatelessWidget {
+  const _ProgressCard({
+    required this.title,
+    required this.progress,
+    required this.leftLabel,
+    required this.leftValue,
+    required this.rightLabel,
+    required this.rightValue,
+  });
+
+  final String title;
+  final double progress;
+  final String leftLabel;
+  final String leftValue;
+  final String rightLabel;
+  final String rightValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: NexoSpacing.lg),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(NexoRadius.pill),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 12,
+              backgroundColor: NexoColors.surfaceMuted,
+              color: NexoColors.accent,
+            ),
+          ),
+          const SizedBox(height: NexoSpacing.lg),
+          Row(
+            children: [
+              Expanded(
+                  child: _KpiCard(
+                      icon: NexoIcons.income,
+                      label: leftLabel,
+                      value: leftValue)),
+              const SizedBox(width: NexoSpacing.md),
+              Expanded(
+                  child: _KpiCard(
+                      icon: NexoIcons.expense,
+                      label: rightLabel,
+                      value: rightValue)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProjectCard extends StatelessWidget {
+  const _ProjectCard({required this.project});
+
+  final _ProjectSummary project;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      radius: NexoRadius.hero,
+      backgroundColor: NexoColors.surfaceElevated,
+      borderColor: NexoColors.border.withValues(alpha: 0.16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(project.name,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: NexoSpacing.xxs),
+                    Text(project.clientName,
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              _StatusPill(project.openAmount > 0 ? 'Aberto' : 'Em dia'),
+            ],
+          ),
+          const SizedBox(height: NexoSpacing.xl),
+          _ValueLine('Total do contrato', MoneyUtils.format(project.total)),
+          _ValueLine('Recebido', MoneyUtils.format(project.received)),
+          _ValueLine('Falta pagar', MoneyUtils.format(project.openAmount)),
+          const SizedBox(height: NexoSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(NexoRadius.pill),
+            child: LinearProgressIndicator(
+              value: project.progress,
+              minHeight: 8,
+              backgroundColor: NexoColors.surfaceMuted,
+              color: NexoColors.accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color:
+            label == 'Em dia' ? NexoColors.successSoft : NexoColors.warningSoft,
+        borderRadius: BorderRadius.circular(NexoRadius.pill),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color:
+                  label == 'Em dia' ? NexoColors.success : NexoColors.warning,
+              fontWeight: FontWeight.w800,
+            ),
+      ),
+    );
+  }
+}
+
+class _InsightPanel extends StatelessWidget {
+  const _InsightPanel({required this.title, required this.lines});
+
+  final String title;
+  final List<String> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: NexoSpacing.md),
+          ...lines.map(
+            (line) => Padding(
+              padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+              child: Text(line, style: Theme.of(context).textTheme.bodyMedium),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InsightCard extends StatelessWidget {
+  const _InsightCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NexoSpacing.md),
+      child: NexoCard(
+        radius: NexoRadius.xl,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: NexoColors.accent),
+            const SizedBox(width: NexoSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: NexoSpacing.xs),
+                  Text(message, style: Theme.of(context).textTheme.titleLarge),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PromptBar extends StatelessWidget {
+  const _PromptBar({required this.summary});
+
+  final LifeFinanceSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final safe = summary.freeMoney - summary.toPay7Days;
+    return NexoCard(
+      radius: NexoRadius.pill,
+      padding: const EdgeInsets.symmetric(
+        horizontal: NexoSpacing.lg,
+        vertical: NexoSpacing.md,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome_rounded, color: NexoColors.accent),
+          const SizedBox(width: NexoSpacing.md),
+          Expanded(
+            child: Text(
+              safe > 0
+                  ? 'Pergunta respondida: voce pode gastar ${MoneyUtils.format(safe)} hoje.'
+                  : 'Pergunta respondida: melhor segurar gastos hoje.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ValueLine extends StatelessWidget {
+  const _ValueLine(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ),
+          Text(value, style: Theme.of(context).textTheme.titleSmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProjectSummary {
+  const _ProjectSummary({
+    required this.name,
+    required this.clientName,
+    required this.total,
+    required this.received,
+    required this.openAmount,
+  });
+
+  final String name;
+  final String clientName;
+  final double total;
+  final double received;
+  final double openAmount;
+
+  double get progress {
+    if (total <= 0) {
+      return 0;
+    }
+    return (received / total).clamp(0, 1).toDouble();
+  }
+}
+
+List<_ProjectSummary> _projectSummaries(List<SaleModel> sales) {
+  final groups = <String, List<SaleModel>>{};
+  for (final sale in sales) {
+    final name = sale.projectGroup?.trim().isNotEmpty == true
+        ? sale.projectGroup!.trim()
+        : sale.serviceName;
+    groups.putIfAbsent(name, () => <SaleModel>[]).add(sale);
+  }
+
+  final projects = groups.entries.map((entry) {
+    final sales = entry.value;
+    return _ProjectSummary(
+      name: entry.key,
+      clientName: sales.first.clientName,
+      total: _sum(sales.map((sale) => sale.grossAmount)),
+      received: _sum(sales
+          .where((sale) => sale.status == SaleStatus.received)
+          .map((sale) => sale.ownerAmount)),
+      openAmount: _sum(sales
+          .where((sale) =>
+              sale.status == SaleStatus.pending ||
+              sale.status == SaleStatus.late)
+          .map((sale) => sale.ownerAmount)),
+    );
+  }).toList(growable: false)
+    ..sort((left, right) => right.total.compareTo(left.total));
+
+  return projects;
+}
+
+Map<String, double> _sumExpensesByCategory(List<ExpenseModel> expenses) {
+  final result = <String, double>{};
+  for (final expense in expenses) {
+    result.update(
+      expense.category,
+      (current) => _money(current + expense.amount),
+      ifAbsent: () => expense.amount,
+    );
+  }
+  return result;
+}
+
+IconData _categoryIcon(String category) {
+  final text = category.toLowerCase();
+  if (text.contains('mercado') || text.contains('aliment')) {
+    return Icons.shopping_cart_rounded;
+  }
+  if (text.contains('beb') || text.contains('saude')) {
+    return Icons.child_care_rounded;
+  }
+  if (text.contains('energia') || text.contains('luz')) {
+    return Icons.bolt_rounded;
+  }
+  if (text.contains('daniel') || text.contains('socio')) {
+    return NexoIcons.partners;
+  }
+  if (text.contains('software') || text.contains('ferrament')) {
+    return Icons.build_rounded;
+  }
+  return Icons.receipt_long_rounded;
+}
+
+IconData _priorityIcon(ActionPriority priority) {
+  return switch (priority) {
+    ActionPriority.high => Icons.warning_rounded,
+    ActionPriority.medium => Icons.lightbulb_rounded,
+    ActionPriority.low => Icons.check_circle_rounded,
+  };
+}
+
+double _sum(Iterable<double> values) {
+  return _money(values.fold<double>(0, (total, value) => total + value));
+}
+
+double _money(double value) {
+  return (value * 100).roundToDouble() / 100;
+}
+
+extension _WidgetSpacing on List<Widget> {
+  List<Widget> withSpacing(double spacing) {
+    if (isEmpty) {
+      return this;
+    }
+    final spaced = <Widget>[];
+    for (var index = 0; index < length; index += 1) {
+      if (index > 0) {
+        spaced.add(SizedBox(height: spacing));
+      }
+      spaced.add(this[index]);
+    }
+    return spaced;
+  }
+}
