@@ -8,7 +8,11 @@
     "client:pub:get": "cd apps/client && flutter pub get",
     "client:test": "cd apps/client && flutter test",
     "client:analyze": "cd apps/client && flutter analyze",
+    "client:run:web:local": "cd apps/client && flutter run -d chrome --dart-define-from-file=supabase/dart_define.local.json",
     "client:build:web": "cd apps/client && flutter build web",
+    "client:build:web:local": "cd apps/client && flutter build web --dart-define-from-file=supabase/dart_define.local.json",
+    "client:build:web:prod": "cd apps/client && flutter build web --dart-define-from-file=supabase/dart_define.production.json",
+    "client:build:apk:prod": "cd apps/client && flutter build apk --release --dart-define-from-file=supabase/dart_define.production.json",
     "test:e2e": "playwright test",
     "test": "npm run client:test && npm run client:build:web && npm run test:e2e"
   },

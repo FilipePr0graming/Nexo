@@ -14,6 +14,10 @@ class NexoTextField extends StatelessWidget {
     this.prefixText,
     this.maxLines = 1,
     this.enabled = true,
+    this.obscureText = false,
+    this.textInputAction,
+    this.autofillHints,
+    this.onSubmitted,
     this.onTap,
   });
 
@@ -25,6 +29,10 @@ class NexoTextField extends StatelessWidget {
   final String? prefixText;
   final int maxLines;
   final bool enabled;
+  final bool obscureText;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final ValueChanged<String>? onSubmitted;
   final VoidCallback? onTap;
 
   @override
@@ -42,6 +50,10 @@ class NexoTextField extends StatelessWidget {
           keyboardType: keyboardType,
           readOnly: readOnly,
           enabled: enabled,
+          obscureText: obscureText,
+          textInputAction: textInputAction,
+          autofillHints: autofillHints,
+          onFieldSubmitted: onSubmitted,
           maxLines: maxLines,
           onTap: onTap,
           style: Theme.of(context).textTheme.bodyLarge,

@@ -1,5 +1,5 @@
 -- Nexo - backend completo para operacao local Supabase.
--- Desenvolvimento: RLS aberto para anon/authenticated. Endurecer antes de producao.
+-- Producao pessoal: RLS exige login Supabase Auth. Nao exponha service_role no app.
 
 create extension if not exists pgcrypto with schema extensions;
 create extension if not exists unaccent with schema extensions;
@@ -409,9 +409,10 @@ begin
   loop
     execute format('alter table public.%I enable row level security', table_name);
     execute format('drop policy if exists %I on public.%I', 'nexo_' || table_name || '_dev_all', table_name);
+    execute format('drop policy if exists %I on public.%I', 'nexo_' || table_name || '_authenticated_all', table_name);
     execute format(
-      'create policy %I on public.%I for all to anon, authenticated using (true) with check (true)',
-      'nexo_' || table_name || '_dev_all',
+      'create policy %I on public.%I for all to authenticated using (true) with check (true)',
+      'nexo_' || table_name || '_authenticated_all',
       table_name
     );
   end loop;

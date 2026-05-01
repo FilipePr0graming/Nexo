@@ -27,6 +27,9 @@ apps/client/windows/flutter/ephemeral/
 # Local-only configuration
 .env
 apps/client/supabase/dart_define.local.json
+apps/client/supabase/dart_define.production.json
+supabase/dart_define.local.json
+supabase/dart_define.production.json
 
 # Test and automation artifacts
 test-results/

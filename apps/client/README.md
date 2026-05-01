@@ -1,6 +1,6 @@
 # Nexo Client
 
-App Flutter do Nexo com design system proprio, persistencia inicial em Supabase e cache local leve para preparar a base local-first.
+App Flutter do Nexo com design system proprio, persistencia em Supabase e cache local leve.
 
 ## O que esta pronto nesta etapa
 
@@ -9,42 +9,56 @@ App Flutter do Nexo com design system proprio, persistencia inicial em Supabase 
 - Persistencia real de `clientes`, `vendas` e `gastos`
 - Cache local serializado para leitura rapida e fallback inicial
 - Dashboard e listas ligadas a dados reais
+- Login por e-mail/senha quando Supabase esta configurado
 
-## 1. Criar projeto no Supabase
+## Ambiente local
 
-1. Crie um projeto no painel do Supabase.
-2. Copie a `Project URL`.
-3. Copie a `anon public key`.
-
-## 2. Criar tabelas
-
-1. Abra o SQL Editor do Supabase.
-2. Execute o arquivo [supabase/schema.sql](./supabase/schema.sql).
-
-Observacao:
-- O schema desta etapa usa politicas abertas para `anon` porque o app ainda nao tem autenticacao.
-- Isso e intencional para desenvolvimento e deve ser endurecido antes de producao.
-
-## 3. Configurar credenciais no Flutter
-
-1. Copie [supabase/dart_define.example.json](./supabase/dart_define.example.json) para um arquivo local, por exemplo `supabase/dart_define.local.json`.
-2. Preencha com sua `SUPABASE_URL` e sua `SUPABASE_ANON_KEY`.
-
-## 4. Instalar dependencias
+O Supabase local e usado somente no PC.
 
 ```powershell
+npx supabase start
+cd apps/client
 flutter pub get
-```
-
-## 5. Rodar no Chrome
-
-```powershell
 flutter run -d chrome --dart-define-from-file=supabase/dart_define.local.json
 ```
 
-Sem as credenciais, o app ainda abre, mas funciona em modo local sem Supabase remoto.
+Crie `supabase/dart_define.local.json` a partir de [supabase/dart_define.local.example.json](./supabase/dart_define.local.example.json).
 
-## 6. Rodar no Windows
+## Ambiente de producao pessoal
+
+O APK fora do PC precisa usar Supabase Cloud.
+
+1. Crie um projeto no painel do Supabase Cloud no plano gratis.
+2. Copie `Project URL`.
+3. Copie a chave publica `anon` ou `publishable`.
+4. Crie localmente `supabase/dart_define.production.json` a partir de [supabase/dart_define.production.example.json](./supabase/dart_define.production.example.json).
+5. Linke o projeto e aplique as migrations:
+
+```powershell
+npx supabase login
+npx supabase link --project-ref SEU_PROJECT_REF
+npx supabase db push
+```
+
+6. Crie seu usuario em Authentication no Supabase Cloud ou habilite cadastro conforme sua preferencia.
+
+## Builds
+
+```powershell
+flutter build web --dart-define-from-file=supabase/dart_define.production.json
+flutter build apk --release --dart-define-from-file=supabase/dart_define.production.json
+```
+
+## Seguranca
+
+- O Flutter usa apenas `SUPABASE_URL` e chave publica `SUPABASE_ANON_KEY` ou `SUPABASE_PUBLISHABLE_KEY`.
+- Nunca use `service_role` ou secret key no Flutter, web build, APK ou GitHub.
+- RLS esta ativado nas tabelas e exige usuario autenticado.
+- A permissao limitada para esposa ainda precisa de evolucao de schema/policies por perfil ou escopo.
+
+Sem credenciais, o app ainda abre, mas funciona em modo local sem Supabase remoto.
+
+## Rodar no Windows
 
 ```powershell
 flutter run -d windows --dart-define-from-file=supabase/dart_define.local.json

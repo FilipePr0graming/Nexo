@@ -37,7 +37,7 @@ class AppBootstrap {
     if (AppEnvironment.hasSupabase) {
       await Supabase.initialize(
         url: AppEnvironment.supabaseUrl,
-        anonKey: AppEnvironment.supabaseAnonKey,
+        anonKey: AppEnvironment.supabaseClientKey,
       );
       supabaseClient = Supabase.instance.client;
     }

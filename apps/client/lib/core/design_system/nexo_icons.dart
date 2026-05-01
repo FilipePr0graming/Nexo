@@ -22,6 +22,7 @@ abstract final class NexoIcons {
 
   static const IconData add = Icons.add_rounded;
   static const IconData refresh = Icons.autorenew_rounded;
+  static const IconData login = Icons.login_rounded;
 
   static const IconData newSale = Icons.credit_card_rounded;
   static const IconData newExpense = Icons.description_rounded;

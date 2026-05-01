@@ -9,6 +9,45 @@ async function enableAccessibilityIfNeeded(page: Page) {
   }
 }
 
+async function waitForManualLogin() {
+  console.log("Faça login manualmente e pressione Enter para continuar.");
+  await new Promise<void>((resolve) => {
+    process.stdin.resume();
+    process.stdin.once("data", () => {
+      process.stdin.pause();
+      resolve();
+    });
+  });
+}
+
+async function loginIfNeeded(page: Page) {
+  const loginButton = page.getByRole("button", { name: "Entrar" });
+  if (!(await loginButton.isVisible().catch(() => false))) {
+    return;
+  }
+
+  const email = process.env.NEXO_E2E_EMAIL;
+  const password = process.env.NEXO_E2E_PASSWORD;
+
+  if (email && password) {
+    await page.getByLabel("E-mail").fill(email);
+    await page.getByLabel("Senha").fill(password);
+    await loginButton.click();
+    await expect(page.getByText("Modo foco")).toBeVisible();
+    return;
+  }
+
+  if (process.env.NEXO_E2E_MANUAL_LOGIN === "1") {
+    await waitForManualLogin();
+    await expect(page.getByText("Modo foco")).toBeVisible();
+    return;
+  }
+
+  throw new Error(
+    "Login necessario. Defina NEXO_E2E_EMAIL/NEXO_E2E_PASSWORD ou rode com NEXO_E2E_MANUAL_LOGIN=1.",
+  );
+}
+
 async function screenshot(page: Page, name: string) {
   await page.screenshot({
     path: `test-results/${name}.png`,
@@ -24,6 +63,7 @@ test.describe("Nexo integracao final UI V2", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await enableAccessibilityIfNeeded(page);
+    await loginIfNeeded(page);
   });
 
   test("modo foco abre e executa fluxos rapidos do dia", async ({ page }) => {

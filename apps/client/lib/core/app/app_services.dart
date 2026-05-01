@@ -32,6 +32,17 @@ class AppServices {
     );
   }
 
+  Future<void> refreshRemoteData() async {
+    await clients.refresh();
+    await Future.wait<void>([
+      sales.refresh(),
+      expenses.refresh(),
+    ]);
+    await sales.createMissingRecurringChargesForClients(
+      clients: clients.clients,
+    );
+  }
+
   void dispose() {
     clients.dispose();
     clientAutofill.dispose();
