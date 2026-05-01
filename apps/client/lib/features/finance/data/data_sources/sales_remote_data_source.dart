@@ -15,7 +15,7 @@ class SalesRemoteDataSource {
     }
 
     final response = await _client
-        .from('sales')
+        .from('payments')
         .select()
         .order('sale_date', ascending: false);
 
@@ -31,7 +31,7 @@ class SalesRemoteDataSource {
     }
 
     final response = await _client
-        .from('sales')
+        .from('payments')
         .upsert(sale.toJson(), onConflict: 'id')
         .select()
         .single();

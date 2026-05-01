@@ -39,4 +39,3 @@ class NexoSegmentedField<T> extends StatelessWidget {
     );
   }
 }
-

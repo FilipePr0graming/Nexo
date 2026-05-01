@@ -27,7 +27,8 @@ class NexoPageScaffold extends StatelessWidget {
       bottom: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final horizontalPadding = constraints.maxWidth >= 1024 ? NexoSpacing.x2l : NexoSpacing.md;
+          final horizontalPadding =
+              constraints.maxWidth >= 1024 ? NexoSpacing.x2l : NexoSpacing.md;
 
           return SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
@@ -60,4 +61,3 @@ class NexoPageScaffold extends StatelessWidget {
     );
   }
 }
-

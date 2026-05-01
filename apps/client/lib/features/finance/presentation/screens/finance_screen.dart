@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/app/nexo_scope.dart';
 import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
+import '../../../../core/services/finance_calculator.dart';
 import '../../../../core/utils/date_label_utils.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
@@ -46,11 +47,20 @@ class FinanceScreen extends StatelessWidget {
 
         final totalIn = monthlySales.fold<double>(
           0,
-          (total, sale) => total + sale.ownerAmount,
+          (total, sale) => total + sale.netAmount,
         );
         final totalOut = monthlyExpenses.fold<double>(
           0,
           (total, expense) => total + expense.amount,
+        );
+        final commitments = monthlySales.fold<double>(
+          0,
+          (total, sale) => total + sale.danielValue,
+        );
+        final realProfit = FinanceCalculator.realCash(
+          receivedEntries: monthlySales.map((sale) => sale.netAmount),
+          expenses: monthlyExpenses.map((expense) => expense.amount),
+          commitments: monthlySales.map((sale) => sale.danielValue),
         );
 
         final movements = <_FinanceMovement>[
@@ -95,6 +105,26 @@ class FinanceScreen extends StatelessWidget {
                       label: 'Saiu no mes',
                       value: MoneyUtils.format(totalOut),
                       footnote: 'Gastos totais',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: NexoSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: NexoMetricCard(
+                      label: 'Compromissos',
+                      value: MoneyUtils.format(commitments),
+                      footnote: 'Dividas nao automaticas',
+                    ),
+                  ),
+                  const SizedBox(width: NexoSpacing.md),
+                  Expanded(
+                    child: NexoMetricCard(
+                      label: 'Lucro real',
+                      value: MoneyUtils.format(realProfit),
+                      footnote: 'Entradas - gastos - compromissos',
                     ),
                   ),
                 ],

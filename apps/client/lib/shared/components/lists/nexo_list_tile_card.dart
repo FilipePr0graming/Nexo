@@ -69,4 +69,3 @@ class NexoListTileCard extends StatelessWidget {
     );
   }
 }
-

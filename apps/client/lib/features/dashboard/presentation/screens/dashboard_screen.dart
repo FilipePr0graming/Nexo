@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/app/nexo_scope.dart';
 import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
+import '../../../../core/services/finance_calculator.dart';
 import '../../../../core/utils/date_label_utils.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/components/actions/nexo_icon_button.dart';
@@ -57,12 +58,11 @@ class DashboardScreen extends StatelessWidget {
             .where((expense) => expense.scope == ExpenseScope.personal)
             .toList(growable: false);
 
-        final businessBalance = receivedSales.fold<double>(
-              0,
-              (total, sale) => total + sale.ownerAmount,
-            ) -
-            businessExpenses.fold<double>(
-                0, (total, expense) => total + expense.amount);
+        final businessBalance = FinanceCalculator.realCash(
+          receivedEntries: receivedSales.map((sale) => sale.netAmount),
+          expenses: businessExpenses.map((expense) => expense.amount),
+          commitments: receivedSales.map((sale) => sale.danielValue),
+        );
         final personalBalance = -personalExpenses.fold<double>(
             0, (total, expense) => total + expense.amount);
         final totalBalance = businessBalance + personalBalance;
@@ -128,7 +128,7 @@ class DashboardScreen extends StatelessWidget {
                   NexoMetricCard(
                     label: 'Daniel',
                     value: MoneyUtils.format(danielThisMonth),
-                    footnote: 'Comissao no periodo',
+                    footnote: 'Compromisso manual',
                   ),
                 ],
               ),

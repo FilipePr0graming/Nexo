@@ -61,4 +61,3 @@ class NexoSelectField extends StatelessWidget {
     );
   }
 }
-

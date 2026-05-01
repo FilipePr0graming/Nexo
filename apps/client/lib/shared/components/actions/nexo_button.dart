@@ -61,4 +61,3 @@ class NexoButton extends StatelessWidget {
     );
   }
 }
-

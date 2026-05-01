@@ -17,6 +17,7 @@ import 'client_detail_screen.dart';
 enum _ClientsFilter {
   all,
   monthly,
+  annual,
   oneOff,
   daniel,
   open,
@@ -81,7 +82,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
         return NexoPageScaffold(
           title: 'Clientes',
-          subtitle: 'Historico real por cliente, sem prender cadastro a um servico.',
+          subtitle:
+              'Historico real por cliente, sem prender cadastro a um servico.',
           trailing: NexoIconButton(
             icon: Icons.add_rounded,
             tooltip: 'Novo cliente',
@@ -102,6 +104,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                 children: [
                   _buildFilterChip(_ClientsFilter.all, 'Todos'),
                   _buildFilterChip(_ClientsFilter.monthly, 'Mensal'),
+                  _buildFilterChip(_ClientsFilter.annual, 'Anual'),
                   _buildFilterChip(_ClientsFilter.oneOff, 'Avulso'),
                   _buildFilterChip(_ClientsFilter.daniel, 'Daniel'),
                   _buildFilterChip(_ClientsFilter.open, 'Em aberto'),
@@ -128,12 +131,16 @@ class _ClientsScreenState extends State<ClientsScreen> {
               else
                 Column(
                   children: clients.map((client) {
-                    final clientSales = _salesForClient(client, salesService.sales);
+                    final clientSales =
+                        _salesForClient(client, salesService.sales);
                     final openAmount = clientSales
                         .where(
-                          (sale) => sale.status == SaleStatus.pending || sale.status == SaleStatus.late,
+                          (sale) =>
+                              sale.status == SaleStatus.pending ||
+                              sale.status == SaleStatus.late,
                         )
-                        .fold<double>(0, (total, sale) => total + sale.ownerAmount);
+                        .fold<double>(
+                            0, (total, sale) => total + sale.ownerAmount);
                     final totalSold = clientSales.fold<double>(
                       0,
                       (total, sale) => total + sale.ownerAmount,
@@ -203,12 +210,15 @@ class _ClientsScreenState extends State<ClientsScreen> {
     return clients.where((client) {
       final clientSales = _salesForClient(client, sales);
       final hasOpenAmount = clientSales.any(
-        (sale) => sale.status == SaleStatus.pending || sale.status == SaleStatus.late,
+        (sale) =>
+            sale.status == SaleStatus.pending || sale.status == SaleStatus.late,
       );
 
       final matchesFilter = switch (_filter) {
         _ClientsFilter.all => true,
-        _ClientsFilter.monthly => client.billingType == ClientBillingType.monthly,
+        _ClientsFilter.monthly =>
+          client.billingType == ClientBillingType.monthly,
+        _ClientsFilter.annual => client.billingType == ClientBillingType.annual,
         _ClientsFilter.oneOff => client.billingType == ClientBillingType.oneOff,
         _ClientsFilter.daniel => client.hasDanielParticipation,
         _ClientsFilter.open => hasOpenAmount,
@@ -231,10 +241,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
         client.stateCode,
         client.zipCode,
         ...clientSales.map((sale) => sale.serviceName),
-      ]
-          .whereType<String>()
-          .map((value) => value.toLowerCase())
-          .join(' ');
+      ].whereType<String>().map((value) => value.toLowerCase()).join(' ');
 
       return haystack.contains(normalizedQuery);
     }).toList(growable: false);
@@ -249,7 +256,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
       return sale.clientName.trim().toLowerCase() == normalizedName;
     }).toList(growable: false);
 
-    related.sort((left, right) => right.movementDate.compareTo(left.movementDate));
+    related
+        .sort((left, right) => right.movementDate.compareTo(left.movementDate));
     return related;
   }
 }

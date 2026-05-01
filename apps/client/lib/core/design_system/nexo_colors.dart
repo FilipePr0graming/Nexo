@@ -25,4 +25,3 @@ abstract final class NexoColors {
   static const Color error = Color(0xFFB42318);
   static const Color errorSoft = Color(0xFFFEF3F2);
 }
-

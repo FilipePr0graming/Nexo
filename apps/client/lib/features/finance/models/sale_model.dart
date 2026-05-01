@@ -70,7 +70,8 @@ class SaleModel {
       clientName: (json['client_name'] as String?) ?? '',
       serviceName: (json['service_name'] as String?) ?? '',
       projectGroup: json['project_group'] as String?,
-      serviceStage: json['service_stage'] as String? ?? json['current_stage'] as String?,
+      serviceStage:
+          json['service_stage'] as String? ?? json['current_stage'] as String?,
       grossAmount: (json['gross_amount'] as num?)?.toDouble() ?? 0,
       platform: (json['platform'] as String?) ?? '',
       paymentMethod: (json['payment_method'] as String?) ?? '',

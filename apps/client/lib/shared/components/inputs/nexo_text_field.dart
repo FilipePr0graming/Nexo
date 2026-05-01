@@ -13,6 +13,7 @@ class NexoTextField extends StatelessWidget {
     this.readOnly = false,
     this.prefixText,
     this.maxLines = 1,
+    this.enabled = true,
     this.onTap,
   });
 
@@ -23,6 +24,7 @@ class NexoTextField extends StatelessWidget {
   final bool readOnly;
   final String? prefixText;
   final int maxLines;
+  final bool enabled;
   final VoidCallback? onTap;
 
   @override
@@ -39,6 +41,7 @@ class NexoTextField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           readOnly: readOnly,
+          enabled: enabled,
           maxLines: maxLines,
           onTap: onTap,
           style: Theme.of(context).textTheme.bodyLarge,
@@ -54,4 +57,3 @@ class NexoTextField extends StatelessWidget {
     );
   }
 }
-

@@ -1,0 +1,21 @@
+{
+  "name": "nexo",
+  "private": true,
+  "scripts": {
+    "supabase": "npx supabase",
+    "supabase:start": "npx supabase start",
+    "supabase:db:push": "npx supabase db push --local",
+    "client:pub:get": "cd apps/client && flutter pub get",
+    "client:test": "cd apps/client && flutter test",
+    "client:analyze": "cd apps/client && flutter analyze",
+    "client:build:web": "cd apps/client && flutter build web",
+    "test:e2e": "playwright test",
+    "test": "npm run client:test && npm run client:build:web && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "concurrently": "^9.2.1",
+    "http-server": "^14.1.1",
+    "supabase": "^2.98.0"
+  }
+}

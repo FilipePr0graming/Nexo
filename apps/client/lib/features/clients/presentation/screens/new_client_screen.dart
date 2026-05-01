@@ -630,6 +630,10 @@ class _NewClientScreenState extends State<NewClientScreen> {
                         value: ClientBillingType.monthly,
                         label: Text('Mensal'),
                       ),
+                      ButtonSegment(
+                        value: ClientBillingType.annual,
+                        label: Text('Anual'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: NexoSpacing.lg),

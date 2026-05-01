@@ -8,4 +8,3 @@ abstract final class NexoSpacing {
   static const double x2l = 32;
   static const double x3l = 40;
 }
-

@@ -48,4 +48,3 @@ class NexoHeader extends StatelessWidget {
     );
   }
 }
-

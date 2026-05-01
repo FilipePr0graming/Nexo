@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/app/nexo_scope.dart';
 import '../../../../core/design_system/nexo_colors.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
+import '../../../../core/models/financial_summary.dart';
+import '../../../../core/services/finance_calculator.dart';
 import '../../../../core/utils/date_label_utils.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/components/actions/nexo_button.dart';
@@ -84,14 +86,43 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
 
   double get _grossAmount => MoneyUtils.parseInput(_grossController.text);
   double get _platformFee => MoneyUtils.parseInput(_platformFeeController.text);
-  double get _paymentFee => MoneyUtils.parseInput(_paymentFeeController.text);
+  double get _manualPaymentFee =>
+      MoneyUtils.parseInput(_paymentFeeController.text);
   double get _danielPercent => _partnerChoice == _PartnerChoice.yes
       ? MoneyUtils.parseInput(_danielPercentController.text)
       : 0;
-  double get _netAmount =>
-      (_grossAmount - _platformFee - _paymentFee).clamp(0, double.infinity);
-  double get _danielValue => _netAmount * (_danielPercent / 100);
-  double get _ownerAmount => _netAmount - _danielValue;
+  double get _paymentFee => _summary.paymentFee;
+  double get _netAmount => _summary.netAmount;
+  double get _danielValue => _summary.partnerCommitment;
+  double get _ownerAmount => _summary.ownerAmount;
+
+  bool get _isAutomaticPaymentFee {
+    final payment = _payment.toLowerCase();
+    return payment.contains('pix') ||
+        payment.contains('cartao') ||
+        payment.contains('cart') ||
+        payment.contains('card');
+  }
+
+  String get _paymentFeeHint {
+    final payment = _payment.toLowerCase();
+    if (payment.contains('pix')) {
+      return 'Pix sem taxa';
+    }
+    if (payment.contains('cartao') || payment.contains('cart')) {
+      return '7% automatico';
+    }
+    return '0,00';
+  }
+
+  FinancialSummary get _summary => FinanceCalculator.summarize(
+        grossAmount: _grossAmount,
+        platformFee: _platformFee,
+        paymentMethod: _payment,
+        manualPaymentFee: _manualPaymentFee,
+        hasDanielParticipation: _partnerChoice == _PartnerChoice.yes,
+        danielPercent: _danielPercent,
+      );
 
   void _rebuildSummary() {
     if (mounted) {
@@ -121,7 +152,13 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
     );
 
     if (selected != null) {
-      setState(() => _payment = selected);
+      setState(() {
+        _payment = selected;
+        if (selected == 'Pix') {
+          _expectedDate = _saleDate;
+          _paymentFeeController.clear();
+        }
+      });
     }
   }
 
@@ -174,6 +211,9 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
         _expectedDate = selected;
       } else {
         _saleDate = selected;
+        if (_payment == 'Pix') {
+          _expectedDate = selected;
+        }
       }
     });
   }
@@ -241,25 +281,26 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
         );
 
     await NexoScope.of(context).sales.createSale(
-      clientId: matchedClient?.id,
-      clientName: clientName,
-      serviceName: serviceName.isEmpty ? 'Projeto' : serviceName,
-      projectGroup: _projectGroupController.text,
-      serviceStage: _serviceStageController.text,
-      grossAmount: _grossAmount,
-      platform: _platform,
-      paymentMethod: _payment,
-      installments: _installments,
-      saleDate: _saleDate.toUtc(),
-      expectedDate: _expectedDate.toUtc(),
-      receivedDate: _status == SaleStatus.received ? _saleDate.toUtc() : null,
-      status: _status,
-      notes: _notesController.text,
-      platformFee: _platformFee,
-      paymentFee: _paymentFee,
-      hasDanielParticipation: _partnerChoice == _PartnerChoice.yes,
-      danielPercent: _danielPercent,
-    );
+          clientId: matchedClient?.id,
+          clientName: clientName,
+          serviceName: serviceName.isEmpty ? 'Projeto' : serviceName,
+          projectGroup: _projectGroupController.text,
+          serviceStage: _serviceStageController.text,
+          grossAmount: _grossAmount,
+          platform: _platform,
+          paymentMethod: _payment,
+          installments: _installments,
+          saleDate: _saleDate.toUtc(),
+          expectedDate: _expectedDate.toUtc(),
+          receivedDate:
+              _status == SaleStatus.received ? _saleDate.toUtc() : null,
+          status: _status,
+          notes: _notesController.text,
+          platformFee: _platformFee,
+          paymentFee: _paymentFee,
+          hasDanielParticipation: _partnerChoice == _PartnerChoice.yes,
+          danielPercent: _danielPercent,
+        );
 
     if (!mounted) {
       return;
@@ -415,10 +456,11 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                       Expanded(
                         child: NexoTextField(
                           label: 'Taxa do pagamento',
-                          hint: '0,00',
+                          hint: _paymentFeeHint,
                           controller: _paymentFeeController,
                           prefixText: 'R\$ ',
                           keyboardType: TextInputType.number,
+                          enabled: !_isAutomaticPaymentFee,
                         ),
                       ),
                     ],
@@ -427,7 +469,8 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                   NexoSegmentedField<_PartnerChoice>(
                     label: 'Daniel participou?',
                     value: _partnerChoice,
-                    onChanged: (value) => setState(() => _partnerChoice = value),
+                    onChanged: (value) =>
+                        setState(() => _partnerChoice = value),
                     segments: const [
                       ButtonSegment(
                         value: _PartnerChoice.no,
@@ -510,7 +553,8 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
                 child: NexoButton(
                   label: 'Cancelar',
                   variant: NexoButtonVariant.secondary,
-                  onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                  onPressed:
+                      _isSaving ? null : () => Navigator.of(context).pop(),
                 ),
               ),
               const SizedBox(width: NexoSpacing.md),

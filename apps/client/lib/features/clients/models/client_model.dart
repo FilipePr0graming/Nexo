@@ -5,6 +5,7 @@ enum ClientType {
 
 enum ClientBillingType {
   monthly,
+  annual,
   oneOff,
 }
 
@@ -262,6 +263,7 @@ class ClientModel {
   static ClientBillingType _billingTypeFromStorage(String? value) {
     return switch (value) {
       'monthly' => ClientBillingType.monthly,
+      'annual' => ClientBillingType.annual,
       _ => ClientBillingType.oneOff,
     };
   }
@@ -269,6 +271,7 @@ class ClientModel {
   static String _billingTypeToStorage(ClientBillingType value) {
     return switch (value) {
       ClientBillingType.monthly => 'monthly',
+      ClientBillingType.annual => 'annual',
       ClientBillingType.oneOff => 'one_off',
     };
   }
@@ -287,6 +290,7 @@ extension ClientBillingTypeLabel on ClientBillingType {
   String get label {
     return switch (this) {
       ClientBillingType.monthly => 'Mensal',
+      ClientBillingType.annual => 'Anual',
       ClientBillingType.oneOff => 'Avulso',
     };
   }

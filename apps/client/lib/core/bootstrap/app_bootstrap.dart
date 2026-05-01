@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -19,6 +21,7 @@ import '../../features/finance/services/expenses_service.dart';
 import '../../features/finance/services/sales_service.dart';
 import '../app/app_services.dart';
 import '../config/app_environment.dart';
+import '../services/supabase_service.dart';
 import '../storage/local_json_store.dart';
 
 class AppBootstrap {
@@ -26,6 +29,9 @@ class AppBootstrap {
 
   static Future<AppServices> initialize() async {
     WidgetsFlutterBinding.ensureInitialized();
+    if (kIsWeb || const bool.fromEnvironment('ENABLE_FLUTTER_SEMANTICS')) {
+      SemanticsBinding.instance.ensureSemantics();
+    }
 
     SupabaseClient? supabaseClient;
     if (AppEnvironment.hasSupabase) {
@@ -36,6 +42,7 @@ class AppBootstrap {
       supabaseClient = Supabase.instance.client;
     }
 
+    final supabaseService = SupabaseService(supabaseClient);
     final localStore = LocalJsonStore();
 
     final clientsRepository = ClientsRepository(
@@ -60,6 +67,7 @@ class AppBootstrap {
 
     final services = AppServices(
       clients: ClientsService(clientsRepository),
+      supabase: supabaseService,
       clientAutofill: ClientAutofillService(clientAutofillRepository),
       sales: SalesService(salesRepository),
       expenses: ExpensesService(expensesRepository),

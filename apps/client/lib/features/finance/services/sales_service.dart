@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/services/finance_calculator.dart';
 import '../../../core/utils/id_generator.dart';
 import '../data/repositories/sales_repository.dart';
 import '../models/sale_model.dart';
@@ -77,11 +78,14 @@ class SalesService extends ChangeNotifier {
     required double danielPercent,
   }) async {
     final timestamp = DateTime.now().toUtc();
-    final netAmount = grossAmount - platformFee - paymentFee;
-    final danielValue = hasDanielParticipation
-        ? netAmount * (danielPercent / 100)
-        : 0.0;
-    final ownerAmount = netAmount - danielValue;
+    final summary = FinanceCalculator.summarize(
+      grossAmount: grossAmount,
+      platformFee: platformFee,
+      paymentMethod: paymentMethod,
+      manualPaymentFee: paymentFee,
+      hasDanielParticipation: hasDanielParticipation,
+      danielPercent: danielPercent,
+    );
 
     final sale = SaleModel(
       id: IdGenerator.next('sale'),
@@ -101,12 +105,16 @@ class SalesService extends ChangeNotifier {
       notes: _emptyToNull(notes),
       origin: _emptyToNull(origin),
       platformFee: platformFee,
-      paymentFee: paymentFee,
-      netAmount: netAmount,
+      paymentFee: summary.paymentFee,
+      netAmount: summary.netAmount,
       hasDanielParticipation: hasDanielParticipation,
-      danielPercent: hasDanielParticipation ? danielPercent : 0,
-      danielValue: danielValue,
-      ownerAmount: ownerAmount,
+      danielPercent: hasDanielParticipation
+          ? (danielPercent <= 0
+              ? FinanceCalculator.danielDefaultPercent
+              : danielPercent)
+          : 0,
+      danielValue: summary.partnerCommitment,
+      ownerAmount: summary.ownerAmount,
       createdAt: timestamp,
       updatedAt: timestamp,
     );

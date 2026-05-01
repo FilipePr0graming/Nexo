@@ -72,8 +72,8 @@ abstract final class NexoTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: NexoColors.surfaceElevated,
         contentTextStyle: NexoTypography.textTheme().bodyMedium?.copyWith(
-          color: NexoColors.ink,
-        ),
+              color: NexoColors.ink,
+            ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(NexoRadius.md),
         ),

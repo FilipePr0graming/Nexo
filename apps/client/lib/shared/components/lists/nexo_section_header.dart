@@ -38,4 +38,3 @@ class NexoSectionHeader extends StatelessWidget {
     );
   }
 }
-

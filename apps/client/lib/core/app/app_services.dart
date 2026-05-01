@@ -2,9 +2,11 @@ import '../../features/clients/services/clients_service.dart';
 import '../../features/clients/services/client_autofill_service.dart';
 import '../../features/finance/services/expenses_service.dart';
 import '../../features/finance/services/sales_service.dart';
+import '../services/supabase_service.dart';
 
 class AppServices {
   AppServices({
+    required this.supabase,
     required this.clients,
     required this.clientAutofill,
     required this.sales,
@@ -12,6 +14,7 @@ class AppServices {
     required this.supabaseEnabled,
   });
 
+  final SupabaseService supabase;
   final ClientsService clients;
   final ClientAutofillService clientAutofill;
   final SalesService sales;

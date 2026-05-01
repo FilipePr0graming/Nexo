@@ -5,6 +5,7 @@ Thumbs.db
 .vscode/
 *.iml
 *.log
+node_modules/
 
 # Python
 **/__pycache__/
@@ -24,4 +25,13 @@ apps/api/backups/
 apps/client/windows/flutter/ephemeral/
 
 # Local-only configuration
+.env
 apps/client/supabase/dart_define.local.json
+
+# Test and automation artifacts
+test-results/
+playwright-report/
+.playwright-mcp/
+nexo-debug.png
+supabase/.branches/
+supabase/.temp/

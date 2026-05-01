@@ -6,4 +6,3 @@ abstract final class NexoRadius {
   static const double hero = 28;
   static const double pill = 999;
 }
-

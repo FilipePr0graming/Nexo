@@ -17,4 +17,3 @@ abstract final class NexoShadows {
         ),
       ];
 }
-

@@ -27,11 +27,13 @@ class _NewExpenseScreenState extends State<NewExpenseScreen> {
   ExpenseScope _scope = ExpenseScope.business;
   String _category = 'Assinaturas de IA';
   String _accountName = 'Conta empresa';
+  String _recurrence = 'Nao recorrente';
   DateTime _expenseDate = DateTime.now();
   bool _isSaving = false;
 
   static const List<String> _businessCategories = [
     'Assinaturas de IA',
+    'Dominio',
     'Softwares',
     'Marketing',
     'Ferramentas',
@@ -91,6 +93,19 @@ class _NewExpenseScreenState extends State<NewExpenseScreen> {
     }
   }
 
+  Future<void> _pickRecurrence() async {
+    final selected = await NexoOptionSheet.show(
+      context,
+      title: 'Recorrencia',
+      options: const ['Nao recorrente', 'Mensal', 'Anual'],
+      currentValue: _recurrence,
+    );
+
+    if (selected != null) {
+      setState(() => _recurrence = selected);
+    }
+  }
+
   Future<void> _pickDate() async {
     final selected = await showDatePicker(
       context: context,
@@ -118,14 +133,19 @@ class _NewExpenseScreenState extends State<NewExpenseScreen> {
     final description = _notesController.text.trim();
 
     await NexoScope.of(context).expenses.createExpense(
-      title: description.isEmpty ? _category : description,
-      category: _category,
-      amount: amount,
-      scope: _scope,
-      accountName: _accountName,
-      expenseDate: _expenseDate.toUtc(),
-      notes: description,
-    );
+          title: description.isEmpty ? _category : description,
+          category: _category,
+          amount: amount,
+          scope: _scope,
+          accountName: _accountName,
+          expenseDate: _expenseDate.toUtc(),
+          recurrence: switch (_recurrence) {
+            'Mensal' => 'monthly',
+            'Anual' => 'annual',
+            _ => null,
+          },
+          notes: description,
+        );
 
     if (!mounted) {
       return;
@@ -156,7 +176,8 @@ class _NewExpenseScreenState extends State<NewExpenseScreen> {
                 children: [
                   NexoHeader(
                     title: 'Novo gasto',
-                    subtitle: 'Registro direto, claro e pensado para uma mao so.',
+                    subtitle:
+                        'Registro direto, claro e pensado para uma mao so.',
                     trailing: NexoIconButton(
                       icon: Icons.close_rounded,
                       tooltip: 'Fechar',
@@ -222,6 +243,12 @@ class _NewExpenseScreenState extends State<NewExpenseScreen> {
                     ],
                   ),
                   const SizedBox(height: NexoSpacing.lg),
+                  NexoSelectField(
+                    label: 'Recorrencia',
+                    value: _recurrence,
+                    onTap: _pickRecurrence,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
                   NexoTextField(
                     label: 'Observacao',
                     hint: 'Detalhe opcional',
@@ -249,7 +276,8 @@ class _NewExpenseScreenState extends State<NewExpenseScreen> {
                 child: NexoButton(
                   label: 'Cancelar',
                   variant: NexoButtonVariant.secondary,
-                  onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+                  onPressed:
+                      _isSaving ? null : () => Navigator.of(context).pop(),
                 ),
               ),
               const SizedBox(width: NexoSpacing.md),

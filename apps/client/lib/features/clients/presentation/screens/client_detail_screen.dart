@@ -60,7 +60,9 @@ class ClientDetailScreen extends StatelessWidget {
         );
         final totalOpen = sales
             .where(
-              (sale) => sale.status == SaleStatus.pending || sale.status == SaleStatus.late,
+              (sale) =>
+                  sale.status == SaleStatus.pending ||
+                  sale.status == SaleStatus.late,
             )
             .fold<double>(0, (total, sale) => total + sale.ownerAmount);
 
@@ -252,7 +254,8 @@ class ClientDetailScreen extends StatelessWidget {
       return sale.clientName.trim().toLowerCase() == normalizedName;
     }).toList(growable: false);
 
-    related.sort((left, right) => right.movementDate.compareTo(left.movementDate));
+    related
+        .sort((left, right) => right.movementDate.compareTo(left.movementDate));
     return related;
   }
 }

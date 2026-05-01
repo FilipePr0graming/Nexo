@@ -13,7 +13,8 @@ class ReportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return NexoPageScaffold(
       title: 'Relatorios',
-      subtitle: 'Base visual pronta para evoluir em indicadores e comparativos.',
+      subtitle:
+          'Base visual pronta para evoluir em indicadores e comparativos.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -41,7 +42,8 @@ class ReportsScreen extends StatelessWidget {
           const SizedBox(height: NexoSpacing.md),
           const NexoEmptyStateCard(
             title: 'Relatorios entram na fase seguinte',
-            message: 'A shell, a linguagem visual e os componentes de base ja estao prontos para clientes, plataforma, lucro liquido e inadimplencia.',
+            message:
+                'A shell, a linguagem visual e os componentes de base ja estao prontos para clientes, plataforma, lucro liquido e inadimplencia.',
           ),
         ],
       ),
