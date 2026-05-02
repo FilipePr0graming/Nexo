@@ -54,7 +54,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.59.1",
-    "workers": 1,
+    "workers": 4,
     "webServer": {
       "command": "npx http-server apps/client/build/web -a 127.0.0.1 -p 3749 --silent",
       "url": "http://127.0.0.1:3749",
@@ -71,13 +71,13 @@
       "specs": [],
       "suites": [
         {
-          "title": "Nexo integracao final UI V2",
+          "title": "Nexo integracao final",
           "file": "nexo-flow.spec.ts",
-          "line": 23,
+          "line": 217,
           "column": 6,
           "specs": [
             {
-              "title": "modo foco abre e executa fluxos rapidos do dia",
+              "title": "login e dashboard inteligente",
               "ok": true,
               "tags": [],
               "tests": [
@@ -92,12 +92,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 13063,
+                      "duration": 15632,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-01T12:42:06.978Z",
+                      "startTime": "2026-05-02T18:19:31.305Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -105,13 +105,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "dcff1f75b6e552eaec48-a52753018977943b07cd",
+              "id": "dcff1f75b6e552eaec48-03c8091ddc8034a4ddd8",
               "file": "nexo-flow.spec.ts",
-              "line": 29,
+              "line": 222,
               "column": 7
             },
             {
-              "title": "navegacao final mostra paginas dinamicas principais",
+              "title": "clientes, projetos, pagamentos, gastos e recebimento",
               "ok": true,
               "tags": [],
               "tests": [
@@ -126,12 +126,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8631,
+                      "duration": 63850,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-01T12:42:20.346Z",
+                      "startTime": "2026-05-02T18:19:48.414Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -139,13 +139,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "dcff1f75b6e552eaec48-bb8f1795acd5587d15e9",
+              "id": "dcff1f75b6e552eaec48-aa1e1989e13c5bfecff6",
               "file": "nexo-flow.spec.ts",
-              "line": 59,
+              "line": 229,
               "column": 7
             },
             {
-              "title": "valida planejamento, Daniel e recorrencia sem dados mockados",
+              "title": "metas, anotacoes, planejamento e parceiro Daniel",
               "ok": true,
               "tags": [],
               "tests": [
@@ -160,12 +160,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5456,
+                      "duration": 39971,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-01T12:42:29.056Z",
+                      "startTime": "2026-05-02T18:20:52.393Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -173,9 +173,43 @@
                   "status": "expected"
                 }
               ],
-              "id": "dcff1f75b6e552eaec48-09f1190ced8fce631832",
+              "id": "dcff1f75b6e552eaec48-a19ea3b605851ef499ce",
               "file": "nexo-flow.spec.ts",
-              "line": 86,
+              "line": 297,
+              "column": 7
+            },
+            {
+              "title": "responsividade mobile com menu lateral colapsavel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T18:21:32.446Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "dcff1f75b6e552eaec48-d50cd7087f34fa40111e",
+              "file": "nexo-flow.spec.ts",
+              "line": 335,
               "column": 7
             }
           ]
@@ -185,9 +219,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-01T12:40:48.245Z",
-    "duration": 107135.554,
-    "expected": 3,
+    "startTime": "2026-05-02T18:19:23.473Z",
+    "duration": 143387.133,
+    "expected": 4,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

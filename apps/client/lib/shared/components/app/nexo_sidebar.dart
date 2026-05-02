@@ -20,19 +20,15 @@ class NexoSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = const [
       _SidebarDestination(NexoIcons.dashboard, 'Hoje'),
-      _SidebarDestination(NexoIcons.home, 'Casa'),
-      _SidebarDestination(NexoIcons.company, 'Empresa'),
       _SidebarDestination(NexoIcons.clients, 'Clientes'),
       _SidebarDestination(NexoIcons.projects, 'Projetos'),
-      _SidebarDestination(NexoIcons.receipts, 'Recebimentos'),
-      _SidebarDestination(NexoIcons.expenses, 'Despesas'),
+      _SidebarDestination(NexoIcons.finance, 'Financeiro'),
       _SidebarDestination(NexoIcons.partners, 'Parceiros'),
-      _SidebarDestination(NexoIcons.subscriptions, 'Assinaturas'),
       _SidebarDestination(NexoIcons.planning, 'Planejamento'),
       _SidebarDestination(NexoIcons.goals, 'Metas'),
-      _SidebarDestination(NexoIcons.intelligence, 'Inteligencia'),
       _SidebarDestination(NexoIcons.notes, 'Anotacoes'),
-      _SidebarDestination(NexoIcons.settings, 'Configuracoes'),
+      _SidebarDestination(NexoIcons.company, 'Empresa'),
+      _SidebarDestination(NexoIcons.home, 'Casa'),
     ];
 
     return Padding(

@@ -12,9 +12,16 @@ import '../../../../core/utils/money_utils.dart';
 import '../../../../features/clients/models/client_model.dart';
 import '../../../../features/finance/models/expense_model.dart';
 import '../../../../features/finance/models/sale_model.dart';
+import '../../../../features/goals/models/goal_model.dart';
+import '../../../../features/notes/models/note_model.dart';
+import '../../../../features/partners/models/partner_payment_model.dart';
+import '../../../../features/projects/models/project_model.dart';
+import '../../../../features/reminders/models/reminder_model.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
+import '../../../../shared/components/actions/nexo_button.dart';
 import '../../../../shared/components/cards/nexo_card.dart';
 import '../../../../shared/components/cards/nexo_empty_state_card.dart';
+import '../../../../shared/components/inputs/nexo_text_field.dart';
 
 class CasaScreen extends StatelessWidget {
   const CasaScreen({super.key});
@@ -165,19 +172,44 @@ class ProjetosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _FinancePageBuilder(
-      builder: (context, data) {
-        final projects = _projectSummaries(data.sales);
-        final portfolio = _sum(projects.map((item) => item.total));
-        final pending = _sum(projects.map((item) => item.openAmount));
+    final services = NexoScope.of(context);
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        services.projects,
+        services.sales,
+        services.clients,
+      ]),
+      builder: (context, _) {
+        final records = services.projects.projects;
+        final derived = _projectSummaries(services.sales.sales);
+        final portfolio = records.isEmpty
+            ? _sum(derived.map((item) => item.total))
+            : _sum(records.map((item) => item.budgetAmount));
+        final pending = _sum(derived.map((item) => item.openAmount));
+        final activeCount = records.isEmpty
+            ? derived.length
+            : records
+                .where((item) => item.status == ProjectStatus.active)
+                .length;
 
         return NexoPageScaffold(
           title: 'Projetos',
-          subtitle: 'Servicos vendidos, progresso de pagamento e pendencias.',
-          trailing: FilledButton.icon(
-            onPressed: onNewSale,
-            icon: const Icon(NexoIcons.add),
-            label: const Text('Novo projeto'),
+          subtitle: 'Carteira de trabalho, etapas e pagamentos por projeto.',
+          trailing: Wrap(
+            spacing: NexoSpacing.xs,
+            runSpacing: NexoSpacing.xs,
+            children: [
+              FilledButton.icon(
+                onPressed: () => _openProjectSheet(context),
+                icon: const Icon(NexoIcons.add),
+                label: const Text('Novo projeto'),
+              ),
+              OutlinedButton.icon(
+                onPressed: onNewSale,
+                icon: const Icon(NexoIcons.receipts),
+                label: const Text('Venda'),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +225,7 @@ class ProjetosScreen extends StatelessWidget {
                   _KpiCard(
                     icon: NexoIcons.projects,
                     label: 'Projetos ativos',
-                    value: projects.length.toString(),
+                    value: activeCount.toString(),
                   ),
                   _KpiCard(
                     icon: NexoIcons.receipts,
@@ -204,16 +236,32 @@ class ProjetosScreen extends StatelessWidget {
               ),
               const SizedBox(height: NexoSpacing.x2l),
               _SectionTitle('Projetos em andamento'),
-              if (projects.isEmpty)
+              if (records.isEmpty && derived.isEmpty)
                 NexoEmptyStateCard(
                   title: 'Nenhum projeto ainda',
-                  message: 'Registre uma venda para criar o primeiro projeto.',
+                  message: 'Crie um projeto ou registre uma venda vinculada.',
                   buttonLabel: 'Novo projeto',
-                  onPressed: onNewSale,
+                  onPressed: () => _openProjectSheet(context),
+                )
+              else if (records.isNotEmpty)
+                _ResponsiveCards(
+                  children: records
+                      .map(
+                        (project) => _ProjectRecordCard(
+                          project: project,
+                          clientName: _clientNameForProject(
+                            project,
+                            services.clients.clients,
+                          ),
+                          onDelete: () =>
+                              services.projects.deleteProject(project.id),
+                        ),
+                      )
+                      .toList(growable: false),
                 )
               else
                 _ResponsiveCards(
-                  children: projects
+                  children: derived
                       .map((project) => _ProjectCard(project: project))
                       .toList(growable: false),
                 ),
@@ -222,6 +270,136 @@ class ProjetosScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _openProjectSheet(BuildContext context) async {
+    final nameController = TextEditingController();
+    final clientController = TextEditingController();
+    final stageController = TextEditingController(text: 'briefing');
+    final budgetController = TextEditingController();
+    final notesController = TextEditingController();
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        backgroundColor: NexoColors.surface,
+        builder: (sheetContext) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              NexoSpacing.lg,
+              NexoSpacing.md,
+              NexoSpacing.lg,
+              MediaQuery.viewInsetsOf(sheetContext).bottom + NexoSpacing.xl,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Novo projeto',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoTextField(
+                    label: 'Nome do projeto',
+                    hint: 'Ex.: Site institucional',
+                    controller: nameController,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Cliente',
+                    hint: 'Opcional',
+                    controller: clientController,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: NexoTextField(
+                          label: 'Etapa',
+                          hint: 'briefing',
+                          controller: stageController,
+                        ),
+                      ),
+                      const SizedBox(width: NexoSpacing.md),
+                      Expanded(
+                        child: NexoTextField(
+                          label: 'Orcamento',
+                          hint: '0,00',
+                          controller: budgetController,
+                          prefixText: 'R\$ ',
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Notas',
+                    hint: 'Contexto do projeto',
+                    controller: notesController,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoButton(
+                    label: 'Salvar projeto',
+                    icon: NexoIcons.add,
+                    onPressed: () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) {
+                        return;
+                      }
+                      final services = NexoScope.of(context);
+                      final clientName = clientController.text.trim();
+                      final matchedClient = services.clients.clients
+                          .cast<ClientModel?>()
+                          .firstWhere(
+                            (client) =>
+                                client != null &&
+                                client.name.trim().toLowerCase() ==
+                                    clientName.toLowerCase(),
+                            orElse: () => null,
+                          );
+                      await services.projects.createProject(
+                        clientId: matchedClient?.id,
+                        name: name,
+                        stage: stageController.text,
+                        budgetAmount: MoneyUtils.parseInput(
+                          budgetController.text,
+                        ),
+                        notes: notesController.text,
+                      );
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } finally {
+      nameController.dispose();
+      clientController.dispose();
+      stageController.dispose();
+      budgetController.dispose();
+      notesController.dispose();
+    }
+  }
+
+  String _clientNameForProject(
+      ProjectModel project, List<ClientModel> clients) {
+    final client = clients.cast<ClientModel?>().firstWhere(
+          (item) => item?.id == project.clientId,
+          orElse: () => null,
+        );
+    return client?.name ?? 'Cliente nao vinculado';
   }
 }
 
@@ -280,7 +458,9 @@ class ParceirosScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return _FinancePageBuilder(
       builder: (context, data) {
+        final services = NexoScope.of(context);
         final partner = data.summary.partner;
+        final openPartnerPayments = services.partnerPayments.openDanielPayments;
         final progress = partner.totalToPay <= 0
             ? 0.0
             : (partner.paid / partner.totalToPay).clamp(0, 1).toDouble();
@@ -306,11 +486,37 @@ class ParceirosScreen extends StatelessWidget {
               ),
             ],
             right: [
+              _SectionTitle('Debitos no Supabase'),
+              if (openPartnerPayments.isEmpty)
+                const NexoEmptyStateCard(
+                  title: 'Sem repasse aberto',
+                  message: 'Vendas com Daniel geram repasses automaticamente.',
+                )
+              else
+                ...openPartnerPayments.map(
+                  (item) => _PartnerPaymentTile(
+                    payment: item,
+                    onMarkPaid: () async {
+                      await services.partnerPayments.markAsPaid(item);
+                      await services.expenses.createExpense(
+                        title: item.description,
+                        category: 'Daniel',
+                        amount: item.amount,
+                        scope: ExpenseScope.business,
+                        accountName: 'Conta empresa',
+                        expenseDate: DateTime.now().toUtc(),
+                        notes: 'Pagamento de socio Daniel',
+                      );
+                    },
+                  ),
+                ),
+              const SizedBox(height: NexoSpacing.lg),
               _SectionTitle('Por projeto'),
               if (partner.projects.isEmpty)
                 const NexoEmptyStateCard(
-                  title: 'Sem repasse aberto',
-                  message: 'Vendas com Daniel aparecem aqui automaticamente.',
+                  title: 'Sem venda recebida com Daniel',
+                  message:
+                      'Quando receber vendas com Daniel, elas aparecem aqui.',
                 )
               else
                 ...partner.projects.map(
@@ -396,7 +602,12 @@ class PlanejamentoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return _FinancePageBuilder(
       builder: (context, data) {
+        final services = NexoScope.of(context);
         final lastForecast = data.summary.forecasts.last;
+        final openReminders = services.reminders.reminders
+            .where((item) => item.status == ReminderStatus.open)
+            .take(4)
+            .toList(growable: false);
         return NexoPageScaffold(
           title: 'Planejamento',
           subtitle: 'Previsao financeira para os proximos dias.',
@@ -431,6 +642,19 @@ class PlanejamentoScreen extends StatelessWidget {
                 right: [
                   _SectionTitle('Contas e compromissos'),
                   _MovementList(expenses: data.summary.upcomingBills),
+                  if (openReminders.isNotEmpty) ...[
+                    _SectionTitle('Alertas e lembretes'),
+                    ...openReminders.map(
+                      (reminder) => _LedgerTile(
+                        icon: NexoIcons.planning,
+                        title: reminder.title,
+                        subtitle: DateLabelUtils.dayLabel(
+                          reminder.dueDate.toLocal(),
+                        ),
+                        value: reminder.status.label,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -446,15 +670,138 @@ class MetasScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _FinancePageBuilder(
-      builder: (context, data) {
+    final services = NexoScope.of(context);
+    return AnimatedBuilder(
+      animation:
+          Listenable.merge([services.goals, services.sales, services.expenses]),
+      builder: (context, _) {
+        final summary = LifeFinanceService.summarize(
+          sales: services.sales.sales,
+          expenses: services.expenses.expenses,
+          goals: services.goals.goals,
+        );
         return NexoPageScaffold(
           title: 'Metas',
           subtitle: 'Guardar dinheiro com previsao clara.',
-          child: _GoalCard(goal: data.summary.goal),
+          trailing: FilledButton.icon(
+            onPressed: () => _openGoalSheet(context),
+            icon: const Icon(NexoIcons.add),
+            label: const Text('Nova meta'),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _GoalCard(goal: summary.goal),
+              const SizedBox(height: NexoSpacing.x2l),
+              _SectionTitle('Seus objetivos'),
+              const SizedBox(height: NexoSpacing.md),
+              if (services.goals.goals.isEmpty)
+                NexoEmptyStateCard(
+                  title: 'Nenhuma meta cadastrada',
+                  message: 'Crie uma meta para acompanhar dinheiro guardado.',
+                  buttonLabel: 'Nova meta',
+                  onPressed: () => _openGoalSheet(context),
+                )
+              else
+                _ResponsiveCards(
+                  children: services.goals.goals
+                      .map(
+                        (goal) => _GoalRecordCard(
+                          goal: goal,
+                          onDelete: () => services.goals.deleteGoal(goal.id),
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
+            ],
+          ),
         );
       },
     );
+  }
+
+  Future<void> _openGoalSheet(BuildContext context) async {
+    final titleController = TextEditingController();
+    final targetController = TextEditingController();
+    final currentController = TextEditingController();
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        backgroundColor: NexoColors.surface,
+        builder: (sheetContext) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              NexoSpacing.lg,
+              NexoSpacing.md,
+              NexoSpacing.lg,
+              MediaQuery.viewInsetsOf(sheetContext).bottom + NexoSpacing.xl,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Nova meta',
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoTextField(
+                    label: 'Titulo',
+                    hint: 'Ex.: Reserva de emergencia',
+                    controller: titleController,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Valor alvo',
+                    hint: '0,00',
+                    controller: targetController,
+                    prefixText: 'R\$ ',
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Ja guardado',
+                    hint: '0,00',
+                    controller: currentController,
+                    prefixText: 'R\$ ',
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoButton(
+                    label: 'Salvar meta',
+                    icon: NexoIcons.add,
+                    onPressed: () async {
+                      final title = titleController.text.trim();
+                      final target =
+                          MoneyUtils.parseInput(targetController.text);
+                      if (title.isEmpty || target <= 0) {
+                        return;
+                      }
+                      await NexoScope.of(context).goals.createGoal(
+                            title: title,
+                            targetAmount: target,
+                            currentAmount:
+                                MoneyUtils.parseInput(currentController.text),
+                          );
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } finally {
+      titleController.dispose();
+      targetController.dispose();
+      currentController.dispose();
+    }
   }
 }
 
@@ -507,15 +854,122 @@ class AnotacoesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const NexoPageScaffold(
-      title: 'Anotacoes',
-      subtitle: 'Observacoes importantes para nao perder contexto.',
-      child: NexoEmptyStateCard(
-        title: 'Anotacoes ainda nao conectadas',
-        message:
-            'A tabela notes existe no Supabase. Quando o servico local for criado, esta tela passa a listar e salvar observacoes.',
-      ),
+    final services = NexoScope.of(context);
+    return AnimatedBuilder(
+      animation: services.notes,
+      builder: (context, _) {
+        return NexoPageScaffold(
+          title: 'Anotacoes',
+          subtitle: 'Observacoes importantes para nao perder contexto.',
+          trailing: FilledButton.icon(
+            onPressed: () => _openNoteSheet(context),
+            icon: const Icon(NexoIcons.add),
+            label: const Text('Nova anotacao'),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _HeroAmount(
+                eyebrow: 'Memoria do sistema',
+                value: services.notes.notes.length.toString(),
+                message:
+                    'Notas sincronizadas com Supabase para ideias, reunioes e detalhes financeiros.',
+              ),
+              const SizedBox(height: NexoSpacing.x2l),
+              if (services.notes.notes.isEmpty)
+                NexoEmptyStateCard(
+                  title: 'Nenhuma anotacao ainda',
+                  message: 'Crie uma nota rapida para guardar contexto.',
+                  buttonLabel: 'Nova anotacao',
+                  onPressed: () => _openNoteSheet(context),
+                )
+              else
+                _ResponsiveCards(
+                  children: services.notes.notes
+                      .map(
+                        (note) => _NoteRecordCard(
+                          note: note,
+                          onDelete: () => services.notes.deleteNote(note.id),
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Future<void> _openNoteSheet(BuildContext context) async {
+    final titleController = TextEditingController();
+    final bodyController = TextEditingController();
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        backgroundColor: NexoColors.surface,
+        builder: (sheetContext) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              NexoSpacing.lg,
+              NexoSpacing.md,
+              NexoSpacing.lg,
+              MediaQuery.viewInsetsOf(sheetContext).bottom + NexoSpacing.xl,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Nova anotacao',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoTextField(
+                    label: 'Titulo',
+                    hint: 'Ex.: Reuniao com cliente',
+                    controller: titleController,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Texto',
+                    hint: 'Escreva a ideia, reuniao ou observacao',
+                    controller: bodyController,
+                    maxLines: 5,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoButton(
+                    label: 'Salvar anotacao',
+                    icon: NexoIcons.add,
+                    onPressed: () async {
+                      final body = bodyController.text.trim();
+                      if (body.isEmpty) {
+                        return;
+                      }
+                      await NexoScope.of(context).notes.createNote(
+                            title: titleController.text,
+                            body: body,
+                          );
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } finally {
+      titleController.dispose();
+      bodyController.dispose();
+    }
   }
 }
 
@@ -541,12 +995,14 @@ class _FinanceData {
     required this.sales,
     required this.expenses,
     required this.clients,
+    required this.goals,
     required this.summary,
   });
 
   final List<SaleModel> sales;
   final List<ExpenseModel> expenses;
   final List<ClientModel> clients;
+  final List<GoalModel> goals;
   final LifeFinanceSummary summary;
 }
 
@@ -565,20 +1021,39 @@ class _FinancePageBuilder extends StatelessWidget {
     return AnimatedBuilder(
       animation: includeClients
           ? Listenable.merge(
-              [services.sales, services.expenses, services.clients])
-          : Listenable.merge([services.sales, services.expenses]),
+              [
+                services.sales,
+                services.expenses,
+                services.clients,
+                services.goals,
+                services.partnerPayments,
+                services.reminders,
+              ],
+            )
+          : Listenable.merge(
+              [
+                services.sales,
+                services.expenses,
+                services.goals,
+                services.partnerPayments,
+                services.reminders,
+              ],
+            ),
       builder: (context, _) {
         final sales = services.sales.sales;
         final expenses = services.expenses.expenses;
+        final goals = services.goals.goals;
         return builder(
           context,
           _FinanceData(
             sales: sales,
             expenses: expenses,
             clients: services.clients.clients,
+            goals: goals,
             summary: LifeFinanceService.summarize(
               sales: sales,
               expenses: expenses,
+              goals: goals,
             ),
           ),
         );
@@ -902,6 +1377,61 @@ class _LedgerTile extends StatelessWidget {
   }
 }
 
+class _PartnerPaymentTile extends StatelessWidget {
+  const _PartnerPaymentTile({
+    required this.payment,
+    required this.onMarkPaid,
+  });
+
+  final PartnerPaymentModel payment;
+  final Future<void> Function() onMarkPaid;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+      child: NexoCard(
+        backgroundColor: NexoColors.surfaceElevated,
+        borderColor: NexoColors.border.withValues(alpha: 0.18),
+        padding: const EdgeInsets.all(NexoSpacing.md),
+        radius: NexoRadius.xl,
+        child: Row(
+          children: [
+            const Icon(NexoIcons.partners, color: NexoColors.accent),
+            const SizedBox(width: NexoSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    payment.description,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: NexoSpacing.xxs),
+                  Text(
+                    '${DateLabelUtils.dayLabel(payment.dueDate.toLocal())} | ${payment.status.label}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: NexoSpacing.md),
+            Text(
+              MoneyUtils.format(payment.amount),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(width: NexoSpacing.sm),
+            TextButton(
+              onPressed: onMarkPaid,
+              child: const Text('Marcar pago'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _GoalCard extends StatelessWidget {
   const _GoalCard({required this.goal});
 
@@ -936,6 +1466,70 @@ class _GoalCard extends StatelessWidget {
           _ValueLine('Meta', MoneyUtils.format(goal.target)),
           _ValueLine('Previsao', forecast),
         ],
+      ),
+    );
+  }
+}
+
+class _GoalRecordCard extends StatelessWidget {
+  const _GoalRecordCard({
+    required this.goal,
+    required this.onDelete,
+  });
+
+  final GoalModel goal;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label: [
+        goal.title,
+        MoneyUtils.format(goal.currentAmount),
+        MoneyUtils.format(goal.targetAmount),
+        goal.status.label,
+      ].join('\n'),
+      child: NexoCard(
+        radius: NexoRadius.xl,
+        backgroundColor: NexoColors.surfaceElevated,
+        borderColor: NexoColors.border.withValues(alpha: 0.16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    goal.title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Excluir meta',
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: NexoSpacing.md),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(NexoRadius.pill),
+              child: LinearProgressIndicator(
+                value: goal.progress,
+                minHeight: 10,
+                backgroundColor: NexoColors.surfaceMuted,
+                color: NexoColors.accent,
+              ),
+            ),
+            const SizedBox(height: NexoSpacing.md),
+            _ValueLine('Guardado', MoneyUtils.format(goal.currentAmount)),
+            _ValueLine('Meta', MoneyUtils.format(goal.targetAmount)),
+            _ValueLine('Falta', MoneyUtils.format(goal.remaining)),
+            _ValueLine('Status', goal.status.label),
+          ],
+        ),
       ),
     );
   }
@@ -1004,46 +1598,150 @@ class _ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NexoCard(
-      radius: NexoRadius.hero,
-      backgroundColor: NexoColors.surfaceElevated,
-      borderColor: NexoColors.border.withValues(alpha: 0.16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(project.name,
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: NexoSpacing.xxs),
-                    Text(project.clientName,
-                        style: Theme.of(context).textTheme.bodySmall),
+    return Semantics(
+      container: true,
+      label: [
+        project.name,
+        project.clientName,
+        MoneyUtils.format(project.total),
+        MoneyUtils.format(project.received),
+        MoneyUtils.format(project.openAmount),
+      ].join('\n'),
+      child: NexoCard(
+        radius: NexoRadius.hero,
+        backgroundColor: NexoColors.surfaceElevated,
+        borderColor: NexoColors.border.withValues(alpha: 0.16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(project.name,
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: NexoSpacing.xxs),
+                      Text(project.clientName,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                _StatusPill(project.openAmount > 0 ? 'Aberto' : 'Em dia'),
+              ],
+            ),
+            const SizedBox(height: NexoSpacing.xl),
+            _ValueLine('Total do contrato', MoneyUtils.format(project.total)),
+            _ValueLine('Recebido', MoneyUtils.format(project.received)),
+            _ValueLine('Falta pagar', MoneyUtils.format(project.openAmount)),
+            const SizedBox(height: NexoSpacing.md),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(NexoRadius.pill),
+              child: LinearProgressIndicator(
+                value: project.progress,
+                minHeight: 8,
+                backgroundColor: NexoColors.surfaceMuted,
+                color: NexoColors.accent,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProjectRecordCard extends StatelessWidget {
+  const _ProjectRecordCard({
+    required this.project,
+    required this.clientName,
+    required this.onDelete,
+  });
+
+  final ProjectModel project;
+  final String clientName;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = project.budgetAmount <= 0
+        ? 0.0
+        : project.status == ProjectStatus.completed
+            ? 1.0
+            : 0.35;
+
+    return Semantics(
+      container: true,
+      label: [
+        project.name,
+        clientName,
+        project.stage,
+        project.status.label,
+        MoneyUtils.format(project.budgetAmount),
+      ].join('\n'),
+      child: NexoCard(
+        radius: NexoRadius.hero,
+        backgroundColor: NexoColors.surfaceElevated,
+        borderColor: NexoColors.border.withValues(alpha: 0.16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        project.name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: NexoSpacing.xxs),
+                      Text(clientName,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  tooltip: 'Acoes do projeto',
+                  onSelected: (value) {
+                    if (value == 'delete') {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Excluir'),
+                    ),
                   ],
                 ),
-              ),
-              _StatusPill(project.openAmount > 0 ? 'Aberto' : 'Em dia'),
-            ],
-          ),
-          const SizedBox(height: NexoSpacing.xl),
-          _ValueLine('Total do contrato', MoneyUtils.format(project.total)),
-          _ValueLine('Recebido', MoneyUtils.format(project.received)),
-          _ValueLine('Falta pagar', MoneyUtils.format(project.openAmount)),
-          const SizedBox(height: NexoSpacing.md),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(NexoRadius.pill),
-            child: LinearProgressIndicator(
-              value: project.progress,
-              minHeight: 8,
-              backgroundColor: NexoColors.surfaceMuted,
-              color: NexoColors.accent,
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: NexoSpacing.xl),
+            _ValueLine('Etapa', project.stage),
+            _ValueLine('Status', project.status.label),
+            _ValueLine('Orcamento', MoneyUtils.format(project.budgetAmount)),
+            if (project.dueDate != null)
+              _ValueLine(
+                'Prazo',
+                DateLabelUtils.dayLabel(project.dueDate!.toLocal()),
+              ),
+            const SizedBox(height: NexoSpacing.md),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(NexoRadius.pill),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 8,
+                backgroundColor: NexoColors.surfaceMuted,
+                color: NexoColors.accent,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1132,6 +1830,68 @@ class _InsightCard extends StatelessWidget {
                   Text(message, style: Theme.of(context).textTheme.titleLarge),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoteRecordCard extends StatelessWidget {
+  const _NoteRecordCard({
+    required this.note,
+    required this.onDelete,
+  });
+
+  final NoteModel note;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label: [
+        note.title,
+        note.body,
+        DateLabelUtils.dayLabel(note.updatedAt.toLocal()),
+      ].join('\n'),
+      child: NexoCard(
+        radius: NexoRadius.xl,
+        backgroundColor: NexoColors.surfaceElevated,
+        borderColor: NexoColors.border.withValues(alpha: 0.16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    note.title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Excluir anotacao',
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: NexoSpacing.sm),
+            Text(
+              note.body,
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: NexoColors.inkMedium,
+                  ),
+            ),
+            const SizedBox(height: NexoSpacing.lg),
+            Text(
+              DateLabelUtils.dayLabel(note.updatedAt.toLocal()),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),

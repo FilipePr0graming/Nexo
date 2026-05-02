@@ -8,6 +8,7 @@ import '../../../features/clients/presentation/screens/clients_screen.dart';
 import '../../../features/clients/presentation/screens/new_client_screen.dart';
 import '../../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../features/final_ui/presentation/screens/final_pages.dart';
+import '../../../features/finance/presentation/screens/finance_screen.dart';
 import '../../../features/finance/presentation/screens/new_expense_screen.dart';
 import '../../../features/finance/presentation/screens/new_sale_screen.dart';
 import '../actions/nexo_button.dart';
@@ -23,6 +24,7 @@ class NexoShell extends StatefulWidget {
 }
 
 class _NexoShellState extends State<NexoShell> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
 
   List<Widget> _buildPages() {
@@ -30,26 +32,25 @@ class _NexoShellState extends State<NexoShell> {
       DashboardScreen(
         onNewSale: _openNewSale,
         onNewExpense: _openNewExpense,
-        onOpenClients: () => setState(() => _currentIndex = 3),
-      ),
-      const CasaScreen(),
-      EmpresaScreen(
-        onNewSale: _openNewSale,
-        onNewExpense: _openNewExpense,
+        onOpenClients: () => setState(() => _currentIndex = 1),
       ),
       ClientsScreen(
         onNewClient: _openNewClient,
       ),
       ProjetosScreen(onNewSale: _openNewSale),
-      RecebimentosScreen(onNewSale: _openNewSale),
-      DespesasScreen(onNewExpense: _openNewExpense),
+      FinanceScreen(
+        onNewSale: _openNewSale,
+        onNewExpense: _openNewExpense,
+      ),
       const ParceirosScreen(),
-      const AssinaturasScreen(),
       const PlanejamentoScreen(),
       const MetasScreen(),
-      const InteligenciaScreen(),
       const AnotacoesScreen(),
-      const ConfiguracoesScreen(),
+      EmpresaScreen(
+        onNewSale: _openNewSale,
+        onNewExpense: _openNewExpense,
+      ),
+      const CasaScreen(),
     ];
   }
 
@@ -117,7 +118,7 @@ class _NexoShellState extends State<NexoShell> {
     );
 
     if (created == true && mounted) {
-      setState(() => _currentIndex = 3);
+      setState(() => _currentIndex = 1);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cliente salvo.')),
       );
@@ -160,6 +161,20 @@ class _NexoShellState extends State<NexoShell> {
     }
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Drawer(
+        width: 304,
+        backgroundColor: NexoColors.canvas,
+        child: SafeArea(
+          child: NexoSidebar(
+            selectedIndex: _currentIndex,
+            onSelected: (index) {
+              Navigator.of(context).pop();
+              setState(() => _currentIndex = index);
+            },
+          ),
+        ),
+      ),
       body: NexoBackground(
         child: IndexedStack(
           index: _currentIndex,
@@ -200,25 +215,25 @@ class _NexoShellState extends State<NexoShell> {
                   child: _BottomNavItem(
                     label: 'Clientes',
                     icon: NexoIcons.clients,
-                    selected: _currentIndex == 3,
-                    onTap: () => setState(() => _currentIndex = 3),
+                    selected: _currentIndex == 1,
+                    onTap: () => setState(() => _currentIndex = 1),
                   ),
                 ),
                 const SizedBox(width: 56),
                 Expanded(
                   child: _BottomNavItem(
-                    label: 'Empresa',
-                    icon: NexoIcons.company,
-                    selected: _currentIndex == 2,
-                    onTap: () => setState(() => _currentIndex = 2),
+                    label: 'Financeiro',
+                    icon: NexoIcons.finance,
+                    selected: _currentIndex == 3,
+                    onTap: () => setState(() => _currentIndex = 3),
                   ),
                 ),
                 Expanded(
                   child: _BottomNavItem(
-                    label: 'Planejar',
-                    icon: NexoIcons.planning,
-                    selected: _currentIndex == 9,
-                    onTap: () => setState(() => _currentIndex = 9),
+                    label: 'Menu',
+                    icon: Icons.menu_rounded,
+                    selected: false,
+                    onTap: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                 ),
               ],

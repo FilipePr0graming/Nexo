@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NEXO - Casa</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#8d4f00",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#a96416",
+                        "tertiary-container": "#008098",
+                        "on-primary-fixed": "#2d1600",
+                        "background": "#f9f9f7",
+                        "on-tertiary-fixed": "#001f27",
+                        "outline-variant": "#d8c3b2",
+                        "outline": "#857466",
+                        "surface": "#f9f9f7",
+                        "surface-container": "#eeeeec",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ecbe96",
+                        "surface-dim": "#dadad8",
+                        "tertiary-fixed-dim": "#65d5f3",
+                        "primary-fixed-dim": "#ffb875",
+                        "surface-container-highest": "#e2e3e1",
+                        "surface-variant": "#e2e3e1",
+                        "on-secondary-fixed": "#2d1600",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary-container": "#795636",
+                        "primary-fixed": "#ffdcc0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#006579",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb875",
+                        "tertiary-fixed": "#b1ecff",
+                        "primary": "#894d00",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f4f4f2",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#604021",
+                        "surface-container-high": "#e8e8e6",
+                        "on-surface": "#1a1c1b",
+                        "inverse-surface": "#2f3130",
+                        "on-tertiary-container": "#f9fdff",
+                        "on-background": "#1a1c1b",
+                        "on-surface-variant": "#534438",
+                        "on-primary-fixed-variant": "#6b3b00",
+                        "secondary-container": "#fecea5",
+                        "secondary": "#7a5737",
+                        "surface-bright": "#f9f9f7",
+                        "on-tertiary-fixed-variant": "#004e5e",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#ffdcc0",
+                        "inverse-on-surface": "#f1f1ef"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex bg-background font-body text-on-surface antialiased min-h-screen">
+<!-- NavigationDrawer (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#f9f9f7] dark:bg-stone-900 border-r border-[#f2f2ef] dark:border-stone-800/50 z-50 flex flex-col py-8 px-4 space-y-2">
+<div class="mb-12 px-4">
+<h1 class="text-2xl font-bold tracking-tight text-[#1a1c1b] dark:text-stone-100 font-headline">NEXO</h1>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-3 text-[#894d00] dark:text-[#c47a2c] font-semibold bg-white/50 dark:bg-stone-700/50 rounded-xl cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-xl" style="font-variation-settings: 'FILL' 1;">home</span>
+                Casa
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">business_center</span>
+                Empresa
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">groups</span>
+                Clientes
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">account_tree</span>
+                Projetos
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">payments</span>
+                Recebimentos
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">handshake</span>
+                Parceiros
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">event_note</span>
+                Planejamento
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">ads_click</span>
+                Metas
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">psychology</span>
+                Inteligência
+            </a>
+<a class="flex items-center px-4 py-3 text-[#1a1c1b]/60 dark:text-stone-400 font-medium rounded-xl hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-3 text-xl">edit_note</span>
+                Anotações
+            </a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col relative min-h-screen">
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border-b border-[#1a1c1b]/05 dark:border-stone-800 flex justify-between items-center h-16 px-8">
+<div class="flex items-center gap-4">
+<button class="scale-95 active:scale-90 transition-transform hover:bg-stone-100 dark:hover:bg-stone-800 p-2 rounded-lg text-stone-500">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-['Inter'] font-semibold text-lg text-[#894d00] dark:text-[#c47a2c]">Painel Financeiro</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="scale-95 active:scale-90 transition-transform hover:bg-stone-100 p-2 rounded-full text-stone-500">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="close-up portrait of a smiling young woman with brown hair in soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRuU6W_Ta-xj7LVrM01sDPkh9qgX2JeN4jRpTH5MZ5QK1yOEH4SKs1O0qwTpGGsWDzAQasmbl8cdSGBV-pFTgHuSpH1CWKeGSDmGckV5aGWKMJhNoBN0ciBiGFv-eJb-anV4EQnnvqfZWP1iNVkYCgcSbgL6ZgfesJmTK1Yb3AlTnPb5XHJ-THoeKgJqtvAkVhOte_gvyIO9aETo2_7AFNx1fprEuK7r4UN_UHeOzgOsg4dBqu1RQRKqDSE9Pb3IUVBHn4BDHMuchj"/>
+</div>
+</div>
+</header>
+<!-- Content Stage -->
+<div class="pt-24 px-8 pb-16 max-w-7xl mx-auto w-full space-y-16">
+<!-- Hero / Big Picture -->
+<section class="flex flex-col md:flex-row justify-between items-end gap-8">
+<div class="space-y-4 w-full md:w-auto">
+<p class="text-on-surface-variant font-medium tracking-wide text-sm uppercase">Saldo da Casa</p>
+<h1 class="font-headline font-bold text-6xl tracking-tight text-on-surface">R$ 4.250,00</h1>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_12px_32px_rgba(26,28,27,0.06)] border border-outline-variant/15 w-full md:w-96 flex flex-col justify-center">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<h3 class="font-semibold text-on-surface">Resumo Inteligente</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed">Você gastou R$ 2.150 neste mês. Você ainda pode gastar <span class="font-bold text-primary">R$ 800</span> com segurança para manter o planejamento.</p>
+</div>
+</section>
+<!-- Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+<!-- Left Column: Transactions & Categories -->
+<div class="lg:col-span-8 space-y-12">
+<!-- Categories Breakdown -->
+<section>
+<div class="flex justify-between items-baseline mb-6">
+<h2 class="font-headline font-semibold text-2xl text-on-surface">Gastos por Categoria</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/15 hover:shadow-[0_8px_24px_rgba(26,28,27,0.04)] transition-shadow">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-4 text-on-surface-variant">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-1">Mercado</p>
+<p class="font-semibold text-xl text-on-surface">R$ 850,00</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/15 hover:shadow-[0_8px_24px_rgba(26,28,27,0.04)] transition-shadow">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-4 text-on-surface-variant">
+<span class="material-symbols-outlined">child_care</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-1">Bebê</p>
+<p class="font-semibold text-xl text-on-surface">R$ 420,00</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/15 hover:shadow-[0_8px_24px_rgba(26,28,27,0.04)] transition-shadow">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center mb-4 text-on-surface-variant">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-1">Contas Fixas</p>
+<p class="font-semibold text-xl text-on-surface">R$ 880,00</p>
+</div>
+</div>
+</section>
+<!-- Transactions List -->
+<section>
+<div class="flex justify-between items-baseline mb-6">
+<h2 class="font-headline font-semibold text-2xl text-on-surface">Últimas Movimentações</h2>
+<button class="text-primary text-sm font-medium hover:underline">Ver todas</button>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 overflow-hidden">
+<div class="flex flex-col">
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-5 hover:bg-surface-container-low/50 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<div>
+<p class="font-medium text-on-surface group-hover:text-primary transition-colors">Supermercado Pão de Açúcar</p>
+<p class="text-sm text-on-surface-variant">Mercado • 12 de Out, 14:30</p>
+</div>
+</div>
+<p class="font-semibold text-on-surface">- R$ 345,50</p>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-5 bg-surface/30 hover:bg-surface-container-low/50 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">child_care</span>
+</div>
+<div>
+<p class="font-medium text-on-surface group-hover:text-primary transition-colors">Fraldas e Lenços</p>
+<p class="text-sm text-on-surface-variant">Bebê • 10 de Out, 09:15</p>
+</div>
+</div>
+<p class="font-semibold text-on-surface">- R$ 120,00</p>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-5 hover:bg-surface-container-low/50 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">electric_bolt</span>
+</div>
+<div>
+<p class="font-medium text-on-surface group-hover:text-primary transition-colors">Conta de Luz</p>
+<p class="text-sm text-on-surface-variant">Contas Fixas • 05 de Out</p>
+</div>
+</div>
+<p class="font-semibold text-on-surface">- R$ 215,30</p>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-5 bg-surface/30 hover:bg-surface-container-low/50 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-medium text-on-surface group-hover:text-primary transition-colors">Jantar Fora</p>
+<p class="text-sm text-on-surface-variant">Lazer • 02 de Out, 20:45</p>
+</div>
+</div>
+<p class="font-semibold text-on-surface">- R$ 180,00</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Goals -->
+<div class="lg:col-span-4 space-y-8">
+<div class="flex justify-between items-baseline mb-2">
+<h2 class="font-headline font-semibold text-2xl text-on-surface">Metas</h2>
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+<div class="space-y-4">
+<!-- Goal Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/15 shadow-[0_4px_16px_rgba(26,28,27,0.02)]">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-semibold text-on-surface">Guarda-roupa</h3>
+<p class="text-xs text-on-surface-variant mt-1">Faltam R$ 800</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">checkroom</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-on-surface">R$ 1.200</span>
+<span class="text-on-surface-variant">R$ 2.000</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 60%;"></div>
+</div>
+</div>
+</div>
+<!-- Goal Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/15 shadow-[0_4px_16px_rgba(26,28,27,0.02)]">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-semibold text-on-surface">Carrinho do Bebê</h3>
+<p class="text-xs text-on-surface-variant mt-1">Faltam R$ 350</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">stroller</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-on-surface">R$ 2.150</span>
+<span class="text-on-surface-variant">R$ 2.500</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 86%;"></div>
+</div>
+</div>
+</div>
+<!-- Goal Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/15 shadow-[0_4px_16px_rgba(26,28,27,0.02)]">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-semibold text-on-surface">Viagem Final de Ano</h3>
+<p class="text-xs text-on-surface-variant mt-1">Faltam R$ 4.500</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">flight_takeoff</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-on-surface">R$ 1.500</span>
+<span class="text-on-surface-variant">R$ 6.000</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 25%;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

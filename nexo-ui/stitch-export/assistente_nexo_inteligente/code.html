@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NEXO - Inteligência</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#8d4f00",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#a96416",
+                        "tertiary-container": "#008098",
+                        "on-primary-fixed": "#2d1600",
+                        "background": "#f9f9f7",
+                        "on-tertiary-fixed": "#001f27",
+                        "outline-variant": "#d8c3b2",
+                        "outline": "#857466",
+                        "surface": "#f9f9f7",
+                        "surface-container": "#eeeeec",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ecbe96",
+                        "surface-dim": "#dadad8",
+                        "tertiary-fixed-dim": "#65d5f3",
+                        "primary-fixed-dim": "#ffb875",
+                        "surface-container-highest": "#e2e3e1",
+                        "surface-variant": "#e2e3e1",
+                        "on-secondary-fixed": "#2d1600",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary-container": "#795636",
+                        "primary-fixed": "#ffdcc0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#006579",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb875",
+                        "tertiary-fixed": "#b1ecff",
+                        "primary": "#894d00",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f4f4f2",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#604021",
+                        "surface-container-high": "#e8e8e6",
+                        "on-surface": "#1a1c1b",
+                        "inverse-surface": "#2f3130",
+                        "on-tertiary-container": "#f9fdff",
+                        "on-background": "#1a1c1b",
+                        "on-surface-variant": "#534438",
+                        "on-primary-fixed-variant": "#6b3b00",
+                        "secondary-container": "#fecea5",
+                        "secondary": "#7a5737",
+                        "surface-bright": "#f9f9f7",
+                        "on-tertiary-fixed-variant": "#004e5e",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#ffdcc0",
+                        "inverse-on-surface": "#f1f1ef"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f7; color: #1a1c1b; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .whisper-shadow { box-shadow: 0px 12px 32px rgba(26, 28, 27, 0.06); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex selection:bg-primary-container selection:text-white">
+<!-- Navigation Drawer -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-[#f9f9f7] dark:bg-stone-900 border-r border-[#1a1c1b]/05 hidden md:flex flex-col py-8 px-4 space-y-2 z-50">
+<div class="px-4 mb-8">
+<h1 class="text-2xl font-bold tracking-tight text-[#1a1c1b] dark:text-stone-100 font-headline">NEXO</h1>
+</div>
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 0;">home</span>
+<span>Casa</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="business_center" style="font-variation-settings: 'FILL' 0;">business_center</span>
+<span>Empresa</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="groups" style="font-variation-settings: 'FILL' 0;">groups</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree" style="font-variation-settings: 'FILL' 0;">account_tree</span>
+<span>Projetos</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="payments" style="font-variation-settings: 'FILL' 0;">payments</span>
+<span>Recebimentos</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="handshake" style="font-variation-settings: 'FILL' 0;">handshake</span>
+<span>Parceiros</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="event_note" style="font-variation-settings: 'FILL' 0;">event_note</span>
+<span>Planejamento</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="ads_click" style="font-variation-settings: 'FILL' 0;">ads_click</span>
+<span>Metas</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#894d00] font-semibold bg-white/50 cursor-pointer active:opacity-80 font-body" href="#">
+<span class="material-symbols-outlined text-[#894d00]" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span>Inteligência</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 rounded-lg text-[#1a1c1b]/60 hover:bg-[#e2e3e1] transition-colors duration-200 cursor-pointer active:opacity-80 font-medium font-body" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+<span>Anotações</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 relative flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-16rem)] z-40 bg-white/80 backdrop-blur-xl border-b border-[#1a1c1b]/05 flex justify-between items-center h-16 px-6 md:px-8">
+<div class="flex items-center space-x-4">
+<button class="md:hidden text-on-surface p-2 hover:bg-stone-100 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h2 class="font-headline font-semibold text-lg text-on-surface">Inteligência</h2>
+</div>
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional headshot of a man with short hair wearing a dark shirt against a blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZO-7Dc_t3mMzm-kh0qM0Rs9mxHQrDajyzWStzK1rxhR7TwrfR_1D3Q0URJ80X7APgtKr0LhDhpVIzCVC8tQ9xpwYRyU6PSqF2DNDTeWPaur-XW-UNEcz_lVi6Mqs5VuB5ULII5lSfqMkPvWm3invgmOc9q2niaB445kBpKpcmVJZV5TLFNEs70D-IUIeIoADWAzdv0M_fGB21YiQluzVIFRmBuqYsqfCn2Fn0GdSXXWPyHc0geS3Nb4yXhd2YdSTlhRRDbZYBrnd7"/>
+</div>
+</div>
+</header>
+<!-- Canvas Body -->
+<div class="flex-1 mt-16 p-6 md:p-12 overflow-y-auto w-full max-w-4xl mx-auto flex flex-col space-y-8">
+<!-- Hero Header -->
+<div class="space-y-2">
+<p class="text-sm font-medium tracking-wide text-primary uppercase font-headline">Assistente Proativo</p>
+<h3 class="text-3xl md:text-4xl font-light text-on-surface leading-tight font-headline">Bom dia. <br/><span class="font-semibold text-primary">Aqui está o seu panorama de hoje.</span></h3>
+</div>
+<!-- Intelligent Feed -->
+<div class="space-y-6 flex-1 flex flex-col justify-end">
+<!-- Insight Card 1: Inflow -->
+<div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 whisper-shadow border border-outline-variant/15 flex items-start space-x-4 group hover:border-primary/20 transition-colors">
+<div class="p-3 bg-tertiary-container/10 text-tertiary rounded-full shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="move_to_inbox" style="font-variation-settings: 'FILL' 1;">move_to_inbox</span>
+</div>
+<div class="space-y-2 flex-1">
+<p class="font-medium text-sm text-on-surface-variant font-label">Previsão de Recebimento</p>
+<p class="text-xl md:text-2xl font-semibold text-on-surface font-headline tracking-tight">Você vai receber R$ 8.500 amanhã.</p>
+<p class="text-sm text-on-surface-variant/80 font-body">Pagamento agendado do Cliente Alpha ref. Projeto X.</p>
+</div>
+</div>
+<!-- Insight Card 2: Cashflow -->
+<div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 whisper-shadow border border-outline-variant/15 flex items-start space-x-4 group hover:border-primary/20 transition-colors">
+<div class="p-3 bg-primary/10 text-primary rounded-full shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<div class="space-y-2 flex-1">
+<p class="font-medium text-sm text-on-surface-variant font-label">Simulação de Caixa</p>
+<p class="text-xl md:text-2xl font-semibold text-on-surface font-headline tracking-tight">Se pagar aluguel + Daniel, sobra R$ 3.200.</p>
+<p class="text-sm text-on-surface-variant/80 font-body">Cálculo baseado no saldo atual e compromissos dos próximos 3 dias.</p>
+</div>
+</div>
+<!-- Insight Card 3: Alert -->
+<div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 whisper-shadow border border-outline-variant/15 flex items-start space-x-4 relative overflow-hidden group hover:border-primary/20 transition-colors">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<div class="p-3 bg-secondary/10 text-secondary rounded-full shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="lightbulb" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div class="space-y-2 flex-1">
+<p class="font-medium text-sm text-on-surface-variant font-label">Dica Estratégica</p>
+<p class="text-xl md:text-2xl font-medium text-on-surface font-headline tracking-tight">Evite gastos extras hoje para manter a meta da <span class="text-secondary font-semibold">Viagem</span>.</p>
+</div>
+</div>
+<!-- Insight Card 4: Safety Margin -->
+<div class="bg-primary-fixed rounded-xl p-6 md:p-8 shadow-sm border border-primary-container/20 flex items-start space-x-4">
+<div class="p-3 bg-white/30 text-on-primary-fixed rounded-full shrink-0">
+<span class="material-symbols-outlined text-2xl" data-icon="shield" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div class="space-y-2 flex-1">
+<p class="font-medium text-sm text-on-primary-fixed/80 font-label uppercase tracking-wider">Margem de Segurança</p>
+<p class="text-2xl md:text-3xl font-bold text-on-primary-fixed font-headline tracking-tight">Você pode gastar até R$ 1.200 com tranquilidade.</p>
+<p class="text-sm text-on-primary-fixed/90 font-body">Este valor não compromete suas metas ou fluxo de caixa do mês.</p>
+</div>
+</div>
+</div>
+<!-- Input Area (Chat Style) -->
+<div class="mt-8 relative sticky bottom-6">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant/50" data-icon="sparkles">colors_spark</span>
+</div>
+<input class="w-full bg-surface-container-lowest border-0 rounded-full py-4 pl-12 pr-16 whisper-shadow text-on-surface font-body text-base placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all" placeholder="Pergunte algo sobre suas finanças..." type="text"/>
+<button class="absolute inset-y-2 right-2 px-3 bg-primary hover:bg-primary-container text-on-primary rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>

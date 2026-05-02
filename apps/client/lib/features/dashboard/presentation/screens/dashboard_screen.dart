@@ -45,6 +45,7 @@ class DashboardScreen extends StatelessWidget {
         services.clients,
         salesService,
         expensesService,
+        services.goals,
       ]),
       builder: (context, _) {
         final sales = salesService.sales;
@@ -56,6 +57,7 @@ class DashboardScreen extends StatelessWidget {
         final summary = LifeFinanceService.summarize(
           sales: sales,
           expenses: expenses,
+          goals: services.goals.goals,
         );
         final movements = _buildRecentMovements(sales, expenses);
 
@@ -1341,48 +1343,57 @@ class _DueActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(NexoSpacing.sm),
-      decoration: BoxDecoration(
-        color: NexoColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: NexoColors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: NexoColors.ink,
-                      ),
-                ),
-                const SizedBox(height: NexoSpacing.xxs),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: NexoColors.inkLow,
-                      ),
-                ),
-              ],
+    return Semantics(
+      container: true,
+      label: [title, subtitle, value].join('\n'),
+      child: Container(
+        padding: const EdgeInsets.all(NexoSpacing.sm),
+        decoration: BoxDecoration(
+          color: NexoColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: NexoColors.border),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: NexoColors.ink,
+                        ),
+                  ),
+                  const SizedBox(height: NexoSpacing.xxs),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: NexoColors.inkLow,
+                        ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: NexoSpacing.md),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          if (actionLabel != null) ...[
-            const SizedBox(width: NexoSpacing.sm),
-            TextButton(
-              onPressed: onPressed,
-              child: Text(actionLabel!),
+            const SizedBox(width: NexoSpacing.md),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleSmall,
             ),
+            if (actionLabel != null) ...[
+              const SizedBox(width: NexoSpacing.sm),
+              Semantics(
+                button: true,
+                label: '$actionLabel $title $subtitle',
+                onTap: onPressed,
+                child: TextButton(
+                  onPressed: onPressed,
+                  child: Text(actionLabel!),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

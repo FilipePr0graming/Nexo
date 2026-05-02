@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NEXO Financeiro - Projetos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#f9fdff",
+                        "inverse-surface": "#2f3130",
+                        "secondary-container": "#fecea5",
+                        "surface-container-highest": "#e2e3e1",
+                        "surface-container": "#eeeeec",
+                        "on-secondary-fixed": "#2d1600",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#65d5f3",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dadad8",
+                        "on-surface-variant": "#534438",
+                        "inverse-on-surface": "#f1f1ef",
+                        "primary": "#894d00",
+                        "outline-variant": "#d8c3b2",
+                        "background": "#f9f9f7",
+                        "tertiary-container": "#008098",
+                        "secondary": "#7a5737",
+                        "on-primary-container": "#fffbff",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9f7",
+                        "primary-fixed": "#ffdcc0",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f9f9f7",
+                        "primary-fixed-dim": "#ffb875",
+                        "outline": "#857466",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#006579",
+                        "surface-tint": "#8d4f00",
+                        "on-secondary-fixed-variant": "#604021",
+                        "secondary-fixed-dim": "#ecbe96",
+                        "on-primary-fixed-variant": "#6b3b00",
+                        "surface-container-high": "#e8e8e6",
+                        "primary-container": "#a96416",
+                        "on-primary-fixed": "#2d1600",
+                        "tertiary-fixed": "#b1ecff",
+                        "surface-variant": "#e2e3e1",
+                        "inverse-primary": "#ffb875",
+                        "secondary-fixed": "#ffdcc0",
+                        "on-secondary-container": "#795636",
+                        "on-tertiary-fixed": "#001f27",
+                        "on-surface": "#1a1c1b",
+                        "on-tertiary-fixed-variant": "#004e5e",
+                        "surface-container-low": "#f4f4f2",
+                        "on-background": "#1a1c1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- NavigationDrawer (The Fixed Monolith) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-stone-100 dark:bg-stone-900 flex flex-col gap-2 p-6 z-50">
+<div class="flex items-center gap-3 mb-10 px-2">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<div>
+<h1 class="text-xl font-black uppercase tracking-widest text-amber-900 leading-none">NEXO</h1>
+<p class="text-[10px] uppercase tracking-tighter text-stone-500 font-bold">Gestão Patrimonial</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined">group</span>
+                Clientes
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-stone-50 dark:bg-stone-800 text-amber-900 dark:text-amber-400 rounded-md shadow-sm font-sans text-sm font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+                Projetos
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+                Recibos
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined">handshake</span>
+                Parceiros
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined">event_note</span>
+                Planejamento
+            </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-stone-200/50">
+<div class="flex items-center gap-3 px-2">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="close-up portrait of a professional man in a business suit with soft office lighting and professional demeanor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnIHqaZavtreghtD28pFArlnFbbcGwlMdaAaXaSYkz4iFK4v3EqMhpk2V9GY1n53gokOjdYrzZsQXxRLsrhn_T0b1vwFOZBtox4szkc6cTWt9MaCPhSx9it2HCqLkDZEr-Q024iFVvUZ7B9mlV2AKaLSWmd98sA1XHzB0XzJw220uWFo9xmRDieGRsmnUEzoWpnqLc9uXuTkpMNf8drhqTHWw7vTbPvJI3CfSiPJLdxEQmAXvh5qskSejvo4fWpsd0cNWrS-WDVcq9"/>
+<div class="overflow-hidden">
+<p class="text-sm font-bold text-on-surface truncate">Admin Nexo</p>
+<p class="text-xs text-stone-500 truncate">Sair do Sistema</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Stage -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar (Small) -->
+<header class="w-full sticky top-0 z-40 bg-[#f9f9f7]/80 backdrop-blur-xl flex justify-between items-center px-12 py-6">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-1">Visão Geral</span>
+<h2 class="text-3xl font-black tracking-tighter text-on-surface">Gestão de Projetos</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full">
+<span class="material-symbols-outlined text-stone-400 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 text-on-surface placeholder-stone-400" placeholder="Buscar projetos..." type="text"/>
+</div>
+<button class="flex items-center gap-2 bg-gradient-to-b from-primary to-primary-container text-on-primary px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                    Novo Projeto
+                </button>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="px-12 py-8 max-w-7xl">
+<!-- Bento Stats Grid -->
+<section class="grid grid-cols-12 gap-6 mb-12">
+<div class="col-span-12 md:col-span-4 bg-primary-fixed p-8 rounded-2xl flex flex-col justify-between">
+<div>
+<span class="text-on-primary-fixed-variant text-xs font-bold uppercase tracking-widest">Valor em Carteira</span>
+<h3 class="text-4xl font-black text-on-primary-fixed mt-2">R$ 142.800,00</h3>
+</div>
+<div class="mt-8 flex items-center gap-2 text-on-primary-fixed-variant text-sm">
+<span class="material-symbols-outlined text-green-700">trending_up</span>
+<span class="font-semibold">+12% este mês</span>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-low p-8 rounded-2xl">
+<span class="text-stone-500 text-xs font-bold uppercase tracking-widest">Projetos Ativos</span>
+<h3 class="text-4xl font-black text-on-surface mt-2">14</h3>
+<div class="mt-8 h-1 w-full bg-stone-200 rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4"></div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-surface-container-low p-8 rounded-2xl">
+<span class="text-stone-500 text-xs font-bold uppercase tracking-widest">Recebimento Pendente</span>
+<h3 class="text-4xl font-black text-on-surface mt-2">R$ 34.200</h3>
+<p class="mt-4 text-sm text-stone-500">Próximos 30 dias</p>
+</div>
+</section>
+<!-- Project Cards Section -->
+<div class="mb-6 flex items-center justify-between">
+<h4 class="text-sm font-bold uppercase tracking-widest text-stone-400">Projetos em Andamento</h4>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-stone-200 rounded-md transition-colors"><span class="material-symbols-outlined text-stone-600">grid_view</span></button>
+<button class="p-2 hover:bg-stone-200 rounded-md transition-colors"><span class="material-symbols-outlined text-stone-400">format_list_bulleted</span></button>
+</div>
+</div>
+<!-- Custom Project Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Card 1: Douglas -->
+<article class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0px_12px_32px_rgba(26,28,27,0.04)] border border-outline-variant/10 group transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-8">
+<div class="flex flex-col">
+<h5 class="text-xl font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Sistema de Reservas</h5>
+<span class="text-sm text-stone-500 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs">person</span> Douglas Silva
+                            </span>
+</div>
+<span class="bg-green-100 text-green-800 text-[10px] font-black uppercase px-3 py-1 rounded-full">Ativo</span>
+</div>
+<div class="space-y-6">
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-stone-400">Total do Contrato</span>
+<span class="text-2xl font-black text-on-surface">R$ 8.500,00</span>
+</div>
+<div class="text-right">
+<span class="text-[10px] uppercase font-bold text-stone-400">Entrada</span>
+<p class="text-sm font-bold text-on-surface">R$ 2.500,00</p>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-bold text-stone-600">Status de Pagamento</span>
+<span class="text-xs font-bold text-primary">65%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container w-[65%]"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-stone-100 flex justify-between items-center">
+<span class="text-xs text-stone-500 font-medium">Parcelas: <strong class="text-on-surface">04 / 12</strong></span>
+<button class="text-primary hover:underline text-xs font-bold">Ver detalhes</button>
+</div>
+</div>
+</article>
+<!-- Card 2: Amanda -->
+<article class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0px_12px_32px_rgba(26,28,27,0.04)] border border-outline-variant/10 group transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-8">
+<div class="flex flex-col">
+<h5 class="text-xl font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Portal E-commerce</h5>
+<span class="text-sm text-stone-500 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs">person</span> Amanda Oliveira
+                            </span>
+</div>
+<span class="bg-amber-100 text-amber-800 text-[10px] font-black uppercase px-3 py-1 rounded-full">Em Atraso</span>
+</div>
+<div class="space-y-6">
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-stone-400">Total do Contrato</span>
+<span class="text-2xl font-black text-on-surface">R$ 15.200,00</span>
+</div>
+<div class="text-right">
+<span class="text-[10px] uppercase font-bold text-stone-400">Entrada</span>
+<p class="text-sm font-bold text-on-surface">R$ 5.000,00</p>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-bold text-stone-600">Status de Pagamento</span>
+<span class="text-xs font-bold text-primary">32%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container w-[32%]"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-stone-100 flex justify-between items-center">
+<span class="text-xs text-stone-500 font-medium">Parcelas: <strong class="text-on-surface">02 / 06</strong></span>
+<button class="text-primary hover:underline text-xs font-bold">Ver detalhes</button>
+</div>
+</div>
+</article>
+<!-- Card 3: New / Empty State Logic -->
+<article class="bg-transparent border-2 border-dashed border-stone-200 p-8 rounded-3xl flex flex-col items-center justify-center text-center group hover:border-primary transition-all">
+<div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 mb-4 group-hover:bg-primary-fixed group-hover:text-primary transition-all">
+<span class="material-symbols-outlined text-3xl">add_circle</span>
+</div>
+<h5 class="text-lg font-bold text-stone-500">Novo Projeto</h5>
+<p class="text-xs text-stone-400 mt-2 max-w-[180px]">Inicie uma nova jornada e registre os dados contratuais.</p>
+</article>
+<!-- Card 4: Carlos -->
+<article class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0px_12px_32px_rgba(26,28,27,0.04)] border border-outline-variant/10 group transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-8">
+<div class="flex flex-col">
+<h5 class="text-xl font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">Landing Page UI</h5>
+<span class="text-sm text-stone-500 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs">person</span> Carlos Eduardo
+                            </span>
+</div>
+<span class="bg-stone-100 text-stone-600 text-[10px] font-black uppercase px-3 py-1 rounded-full">Concluído</span>
+</div>
+<div class="space-y-6">
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-stone-400">Total do Contrato</span>
+<span class="text-2xl font-black text-on-surface">R$ 3.800,00</span>
+</div>
+<div class="text-right">
+<span class="text-[10px] uppercase font-bold text-stone-400">Entrada</span>
+<p class="text-sm font-bold text-on-surface">R$ 3.800,00</p>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-bold text-stone-600">Status de Pagamento</span>
+<span class="text-xs font-bold text-primary">100%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container w-[100%]"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-stone-100 flex justify-between items-center">
+<span class="text-xs text-stone-500 font-medium">Parcelas: <strong class="text-on-surface">01 / 01</strong></span>
+<button class="text-primary hover:underline text-xs font-bold">Ver detalhes</button>
+</div>
+</div>
+</article>
+<!-- Card 5: Maria -->
+<article class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0px_12px_32px_rgba(26,28,27,0.04)] border border-outline-variant/10 group transition-all hover:translate-y-[-4px]">
+<div class="flex justify-between items-start mb-8">
+<div class="flex flex-col">
+<h5 class="text-xl font-bold text-on-surface mb-1 group-hover:text-primary transition-colors">App Delivery</h5>
+<span class="text-sm text-stone-500 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs">person</span> Maria Clara
+                            </span>
+</div>
+<span class="bg-green-100 text-green-800 text-[10px] font-black uppercase px-3 py-1 rounded-full">Ativo</span>
+</div>
+<div class="space-y-6">
+<div class="flex justify-between items-end">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-bold text-stone-400">Total do Contrato</span>
+<span class="text-2xl font-black text-on-surface">R$ 22.500,00</span>
+</div>
+<div class="text-right">
+<span class="text-[10px] uppercase font-bold text-stone-400">Entrada</span>
+<p class="text-sm font-bold text-on-surface">R$ 7.500,00</p>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-bold text-stone-600">Status de Pagamento</span>
+<span class="text-xs font-bold text-primary">45%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container w-[45%]"></div>
+</div>
+</div>
+<div class="pt-4 border-t border-stone-100 flex justify-between items-center">
+<span class="text-xs text-stone-500 font-medium">Parcelas: <strong class="text-on-surface">05 / 10</strong></span>
+<button class="text-primary hover:underline text-xs font-bold">Ver detalhes</button>
+</div>
+</div>
+</article>
+</div>
+</div>
+<!-- Float FAB for quick project entry - Only on dashboard/main lists as per instructions -->
+<button class="fixed bottom-12 right-12 w-16 h-16 rounded-full bg-primary text-on-primary shadow-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-95 group">
+<span class="material-symbols-outlined text-3xl">add</span>
+<span class="absolute right-20 bg-on-surface text-white px-4 py-2 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Novo Registro Fast</span>
+</button>
+</main>
+</body></html>

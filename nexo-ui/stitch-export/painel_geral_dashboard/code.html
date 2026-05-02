@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#f9fdff",
+                    "inverse-surface": "#2f3130",
+                    "secondary-container": "#fecea5",
+                    "surface-container-highest": "#e2e3e1",
+                    "surface-container": "#eeeeec",
+                    "on-secondary-fixed": "#2d1600",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#65d5f3",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dadad8",
+                    "on-surface-variant": "#534438",
+                    "inverse-on-surface": "#f1f1ef",
+                    "primary": "#894d00",
+                    "outline-variant": "#d8c3b2",
+                    "background": "#f9f9f7",
+                    "tertiary-container": "#008098",
+                    "secondary": "#7a5737",
+                    "on-primary-container": "#fffbff",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f9f9f7",
+                    "primary-fixed": "#ffdcc0",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "surface-bright": "#f9f9f7",
+                    "primary-fixed-dim": "#ffb875",
+                    "outline": "#857466",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#006579",
+                    "surface-tint": "#8d4f00",
+                    "on-secondary-fixed-variant": "#604021",
+                    "secondary-fixed-dim": "#ecbe96",
+                    "on-primary-fixed-variant": "#6b3b00",
+                    "surface-container-high": "#e8e8e6",
+                    "primary-container": "#a96416",
+                    "on-primary-fixed": "#2d1600",
+                    "tertiary-fixed": "#b1ecff",
+                    "surface-variant": "#e2e3e1",
+                    "inverse-primary": "#ffb875",
+                    "secondary-fixed": "#ffdcc0",
+                    "on-secondary-container": "#795636",
+                    "on-tertiary-fixed": "#001f27",
+                    "on-surface": "#1a1c1b",
+                    "on-tertiary-fixed-variant": "#004e5e",
+                    "surface-container-low": "#f4f4f2",
+                    "on-background": "#1a1c1b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-shadow {
+            box-shadow: 0px 12px 32px rgba(26, 28, 27, 0.06);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-background antialiased selection:bg-secondary-container selection:text-on-secondary-fixed">
+<!-- Navigation Drawer -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-stone-100 dark:bg-stone-900 flex flex-col gap-2 p-6 transition-colors duration-200 z-50">
+<div class="flex items-center gap-3 mb-12">
+<div class="w-10 h-10 bg-primary rounded flex items-center justify-center text-on-primary font-black uppercase tracking-widest text-xl">N</div>
+<div>
+<h2 class="text-xl font-black uppercase tracking-widest text-amber-900 leading-none">NEXO Financeiro</h2>
+<p class="text-xs font-medium tracking-wide text-stone-600 mt-1 uppercase">Gestão Patrimonial</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<a class="bg-stone-50 dark:bg-stone-800 text-amber-900 dark:text-amber-400 rounded-md shadow-sm flex items-center gap-3 px-4 py-3 font-sans text-sm font-medium tracking-wide translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors flex items-center gap-3 px-4 py-3 font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Clientes
+            </a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors flex items-center gap-3 px-4 py-3 font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+                Projetos
+            </a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors flex items-center gap-3 px-4 py-3 font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+                Recibos
+            </a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors flex items-center gap-3 px-4 py-3 font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+                Parceiros
+            </a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors flex items-center gap-3 px-4 py-3 font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+                Planejamento
+            </a>
+</nav>
+<div class="mt-auto pt-6 flex items-center gap-3 border-t border-stone-200">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="professional portrait of a financial advisor in a light-colored suit with soft natural lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiqa7-GayBXaXXA1GYyvAixrUJCTv45Qp-_LgbpTeOXx0Wlffk--FAAq6JjvUShY5-jETjeJcHZBV3ylru47Dbs10p46uid8XYTtq71VhfthDiNoX1m9EX867cIV6usQc060emHVqnV_nErPcmYDZIvn5Z-b6mrLL5F9zgps5gO1UyGR2qPZz6AM8qx53izsAtzl5J8pZ5zJuGbRQkP8toh7wXsBOEYJsjcU2DJYAQyXNyDB9SaTZwmUKGJ1NIAcr279Zoh-vG40pV"/>
+<div class="overflow-hidden">
+<p class="text-xs font-bold text-stone-900 truncate">Sérgio Rodrigues</p>
+<p class="text-[10px] text-stone-500 truncate">Diretor Executivo</p>
+</div>
+<span class="material-symbols-outlined text-stone-400 ml-auto" data-icon="settings">settings</span>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-40 bg-[#f9f9f7]/80 dark:bg-stone-950/80 backdrop-blur-xl flex justify-between items-center px-12 py-6 no-border transition-colors duration-200">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-amber-900 dark:text-amber-500" data-icon="menu">menu</span>
+<h1 class="text-lg font-bold tracking-tighter text-amber-900 dark:text-amber-500 font-sans antialiased">NEXO Financeiro</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined text-stone-500" data-icon="notifications">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+</div>
+<div class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center overflow-hidden">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="close-up profile photo of a smiling professional user with clean white background and soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE3fm7GmcQBpgOjoWxj8OOXpwspMgMdFjWby53xK-kbTYljnab1PrMTTjmbPHbGFRdwV03zET7OgdSvFzUsIGITo6rjnDHVkj23Vhe0An314NnfMIS3Q8k3KmKwn_2JfI36sL5tO-3ynFGJ-e3BSqc0FwiGv2u-JivRUXmkayFEnW6a4SCYsR7tNRLRtIsTf2H_J_SGYqdJ2UWwHXxUbdU6VWR7SQlpIr3oMR0YBHtjw08PaGFthBsyvi-L671tU-6C8R_u87re0RG"/>
+</div>
+</div>
+</header>
+<div class="px-12 py-10 max-w-7xl mx-auto space-y-12">
+<!-- Greeting & Editorial Header -->
+<section class="space-y-2">
+<p class="text-sm font-medium tracking-widest text-primary uppercase">Visão Geral • 24 de Outubro</p>
+<h2 class="text-5xl font-extrabold tracking-tight text-on-surface">Bom dia, Sérgio.</h2>
+<p class="text-on-surface-variant max-w-lg leading-relaxed">Sua saúde patrimonial cresceu 2.4% este mês. Aqui estão as atualizações prioritárias para o seu dia.</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Main Balance Card (Hero) -->
+<div class="col-span-12 lg:col-span-8 bg-primary-fixed rounded-xl p-10 editorial-shadow relative overflow-hidden flex flex-col justify-between h-[400px]">
+<div class="z-10">
+<span class="text-xs font-bold text-on-primary-fixed-variant uppercase tracking-widest mb-4 block">Patrimônio Consolidado</span>
+<h3 class="text-6xl font-black text-on-primary-fixed tracking-tighter">R$ 4.280.450,00</h3>
+<div class="flex items-center mt-4 gap-2 text-primary font-bold">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span>+ R$ 12.400,00 hoje</span>
+</div>
+</div>
+<div class="z-10 grid grid-cols-2 gap-8 border-t border-primary-container/20 pt-8">
+<div>
+<p class="text-[10px] text-on-primary-fixed-variant font-bold uppercase tracking-widest mb-1">Empresa Nexo</p>
+<p class="text-2xl font-bold text-on-primary-fixed tracking-tight">R$ 2.850.000</p>
+</div>
+<div>
+<p class="text-[10px] text-on-primary-fixed-variant font-bold uppercase tracking-widest mb-1">Pessoal / Home</p>
+<p class="text-2xl font-bold text-on-primary-fixed tracking-tight">R$ 1.430.450</p>
+</div>
+</div>
+<!-- Decorative Organic Shape -->
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-primary-container rounded-full blur-[100px] opacity-20"></div>
+</div>
+<!-- Cash Flow Visualization -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 editorial-shadow h-[400px] flex flex-col">
+<div class="flex justify-between items-center mb-10">
+<h4 class="text-sm font-bold text-on-surface tracking-tight uppercase">Fluxo de Caixa</h4>
+<span class="text-xs font-medium text-stone-400">Mensal</span>
+</div>
+<div class="flex-1 flex items-end gap-3 px-2">
+<div class="flex-1 bg-surface-container-highest rounded-t-sm h-[40%] transition-all hover:h-[45%]"></div>
+<div class="flex-1 bg-primary-container/40 rounded-t-sm h-[65%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t-sm h-[50%]"></div>
+<div class="flex-1 bg-primary rounded-t-sm h-[90%]"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t-sm h-[30%]"></div>
+<div class="flex-1 bg-primary-container/60 rounded-t-sm h-[75%]"></div>
+</div>
+<div class="mt-8 pt-6 border-t border-surface-container flex justify-between items-center">
+<div>
+<p class="text-xs text-stone-500">Projeção Nov</p>
+<p class="text-lg font-bold text-on-surface">R$ 520k</p>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="analytics">analytics</span>
+</div>
+</div>
+<!-- Pending Alerts Section -->
+<div class="col-span-12 lg:col-span-7 space-y-6">
+<h4 class="text-lg font-bold tracking-tight text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="emergency">emergency</span>
+                        Alertas Pendentes
+                    </h4>
+<div class="space-y-4">
+<!-- Alert 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-6 group hover:bg-white transition-colors duration-200">
+<div class="w-12 h-12 rounded-full bg-error-container/20 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="priority_high">priority_high</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">Daniel solicita pagamento urgente</p>
+<p class="text-xs text-stone-500 mt-1">Fornecedor: Consultoria Alpha • Vence hoje às 17h</p>
+</div>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-md text-xs font-bold hover:bg-primary-container transition-all shadow-sm">Pagar R$ 12.500</button>
+</div>
+<!-- Alert 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-6 group hover:bg-white transition-colors duration-200">
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">Projeto Douglas em atraso</p>
+<p class="text-xs text-stone-500 mt-1">Status: Pagamento da 2ª parcela não identificado</p>
+</div>
+<button class="bg-surface-container-highest text-on-surface px-5 py-2.5 rounded-md text-xs font-bold hover:bg-stone-300 transition-all">Cobrar</button>
+</div>
+</div>
+</div>
+<!-- Quick Tasks Section -->
+<div class="col-span-12 lg:col-span-5 space-y-6">
+<h4 class="text-lg font-bold tracking-tight text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="checklist">checklist</span>
+                        Ações Rápidas
+                    </h4>
+<div class="bg-surface-container-low rounded-xl p-2 space-y-1">
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg hover:translate-x-1 transition-transform duration-150">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-400" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span class="text-sm font-medium text-on-surface">Conciliar extrato Banco Safra</span>
+</div>
+<span class="text-[10px] text-stone-400 font-bold">HOJE</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg hover:translate-x-1 transition-transform duration-150">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-400" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span class="text-sm font-medium text-on-surface">Enviar recibo para Casa Cor</span>
+</div>
+<span class="text-[10px] text-stone-400 font-bold">AMANHÃ</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg hover:translate-x-1 transition-transform duration-150 opacity-60">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-400" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span class="text-sm font-medium text-on-surface line-through">Revisar impostos trimestrais</span>
+</div>
+<span class="material-symbols-outlined text-primary text-sm" data-icon="check_circle">check_circle</span>
+</div>
+<button class="w-full py-4 text-center text-xs font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors mt-2">
+                            + Nova Tarefa
+                        </button>
+</div>
+</div>
+</div>
+<!-- Bottom Highlights - Horizontal Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-surface-container-low p-8 rounded-xl space-y-4">
+<span class="material-symbols-outlined text-primary" data-icon="hub">hub</span>
+<h5 class="text-sm font-bold text-on-surface">Sinergia Patrimonial</h5>
+<p class="text-xs text-stone-500 leading-relaxed">Integre suas contas internacionais para uma visão global unificada.</p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl space-y-4">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+<h5 class="text-sm font-bold text-on-surface">Relatório Mensal</h5>
+<p class="text-xs text-stone-500 leading-relaxed">O fechamento de Setembro está disponível para download.</p>
+</div>
+<div class="bg-surface-container-low p-8 rounded-xl space-y-4">
+<span class="material-symbols-outlined text-primary" data-icon="tips_and_updates">tips_and_updates</span>
+<h5 class="text-sm font-bold text-on-surface">Dica NEXO</h5>
+<p class="text-xs text-stone-500 leading-relaxed">Você economizou R$ 2.400 este mês reduzindo taxas bancárias.</p>
+</div>
+</section>
+</div>
+</main>
+<!-- FAB Action (Contextual for Dashboard) -->
+<button class="fixed bottom-10 right-10 w-16 h-16 bg-primary text-on-primary rounded-full editorial-shadow flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+</button>
+</body></html>

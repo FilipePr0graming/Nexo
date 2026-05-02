@@ -26,33 +26,38 @@ class NexoSelectField extends StatelessWidget {
           style: Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: NexoSpacing.xs),
-        Material(
-          color: NexoColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NexoRadius.md),
-            side: const BorderSide(color: NexoColors.border),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(NexoRadius.md),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: NexoSpacing.md,
-                vertical: NexoSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.bodyLarge,
+        Semantics(
+          button: true,
+          label: label,
+          value: value,
+          child: Material(
+            color: NexoColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(NexoRadius.md),
+              side: const BorderSide(color: NexoColors.border),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(NexoRadius.md),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NexoSpacing.md,
+                  vertical: NexoSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        value,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                     ),
-                  ),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: NexoColors.inkLow,
-                  ),
-                ],
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: NexoColors.inkLow,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

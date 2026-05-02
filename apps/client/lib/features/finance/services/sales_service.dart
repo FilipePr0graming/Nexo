@@ -59,6 +59,7 @@ class SalesService extends ChangeNotifier {
 
   Future<void> createSale({
     String? clientId,
+    String? projectId,
     required String clientName,
     required String serviceName,
     String? projectGroup,
@@ -91,6 +92,7 @@ class SalesService extends ChangeNotifier {
     final sale = SaleModel(
       id: IdGenerator.next('sale'),
       clientId: clientId,
+      projectId: projectId,
       clientName: clientName.trim(),
       serviceName: serviceName.trim(),
       projectGroup: _emptyToNull(projectGroup),
@@ -230,6 +232,59 @@ class SalesService extends ChangeNotifier {
     } catch (_) {
       _errorMessage =
           'Recebimento marcado localmente. A sincronizacao com Supabase falhou.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateSale(SaleModel sale) async {
+    final summary = FinanceCalculator.summarize(
+      grossAmount: sale.grossAmount,
+      platformFee: sale.platformFee,
+      paymentMethod: sale.paymentMethod,
+      manualPaymentFee: sale.paymentFee,
+      hasDanielParticipation: sale.hasDanielParticipation,
+      danielPercent: sale.danielPercent,
+    );
+    final updated = sale.copyWith(
+      paymentFee: summary.paymentFee,
+      netAmount: summary.netAmount,
+      danielPercent: sale.hasDanielParticipation ? sale.danielPercent : 0,
+      danielValue: summary.partnerCommitment,
+      ownerAmount: summary.ownerAmount,
+      updatedAt: DateTime.now().toUtc(),
+    );
+
+    _replace(updated);
+    await _repository.cacheAll(_sales);
+    notifyListeners();
+
+    try {
+      final saved = await _repository.upsert(updated);
+      _replace(saved);
+      await _repository.cacheAll(_sales);
+      _errorMessage = null;
+    } catch (_) {
+      _errorMessage =
+          'Venda atualizada localmente. A sincronizacao com Supabase falhou.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteSale(String id) async {
+    final previous = _sales;
+    _sales = _sales.where((sale) => sale.id != id).toList(growable: false);
+    await _repository.cacheAll(_sales);
+    notifyListeners();
+
+    try {
+      await _repository.deleteById(id);
+      _errorMessage = null;
+    } catch (_) {
+      _sales = previous;
+      await _repository.cacheAll(_sales);
+      _errorMessage = 'Nao foi possivel excluir venda agora.';
     } finally {
       notifyListeners();
     }

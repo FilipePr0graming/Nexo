@@ -32,4 +32,8 @@ class ExpensesRepository {
   Future<ExpenseModel> upsert(ExpenseModel expense) {
     return remoteDataSource.upsert(expense);
   }
+
+  Future<void> deleteById(String id) {
+    return remoteDataSource.deleteById(id);
+  }
 }

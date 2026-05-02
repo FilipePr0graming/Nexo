@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#f9fdff",
+                        "inverse-surface": "#2f3130",
+                        "secondary-container": "#fecea5",
+                        "surface-container-highest": "#e2e3e1",
+                        "surface-container": "#eeeeec",
+                        "on-secondary-fixed": "#2d1600",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#65d5f3",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dadad8",
+                        "on-surface-variant": "#534438",
+                        "inverse-on-surface": "#f1f1ef",
+                        "primary": "#894d00",
+                        "outline-variant": "#d8c3b2",
+                        "background": "#f9f9f7",
+                        "tertiary-container": "#008098",
+                        "secondary": "#7a5737",
+                        "on-primary-container": "#fffbff",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9f7",
+                        "primary-fixed": "#ffdcc0",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f9f9f7",
+                        "primary-fixed-dim": "#ffb875",
+                        "outline": "#857466",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#006579",
+                        "surface-tint": "#8d4f00",
+                        "on-secondary-fixed-variant": "#604021",
+                        "secondary-fixed-dim": "#ecbe96",
+                        "on-primary-fixed-variant": "#6b3b00",
+                        "surface-container-high": "#e8e8e6",
+                        "primary-container": "#a96416",
+                        "on-primary-fixed": "#2d1600",
+                        "tertiary-fixed": "#b1ecff",
+                        "surface-variant": "#e2e3e1",
+                        "inverse-primary": "#ffb875",
+                        "secondary-fixed": "#ffdcc0",
+                        "on-secondary-container": "#795636",
+                        "on-tertiary-fixed": "#001f27",
+                        "on-surface": "#1a1c1b",
+                        "on-tertiary-fixed-variant": "#004e5e",
+                        "surface-container-low": "#f4f4f2",
+                        "on-background": "#1a1c1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface flex min-h-screen">
+<!-- NavigationDrawer (Sidebar) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-stone-100 dark:bg-stone-900 flex flex-col gap-2 p-6 z-50">
+<div class="mb-8 flex flex-col gap-1">
+<h2 class="text-xl font-black uppercase tracking-widest text-amber-900">NEXO Financeiro</h2>
+<p class="text-stone-600 dark:text-stone-400 text-xs font-medium tracking-wide">Gestão Patrimonial</p>
+</div>
+<nav class="flex flex-col gap-2">
+<!-- Active state for Recibos as requested by user context -->
+<a class="flex items-center gap-3 px-4 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 transition-all font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 transition-all font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span> Clientes
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 transition-all font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span> Projetos
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 bg-stone-50 dark:bg-stone-800 text-amber-900 dark:text-amber-400 rounded-md shadow-sm font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span> Recibos
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 transition-all font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span> Parceiros
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 transition-all font-sans text-sm font-medium tracking-wide" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span> Planejamento
+            </a>
+</nav>
+<div class="mt-auto pt-6 flex items-center gap-3 border-t border-stone-200 dark:border-stone-800">
+<img alt="Profile" class="w-10 h-10 rounded-full object-cover" data-alt="Professional portrait of a financial advisor in a suit, soft corporate lighting, minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcGBJPvCUFwBXro83dPnobiWPBVcfX4hoTgRmgoiEmMjaWZyPsnEKRvr_FuUPH4nBIde40XcHgQpJ41LqF3yybWJBK68WbQiyYDx_zDxiWti-Hg8ZoV_jVLs9cW26Ca5Ge6Yh8HF9BHTJxIzYBZU0N22STsJ8q42dkNItxci_socJyAhRGzjZxdilc7ZOGZ1HM8oWIGWUugaqLOshyF1PnO2VTK3W1jAbj2VCWKbDOlx3ANXGc5D8SfUlVX_SLQeBFWqUulxXsaHEk"/>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-on-surface">Carlos Eduardo</span>
+<span class="text-[10px] text-stone-500">Diretor Financeiro</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-40 bg-[#f9f9f7]/80 dark:bg-stone-950/80 backdrop-blur-xl flex justify-between items-center px-8 py-4 no-border transition-colors duration-200">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-amber-900 dark:text-amber-500 cursor-pointer" data-icon="menu">menu</span>
+<h1 class="text-lg font-bold tracking-tighter text-amber-900 dark:text-amber-500 font-sans">NEXO Financeiro</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-4">
+<span class="text-stone-500 text-sm font-medium">Recibos e Pagamentos</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-stone-200 overflow-hidden">
+<img alt="User Profile Avatar" data-alt="Professional profile headshot of a mature executive with a confident smile, sharp focus, natural office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7q0b86zVqKvYuu7RiHmV49GoBYGTzcqpRpQHsOXphSyEMpXczjWUDAeQ0_LswlPpXapHOjln_WwBvN2JZ1jXvxg01gjXyh1bWZT7gCWZPZ7afGb81xgvmKryejoRl7MNvScSJzmVqldy4t7JWf8N57m3Q3gmHZ9MjKL5kxpXMnAm2NY1jBBwCAEWIXlXTQHHfXzzAP6RetWkZIdVGRDXH-rPW4jNPFMPd-MYDLokt0-vjKAbIf937fnyKykhEe21itv0Gsjfrs-Hc"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-12 max-w-7xl mx-auto w-full">
+<!-- Page Hero Section -->
+<div class="mb-16">
+<h2 class="text-[3.5rem] font-extrabold tracking-tight text-on-surface leading-tight mb-2">Novo Registro.</h2>
+<p class="text-stone-500 text-lg max-w-xl">Configure o faturamento de serviços com cálculo automático de taxas e impostos para maior precisão patrimonial.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+<!-- Registration Form Section -->
+<section class="lg:col-span-7 space-y-12">
+<div class="bg-surface-container-lowest p-10 rounded-xl space-y-8 shadow-sm">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Cliente</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all">
+<option>Selecione o Cliente</option>
+<option>Construtora Andrade &amp; Co</option>
+<option>TechFlow Solutions</option>
+<option>Investimentos Vale Verde</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Projeto</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all">
+<option>Vincular a um Projeto</option>
+<option>Reestruturação Societária</option>
+<option>Gestão de Ativos Imobiliários</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Valor Bruto (R$)</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-4 text-2xl font-bold text-on-surface placeholder-stone-300 focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest transition-all" placeholder="0,00" type="number"/>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 px-1">Tipo de Recebimento</label>
+<div class="flex gap-2 p-1 bg-surface-container-low rounded-lg h-full">
+<button class="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-surface-container-lowest shadow-sm text-primary font-bold transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="credit_card">credit_card</span>
+<span class="text-sm">Cartão</span>
+</button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-stone-500 hover:bg-stone-200/50 transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="account_balance">account_balance</span>
+<span class="text-sm">Pix / TED</span>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-stone-100">
+<button class="w-full bg-gradient-to-b from-primary to-primary-container text-on-primary py-5 rounded-md font-bold text-lg flex items-center justify-center gap-3 shadow-lg hover:brightness-110 transition-all">
+<span class="material-symbols-outlined" data-icon="save">save</span>
+                                Gerar Recibo
+                            </button>
+</div>
+</div>
+<!-- Informational Context (Editorial Aesthetic) -->
+<div class="px-2">
+<div class="flex items-start gap-4 p-6 bg-secondary-container/20 rounded-xl">
+<span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+<div class="space-y-1">
+<h4 class="font-bold text-on-secondary-container text-sm">Política de Taxas NEXO</h4>
+<p class="text-stone-500 text-xs leading-relaxed">Operações via cartão de crédito e débito possuem uma taxa administrativa fixa de 7% sobre o valor bruto. O repasse ocorre em D+1 para a conta patrimonial vinculada.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Financial Calculation Display (Bento/Card Style) -->
+<aside class="lg:col-span-5 space-y-8 sticky top-24">
+<div class="bg-primary-fixed p-10 rounded-xl relative overflow-hidden group">
+<!-- Decorative Abstract Background -->
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+<div class="absolute bottom-0 left-0 w-32 h-32 bg-primary rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
+</div>
+<div class="relative z-10 space-y-12">
+<header class="flex justify-between items-center">
+<span class="text-[10px] uppercase font-black tracking-widest text-on-primary-fixed-variant">Detalhamento Financeiro</span>
+<span class="material-symbols-outlined text-on-primary-fixed-variant" data-icon="analytics">analytics</span>
+</header>
+<div class="space-y-8">
+<div class="flex justify-between items-end border-b border-on-primary-fixed-variant/10 pb-4">
+<div class="space-y-1">
+<p class="text-xs font-medium text-on-primary-fixed-variant/70">Valor Bruto</p>
+<p class="text-3xl font-bold tracking-tight text-on-primary-fixed">R$ 15.000,00</p>
+</div>
+<span class="text-[10px] font-bold text-on-primary-fixed-variant bg-on-primary-fixed-variant/5 px-2 py-1 rounded">100%</span>
+</div>
+<div class="flex justify-between items-end border-b border-on-primary-fixed-variant/10 pb-4">
+<div class="space-y-1">
+<p class="text-xs font-medium text-on-primary-fixed-variant/70">Taxa Admin. (7%)</p>
+<p class="text-xl font-bold tracking-tight text-error">R$ -1.050,00</p>
+</div>
+<span class="material-symbols-outlined text-error text-lg" data-icon="trending_down">trending_down</span>
+</div>
+<div class="pt-4">
+<div class="space-y-1">
+<p class="text-xs font-medium text-on-primary-fixed-variant/70">Recebimento Líquido</p>
+<p class="text-[2.75rem] font-black tracking-tighter text-on-primary-fixed leading-none">R$ 13.950,00</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Stats Card -->
+<div class="bg-surface-container-low p-8 rounded-xl space-y-6">
+<h4 class="text-xs font-bold uppercase tracking-widest text-stone-500">Histórico Recente</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+<span class="text-sm font-medium text-on-surface">Andrade &amp; Co</span>
+</div>
+<span class="text-sm font-bold text-on-surface">R$ 4.250,00</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+<span class="text-sm font-medium text-on-surface">TechFlow</span>
+</div>
+<span class="text-sm font-bold text-on-surface">R$ 8.900,00</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+<!-- Sticky Floating Action (Suppressed as per rules, but showing context) -->
+<!-- Only visible on relevant screens, here we maintain clean canvas -->
+</main>
+<!-- Mobile Navigation Shell (Bottom Bar) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass-effect bg-white/90 flex justify-around items-center py-4 px-6 border-t border-stone-100 z-50">
+<button class="flex flex-col items-center gap-1 text-stone-400">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-medium">Início</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="receipt_long" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="text-[10px] font-bold">Recibos</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-stone-400">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-[10px] font-medium">Clientes</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-stone-400">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-[10px] font-medium">Ajustes</span>
+</button>
+</nav>
+</body></html>

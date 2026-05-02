@@ -38,4 +38,12 @@ class ClientsRemoteDataSource {
 
     return ClientModel.fromJson(response);
   }
+
+  Future<void> deleteById(String id) async {
+    if (_client == null) {
+      return;
+    }
+
+    await _client.from('clients').delete().eq('id', id);
+  }
 }

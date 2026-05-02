@@ -5,6 +5,7 @@ import '../../../../core/design_system/nexo_colors.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/components/actions/nexo_icon_button.dart';
+import '../../../../shared/components/actions/nexo_button.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
 import '../../../../shared/components/cards/nexo_empty_state_card.dart';
 import '../../../../shared/components/inputs/nexo_text_field.dart';
@@ -165,10 +166,26 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         title: client.name,
                         subtitle: subtitleParts.join(' | '),
                         detail: detailParts.join(' | '),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 14,
-                          color: NexoColors.inkLow,
+                        trailing: PopupMenuButton<String>(
+                          tooltip: 'Acoes do cliente',
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _openEditClientSheet(client);
+                            }
+                            if (value == 'delete') {
+                              clientsService.deleteClient(client.id);
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Editar'),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Excluir'),
+                            ),
+                          ],
                         ),
                         onTap: () => _openClientDetail(client.id),
                       ),
@@ -198,6 +215,86 @@ class _ClientsScreenState extends State<ClientsScreen> {
       selected: isSelected,
       onSelected: (_) => setState(() => _filter = filter),
     );
+  }
+
+  Future<void> _openEditClientSheet(ClientModel client) async {
+    final nameController = TextEditingController(text: client.name);
+    final phoneController = TextEditingController(text: client.phone ?? '');
+    final notesController = TextEditingController(text: client.notes ?? '');
+
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        backgroundColor: NexoColors.surface,
+        builder: (sheetContext) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              NexoSpacing.lg,
+              NexoSpacing.md,
+              NexoSpacing.lg,
+              MediaQuery.viewInsetsOf(sheetContext).bottom + NexoSpacing.xl,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Editar cliente',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoTextField(
+                    label: 'Nome',
+                    controller: nameController,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Telefone',
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Observacoes',
+                    controller: notesController,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: NexoSpacing.lg),
+                  NexoButton(
+                    label: 'Salvar alteracoes',
+                    icon: Icons.check_rounded,
+                    onPressed: () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) {
+                        return;
+                      }
+                      await NexoScope.of(context).clients.updateClient(
+                            client.copyWith(
+                              name: name,
+                              phone: _emptyToNull(phoneController.text),
+                              notes: _emptyToNull(notesController.text),
+                            ),
+                          );
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } finally {
+      nameController.dispose();
+      phoneController.dispose();
+      notesController.dispose();
+    }
   }
 
   List<ClientModel> _applyFilters(
@@ -259,5 +356,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
     related
         .sort((left, right) => right.movementDate.compareTo(left.movementDate));
     return related;
+  }
+
+  static String? _emptyToNull(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 }

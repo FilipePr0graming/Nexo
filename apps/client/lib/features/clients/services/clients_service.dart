@@ -118,6 +118,43 @@ class ClientsService extends ChangeNotifier {
     }
   }
 
+  Future<void> updateClient(ClientModel client) async {
+    final updated = client.copyWith(updatedAt: DateTime.now().toUtc());
+    _replace(updated);
+    await _repository.cacheAll(_clients);
+    notifyListeners();
+
+    try {
+      final saved = await _repository.upsert(updated);
+      _replace(saved);
+      await _repository.cacheAll(_clients);
+      _errorMessage = null;
+    } catch (_) {
+      _errorMessage =
+          'Cliente atualizado localmente. A sincronizacao com Supabase falhou.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteClient(String id) async {
+    final previous = _clients;
+    _clients = _clients.where((client) => client.id != id).toList();
+    await _repository.cacheAll(_clients);
+    notifyListeners();
+
+    try {
+      await _repository.deleteById(id);
+      _errorMessage = null;
+    } catch (_) {
+      _clients = previous;
+      await _repository.cacheAll(_clients);
+      _errorMessage = 'Nao foi possivel excluir cliente agora.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
   void _replace(ClientModel updated) {
     _clients = _clients
         .map((client) => client.id == updated.id ? updated : client)

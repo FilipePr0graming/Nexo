@@ -1,5 +1,6 @@
 import '../../features/finance/models/expense_model.dart';
 import '../../features/finance/models/sale_model.dart';
+import '../../features/goals/models/goal_model.dart';
 import '../../shared/components/cards/nexo_alert_card.dart';
 import '../models/life_finance_summary.dart';
 import '../utils/date_label_utils.dart';
@@ -11,6 +12,7 @@ class LifeFinanceService {
   static LifeFinanceSummary summarize({
     required List<SaleModel> sales,
     required List<ExpenseModel> expenses,
+    List<GoalModel> goals = const [],
     DateTime? now,
   }) {
     final today = now ?? DateTime.now();
@@ -67,6 +69,7 @@ class LifeFinanceService {
     final goal = _goalSummary(
       freeMoney: freeMoney,
       expenses: expenses,
+      goals: goals,
       today: today,
     );
     final forecasts = _forecasts(
@@ -377,8 +380,32 @@ class LifeFinanceService {
   static GoalSummary _goalSummary({
     required double freeMoney,
     required List<ExpenseModel> expenses,
+    required List<GoalModel> goals,
     required DateTime today,
   }) {
+    final activeGoals = goals
+        .where((goal) => goal.status == GoalStatus.active)
+        .toList(growable: false)
+      ..sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+
+    if (activeGoals.isNotEmpty) {
+      final goal = activeGoals.first;
+      final monthlyPace = freeMoney > 0 ? freeMoney : 0.0;
+      final missing = goal.targetAmount - goal.currentAmount;
+      final monthsToReach = missing <= 0
+          ? 0
+          : monthlyPace <= 0
+              ? null
+              : (missing / monthlyPace).ceil();
+      return GoalSummary(
+        title: goal.title,
+        target: _money(goal.targetAmount),
+        saved: _money(goal.currentAmount),
+        monthlyPace: _money(monthlyPace),
+        monthsToReach: monthsToReach,
+      );
+    }
+
     final monthlyExpenses = _sum(expenses
         .where((expense) => DateLabelUtils.isInCurrentMonth(
             expense.expenseDate.toLocal(), today))

@@ -28,6 +28,7 @@ class SaleModel {
     required this.createdAt,
     required this.updatedAt,
     this.clientId,
+    this.projectId,
     this.projectGroup,
     this.serviceStage,
     this.receivedDate,
@@ -37,6 +38,7 @@ class SaleModel {
 
   final String id;
   final String? clientId;
+  final String? projectId;
   final String clientName;
   final String serviceName;
   final String? projectGroup;
@@ -66,6 +68,7 @@ class SaleModel {
   SaleModel copyWith({
     String? id,
     String? clientId,
+    String? projectId,
     String? clientName,
     String? serviceName,
     String? projectGroup,
@@ -93,6 +96,7 @@ class SaleModel {
     return SaleModel(
       id: id ?? this.id,
       clientId: clientId ?? this.clientId,
+      projectId: projectId ?? this.projectId,
       clientName: clientName ?? this.clientName,
       serviceName: serviceName ?? this.serviceName,
       projectGroup: projectGroup ?? this.projectGroup,
@@ -124,6 +128,7 @@ class SaleModel {
     return SaleModel(
       id: json['id'] as String,
       clientId: json['client_id'] as String?,
+      projectId: json['project_id'] as String?,
       clientName: (json['client_name'] as String?) ?? '',
       serviceName: (json['service_name'] as String?) ?? '',
       projectGroup: json['project_group'] as String?,
@@ -170,6 +175,7 @@ class SaleModel {
     return {
       'id': id,
       'client_id': clientId,
+      'project_id': projectId,
       'client_name': clientName,
       'service_name': serviceName,
       'project_group': projectGroup,

@@ -34,11 +34,13 @@ class FinanceScreen extends StatelessWidget {
     final expensesService = services.expenses;
 
     return AnimatedBuilder(
-      animation: Listenable.merge([salesService, expensesService]),
+      animation:
+          Listenable.merge([salesService, expensesService, services.goals]),
       builder: (context, _) {
         final summary = LifeFinanceService.summarize(
           sales: salesService.sales,
           expenses: expensesService.expenses,
+          goals: services.goals.goals,
         );
 
         final movements = <_FinanceMovement>[

@@ -16,6 +16,7 @@ import '../../../../shared/components/inputs/nexo_segmented_field.dart';
 import '../../../../shared/components/inputs/nexo_select_field.dart';
 import '../../../../shared/components/inputs/nexo_text_field.dart';
 import '../../../clients/models/client_model.dart';
+import '../../../projects/models/project_model.dart';
 import '../../models/sale_model.dart';
 
 enum _PartnerChoice {
@@ -272,35 +273,45 @@ class _NewSaleScreenState extends State<NewSaleScreen> {
 
     setState(() => _isSaving = true);
 
-    final clients = NexoScope.of(context).clients.clients;
+    final services = NexoScope.of(context);
+    final clients = services.clients.clients;
     final matchedClient = clients.cast<ClientModel?>().firstWhere(
           (client) =>
               client != null &&
               client.name.trim().toLowerCase() == clientName.toLowerCase(),
           orElse: () => null,
         );
-
-    await NexoScope.of(context).sales.createSale(
-          clientId: matchedClient?.id,
-          clientName: clientName,
-          serviceName: serviceName.isEmpty ? 'Projeto' : serviceName,
-          projectGroup: _projectGroupController.text,
-          serviceStage: _serviceStageController.text,
-          grossAmount: _grossAmount,
-          platform: _platform,
-          paymentMethod: _payment,
-          installments: _installments,
-          saleDate: _saleDate.toUtc(),
-          expectedDate: _expectedDate.toUtc(),
-          receivedDate:
-              _status == SaleStatus.received ? _saleDate.toUtc() : null,
-          status: _status,
-          notes: _notesController.text,
-          platformFee: _platformFee,
-          paymentFee: _paymentFee,
-          hasDanielParticipation: _partnerChoice == _PartnerChoice.yes,
-          danielPercent: _danielPercent,
+    final projectName = _projectGroupController.text.trim();
+    final matchedProject = services.projects.projects
+        .cast<ProjectModel?>()
+        .firstWhere(
+          (project) =>
+              project != null &&
+              project.name.trim().toLowerCase() == projectName.toLowerCase(),
+          orElse: () => null,
         );
+
+    await services.sales.createSale(
+      clientId: matchedClient?.id,
+      projectId: matchedProject?.id,
+      clientName: clientName,
+      serviceName: serviceName.isEmpty ? 'Projeto' : serviceName,
+      projectGroup: _projectGroupController.text,
+      serviceStage: _serviceStageController.text,
+      grossAmount: _grossAmount,
+      platform: _platform,
+      paymentMethod: _payment,
+      installments: _installments,
+      saleDate: _saleDate.toUtc(),
+      expectedDate: _expectedDate.toUtc(),
+      receivedDate: _status == SaleStatus.received ? _saleDate.toUtc() : null,
+      status: _status,
+      notes: _notesController.text,
+      platformFee: _platformFee,
+      paymentFee: _paymentFee,
+      hasDanielParticipation: _partnerChoice == _PartnerChoice.yes,
+      danielPercent: _danielPercent,
+    );
 
     if (!mounted) {
       return;

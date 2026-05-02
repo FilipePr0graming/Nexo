@@ -32,6 +32,36 @@ class ExpenseModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  ExpenseModel copyWith({
+    String? id,
+    String? title,
+    String? category,
+    String? subcategory,
+    double? amount,
+    ExpenseScope? scope,
+    String? accountName,
+    DateTime? expenseDate,
+    String? recurrence,
+    String? notes,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ExpenseModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      subcategory: subcategory ?? this.subcategory,
+      amount: amount ?? this.amount,
+      scope: scope ?? this.scope,
+      accountName: accountName ?? this.accountName,
+      expenseDate: expenseDate ?? this.expenseDate,
+      recurrence: recurrence ?? this.recurrence,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory ExpenseModel.fromJson(Map<String, dynamic> json) {
     return ExpenseModel(
       id: json['id'] as String,

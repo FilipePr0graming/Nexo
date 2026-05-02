@@ -32,4 +32,8 @@ class SalesRepository {
   Future<SaleModel> upsert(SaleModel sale) {
     return remoteDataSource.upsert(sale);
   }
+
+  Future<void> deleteById(String id) {
+    return remoteDataSource.deleteById(id);
+  }
 }

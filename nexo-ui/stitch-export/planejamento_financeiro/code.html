@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Planejamento - NEXO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#8d4f00",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#a96416",
+                        "tertiary-container": "#008098",
+                        "on-primary-fixed": "#2d1600",
+                        "background": "#f9f9f7",
+                        "on-tertiary-fixed": "#001f27",
+                        "outline-variant": "#d8c3b2",
+                        "outline": "#857466",
+                        "surface": "#f9f9f7",
+                        "surface-container": "#eeeeec",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ecbe96",
+                        "surface-dim": "#dadad8",
+                        "tertiary-fixed-dim": "#65d5f3",
+                        "primary-fixed-dim": "#ffb875",
+                        "surface-container-highest": "#e2e3e1",
+                        "surface-variant": "#e2e3e1",
+                        "on-secondary-fixed": "#2d1600",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary-container": "#795636",
+                        "primary-fixed": "#ffdcc0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#006579",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb875",
+                        "tertiary-fixed": "#b1ecff",
+                        "primary": "#894d00",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f4f4f2",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#604021",
+                        "surface-container-high": "#e8e8e6",
+                        "on-surface": "#1a1c1b",
+                        "inverse-surface": "#2f3130",
+                        "on-tertiary-container": "#f9fdff",
+                        "on-background": "#1a1c1b",
+                        "on-surface-variant": "#534438",
+                        "on-primary-fixed-variant": "#6b3b00",
+                        "secondary-container": "#fecea5",
+                        "secondary": "#7a5737",
+                        "surface-bright": "#f9f9f7",
+                        "on-tertiary-fixed-variant": "#004e5e",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#ffdcc0",
+                        "inverse-on-surface": "#f1f1ef"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: theme('colors.background'); color: theme('colors.on-surface'); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex h-screen overflow-hidden antialiased text-on-surface bg-background font-body">
+<!-- NavigationDrawer -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-[#f9f9f7] dark:bg-stone-900 border-r border-[#f2f2ef] dark:border-stone-800/50 flex flex-col py-8 px-4 space-y-2 z-50">
+<div class="px-4 pb-8">
+<h1 class="text-2xl font-bold tracking-tight text-[#1a1c1b] dark:text-stone-100 font-headline">NEXO</h1>
+</div>
+<div class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="home">home</span>
+<span>Casa</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="business_center">business_center</span>
+<span>Empresa</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="groups">groups</span>
+<span>Clientes</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="account_tree">account_tree</span>
+<span>Projetos</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="payments">payments</span>
+<span>Recebimentos</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="handshake">handshake</span>
+<span>Parceiros</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#894d00] dark:text-[#c47a2c] font-semibold bg-white/50 dark:bg-stone-700/50 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="event_note">event_note</span>
+<span>Planejamento</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="ads_click">ads_click</span>
+<span>Metas</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="psychology">psychology</span>
+<span>Inteligência</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-[#1a1c1b]/60 dark:text-stone-400 font-medium hover:bg-[#e2e3e1] dark:hover:bg-stone-800 transition-colors duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined mr-4" data-icon="edit_note">edit_note</span>
+<span>Anotações</span>
+</a>
+</div>
+</nav>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl border-b border-[#1a1c1b]/05 dark:border-stone-800 flex justify-between items-center h-16 px-8 ml-64">
+<div class="flex items-center">
+<button class="mr-4 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all rounded-full p-2 scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h2 class="font-['Inter'] font-semibold text-lg text-[#894d00] dark:text-[#c47a2c]">Painel Financeiro</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm text-on-surface-variant" data-icon="person">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-12 lg:p-16 w-full overflow-y-auto bg-surface h-[calc(100vh-4rem)]">
+<div class="max-w-6xl mx-auto space-y-16">
+<!-- Page Header -->
+<header class="flex flex-col gap-2">
+<h2 class="text-display-md font-bold text-on-surface font-headline tracking-tight">Planejamento</h2>
+<p class="text-body-lg text-on-surface-variant max-w-2xl">Projeção financeira e compromissos para o próximo período.</p>
+</header>
+<!-- Top Row: Future Balance & Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Hero Card: Future Balance -->
+<div class="lg:col-span-2 bg-primary-fixed rounded-xl p-8 flex flex-col justify-between relative overflow-hidden shadow-[0px_12px_32px_rgba(26,28,27,0.06)]">
+<div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<span class="text-sm font-medium text-on-primary-fixed-variant tracking-widest uppercase">Resultado Futuro</span>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-medium text-on-primary-fixed">R$</span>
+<span class="text-display-lg font-bold text-on-primary-fixed tracking-tight">5.120,00</span>
+</div>
+</div>
+<div class="relative z-10 mt-8 pt-6 border-t border-on-primary-fixed/10 flex items-center justify-between">
+<span class="text-sm text-on-primary-fixed-variant">Projeção para final do mês</span>
+<span class="material-symbols-outlined text-primary" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<!-- Quick Actions / Context -->
+<div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col gap-6 shadow-[0px_12px_32px_rgba(26,28,27,0.06)] border border-outline-variant/15">
+<h3 class="text-headline-sm font-semibold text-on-surface font-headline">Ações</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-gradient-to-b from-primary to-primary-container text-on-primary py-3 px-4 rounded-md font-medium text-sm transition-opacity hover:opacity-90 shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                            Nova Previsão
+                        </button>
+<button class="w-full bg-surface-container-highest text-on-surface py-3 px-4 rounded-md font-medium text-sm transition-colors hover:bg-surface-variant flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="receipt_long">receipt_long</span>
+                            Adicionar Compromisso
+                        </button>
+</div>
+</div>
+</div>
+<!-- Detailed Breakdowns -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+<!-- Inflows (Previsões) -->
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between border-b border-surface-container-highest pb-4">
+<h3 class="text-headline-sm font-semibold text-on-surface font-headline">Previsões de Entrada</h3>
+<span class="text-sm font-medium text-primary bg-primary-container/10 px-3 py-1 rounded-full">+ R$ 8.500,00</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/15 flex items-center justify-between group hover:bg-surface-container-low transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Douglas</span>
+<span class="text-xs text-on-surface-variant">Serviços Prestados</span>
+</div>
+</div>
+<span class="font-medium text-on-surface">R$ 6.500,00</span>
+</div>
+<!-- Item -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/15 flex items-center justify-between group hover:bg-surface-container-low transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Tamiris</span>
+<span class="text-xs text-on-surface-variant">Consultoria</span>
+</div>
+</div>
+<span class="font-medium text-on-surface">R$ 2.000,00</span>
+</div>
+</div>
+</div>
+<!-- Outflows (Compromissos) -->
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between border-b border-surface-container-highest pb-4">
+<h3 class="text-headline-sm font-semibold text-on-surface font-headline">Compromissos</h3>
+<span class="text-sm font-medium text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full">- R$ 3.380,00</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/15 flex items-center justify-between group hover:bg-surface-container-low transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="home_work">home_work</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Aluguel</span>
+<span class="text-xs text-on-surface-variant">Fixo mensal</span>
+</div>
+</div>
+<span class="font-medium text-on-surface">R$ 1.800,00</span>
+</div>
+<!-- Item -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/15 flex items-center justify-between group hover:bg-surface-container-low transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Cemig</span>
+<span class="text-xs text-on-surface-variant">Utilidades</span>
+</div>
+</div>
+<span class="font-medium text-on-surface">R$ 280,00</span>
+</div>
+<!-- Item -->
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/15 flex items-center justify-between group hover:bg-surface-container-low transition-colors duration-200">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface">Cartão de Crédito</span>
+<span class="text-xs text-on-surface-variant">Variável</span>
+</div>
+</div>
+<span class="font-medium text-on-surface">R$ 1.300,00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

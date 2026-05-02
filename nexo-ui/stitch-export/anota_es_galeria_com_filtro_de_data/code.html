@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#857466",
+                    "on-tertiary-fixed-variant": "#004e5e",
+                    "on-surface-variant": "#534438",
+                    "background": "#f9f9f7",
+                    "on-primary-fixed-variant": "#6b3b00",
+                    "on-tertiary-container": "#f9fdff",
+                    "surface-dim": "#dadad8",
+                    "outline-variant": "#d8c3b2",
+                    "surface-container-highest": "#e2e3e1",
+                    "primary-fixed": "#ffdcc0",
+                    "surface-variant": "#e2e3e1",
+                    "surface-bright": "#f9f9f7",
+                    "on-tertiary-fixed": "#001f27",
+                    "tertiary-fixed": "#b1ecff",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#65d5f3",
+                    "secondary": "#7a5737",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#795636",
+                    "primary-container": "#a96416",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#2d1600",
+                    "tertiary-container": "#008098",
+                    "tertiary": "#006579",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f1f1ef",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#fffbff",
+                    "secondary-fixed-dim": "#ecbe96",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#ffb875",
+                    "primary": "#894d00",
+                    "on-secondary-fixed-variant": "#604021",
+                    "inverse-surface": "#2f3130",
+                    "on-surface": "#1a1c1b",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#8d4f00",
+                    "primary-fixed-dim": "#ffb875",
+                    "surface-container-low": "#f4f4f2",
+                    "secondary-container": "#fecea5",
+                    "surface-container-high": "#e8e8e6",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#2d1600",
+                    "surface": "#f9f9f7",
+                    "surface-container": "#eeeeec",
+                    "secondary-fixed": "#ffdcc0",
+                    "on-background": "#1a1c1b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "display": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e3e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- TopAppBar (Mobile Only) -->
+<header class="md:hidden flex justify-between items-center px-6 h-16 fixed top-0 w-full z-40 bg-[#f9f9f7]/80 backdrop-blur-xl transition-all duration-200">
+<span class="material-symbols-outlined text-stone-500">menu</span>
+<h1 class="font-['Inter'] font-bold text-lg text-stone-900">NEXO Financeiro</h1>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzom9XvCa3ahaCPhmEYaS0mCyuWCZteeddTp-mDK4L4-93siF_1Hy54khdEp9pvINXSuA8Z5L3kb9qi6R7q1ryKS6wlp0dGwgOQf9U31nzcrWOB_GgbERf0xpgc4DCJ8p2t0prS_q4iLU2il5CuXljweMSnOZmCVNa-5vsoXfffJCivdPJ1_9xiPchS8nELpL9FumAEx_KIF7LlmzWMB7euBCjtwF1eMljYoQukKdNEr0xXudVb9dRVQraFWjTi0cWlNJpzTse6n7h"/>
+</div>
+</header>
+<!-- NavigationDrawer (Sidebar) -->
+<aside class="hidden md:flex flex-col py-8 px-6 gap-2 h-screen w-72 fixed left-0 top-0 bg-[#f9f9f7] border-none z-50">
+<div class="mb-10 px-2">
+<h2 class="text-2xl font-black tracking-tighter text-stone-900">NEXO Financeiro</h2>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Casa</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">business</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Empresa</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Projetos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Recebimentos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">handshake</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Parceiros</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Planejamento</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">flag</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Metas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-500 hover:bg-white/80 transition-colors duration-200 rounded-md" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Inteligência</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-stone-900 font-bold bg-white/50 rounded-md" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-['Inter'] font-medium text-sm tracking-tight">Anotações</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Stage -->
+<main class="md:ml-72 min-h-screen pt-20 md:pt-12 pb-24 md:pb-12 px-6 md:px-16 flex flex-col gap-8 max-w-[1400px]">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="flex flex-col gap-2">
+<h2 class="text-stone-400 font-medium tracking-widest text-xs uppercase">Espaço de Trabalho</h2>
+<h1 class="text-5xl font-black text-on-surface tracking-tighter">Anotações</h1>
+</div>
+<div class="flex gap-4 items-center">
+<div class="relative flex-1 md:w-80">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-primary/40 transition-all text-sm" placeholder="Buscar anotações..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-xl flex items-center gap-2 font-semibold shadow-sm hover:opacity-90 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="text-sm">Nova</span>
+</button>
+</div>
+</header>
+<!-- Editor/Quick Idea Area (Maintained) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="md:col-span-2 bg-surface-container-lowest p-1 rounded-xl shadow-sm border border-stone-100/50">
+<div class="flex flex-col h-full bg-surface rounded-lg p-6 group focus-within:bg-surface-container-lowest transition-colors">
+<label class="text-[10px] uppercase tracking-widest font-bold text-stone-400 mb-2">Escrita Rápida</label>
+<textarea class="w-full h-full min-h-[100px] bg-transparent border-none focus:ring-0 text-lg leading-relaxed text-stone-700 resize-none placeholder-stone-300" placeholder="O que você está pensando agora? Digite uma ideia de projeto, venda ou detalhe de reunião..."></textarea>
+<div class="flex items-center justify-between mt-4 border-t border-stone-100 pt-4">
+<div class="flex gap-2">
+<button class="text-stone-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">format_bold</span></button>
+<button class="text-stone-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">format_list_bulleted</span></button>
+<button class="text-stone-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">attachment</span></button>
+</div>
+<button class="text-xs font-bold text-primary uppercase tracking-widest px-4 py-2 bg-primary-fixed rounded-full hover:bg-primary-container hover:text-on-primary transition-all">Salvar como Ideia</button>
+</div>
+</div>
+</div>
+<!-- Contextual Insight -->
+<div class="bg-secondary-container p-6 rounded-xl flex flex-col justify-between">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<div>
+<h3 class="text-on-secondary-container font-bold text-lg">Sugestão da IA</h3>
+<p class="text-on-secondary-container opacity-80 text-sm leading-snug">Você tem 3 reuniões pendentes de registro. Gostaria de criá-las agora?</p>
+</div>
+</div>
+</section>
+<!-- Filters (Maintained) -->
+<div class="flex items-center justify-between gap-4">
+<div class="flex flex-wrap gap-2">
+<button class="px-5 py-2 rounded-full bg-stone-900 text-stone-50 text-xs font-bold tracking-wide transition-all">Todas</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-low text-stone-500 text-xs font-bold tracking-wide hover:bg-stone-200 transition-all flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-400"></span> Reunião
+                </button>
+<button class="px-5 py-2 rounded-full bg-surface-container-low text-stone-500 text-xs font-bold tracking-wide hover:bg-stone-200 transition-all flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-400"></span> Ideia
+                </button>
+<button class="px-5 py-2 rounded-full bg-surface-container-low text-stone-500 text-xs font-bold tracking-wide hover:bg-stone-200 transition-all flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Venda
+                </button><div class="relative group">
+<button class="px-5 py-2 rounded-full bg-surface-container-low text-stone-500 text-xs font-bold tracking-wide hover:bg-stone-200 transition-all flex items-center gap-2 border border-transparent focus:border-primary/30">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+    Data
+    <span class="material-symbols-outlined text-[16px] text-stone-400 group-hover:text-primary transition-colors">expand_more</span>
+</button>
+<div class="absolute left-0 mt-2 w-40 bg-surface-container-lowest rounded-xl shadow-xl border border-stone-100 py-2 hidden group-hover:block z-30">
+<a class="block px-4 py-2 text-xs font-medium text-stone-700 hover:bg-primary-fixed hover:text-on-primary-fixed-variant transition-colors" href="#">Mais Recentes</a>
+<a class="block px-4 py-2 text-xs font-medium text-stone-700 hover:bg-primary-fixed hover:text-on-primary-fixed-variant transition-colors" href="#">Este Mês</a>
+<a class="block px-4 py-2 text-xs font-medium text-stone-700 hover:bg-primary-fixed hover:text-on-primary-fixed-variant transition-colors" href="#">Antigas</a>
+</div>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-1 text-stone-400">
+<span class="material-symbols-outlined text-xl">grid_view</span>
+<span class="material-symbols-outlined text-xl opacity-40">view_list</span>
+</div>
+</div>
+<!-- Notes Gallery Grid -->
+<section class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+<!-- Meeting Card -->
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100 flex flex-col">
+<div class="h-40 bg-blue-50/50 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#3b82f6 0.5px, transparent 0.5px); background-size: 10px 10px;"></div>
+<span class="material-symbols-outlined text-blue-200 text-6xl transition-transform group-hover:scale-110 duration-500">groups</span>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-lg">Reunião</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary transition-colors">Kickoff Projeto Nexo 2.0</h3>
+<p class="text-stone-500 text-xs line-clamp-2 leading-relaxed mb-4">Definidos os prazos para o MVP de inteligência artificial aplicada ao fluxo de caixa...</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex -space-x-1.5">
+<img alt="User" class="w-6 h-6 rounded-full border-2 border-surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEwV9cT8QAmD-5JEJfgwzkHmO_qpv4Za-vii0dIPXPqFQRA0hN4eFUQ5hshf6UK22zdoHKY_X81gWhecHdm2sXdoAfsETwy2xO_hvKbAktRBBlBDw5vMuOspuLH6ZbH0Ur0rJjlR5bgRw3QGazDfcU9Awb9ush5Att1hVxjLFRwc12zm1pcGEbKbClbo_XObgBg2NMpJPUDSXepWLhExjetFeXFshSLuUsZbtBaf923QN9KtLdmAXwK9PKeMGHTo0hMIQx0zL-y-GG"/>
+<div class="w-6 h-6 rounded-full bg-stone-100 border-2 border-surface flex items-center justify-center text-[8px] font-bold">+3</div>
+</div>
+<span class="text-[10px] text-stone-400">Hoje, 10:30</span>
+</div>
+</div>
+</div>
+<!-- Sale Card -->
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100 flex flex-col">
+<div class="h-40 bg-emerald-50/50 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(45deg, #10b981 0, #10b981 1px, transparent 0, transparent 50%); background-size: 8px 8px;"></div>
+<span class="material-symbols-outlined text-emerald-200 text-6xl transition-transform group-hover:scale-110 duration-500">payments</span>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-lg">Venda</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary transition-colors">Construtora Silva</h3>
+<p class="text-stone-500 text-xs line-clamp-2 leading-relaxed mb-4">Interesse em automação de relatórios trimestrais. Valor: R$ 15.000,00 mensal.</p>
+<div class="mt-auto flex items-center justify-between">
+<span class="text-[10px] font-bold text-emerald-600">R$ 15k est.</span>
+<span class="text-[10px] text-stone-400">Ontem</span>
+</div>
+</div>
+</div>
+<!-- Idea/Visual Card -->
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100 flex flex-col">
+<div class="h-40 bg-stone-100 relative">
+<img alt="Moodboard" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAubrjEV0344Eqap2RW1wsOFlOlMS6zauhceVUJ_X8PUYQ-JPrakgMFmSpI94nZXFhkIBoP3KHimEv0V_129y29CSexLcfH2mMe4paoOc8zm7hqqpJdVTRv9bO1_zP04lnEyWVK7Ys4vqPYpAtylue087nb-2iDRhIUXy19-KiFIPWT2cq5tHMAtzR1OkoD00SZe8NnYk-l2ql2wxGFZVvMFkYCgHKhL4LXxgJl-iu98RBeUpWTI193N3N6cb2Q0BSNVmlmoBcR7yfs"/>
+<div class="absolute inset-0 bg-stone-900/10 group-hover:bg-transparent transition-colors"></div>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">Visual</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary transition-colors">Moodboard App Redesign</h3>
+<p class="text-stone-500 text-xs line-clamp-2 leading-relaxed mb-4">Referência de layout para a nova dashboard de investimentos.</p>
+<div class="mt-auto flex items-center justify-between">
+<span class="material-symbols-outlined text-stone-300 text-sm">image</span>
+<span class="text-[10px] text-stone-400">20 Out</span>
+</div>
+</div>
+</div>
+<!-- Idea Card -->
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100 flex flex-col">
+<div class="h-40 bg-amber-50/50 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#f59e0b 1px, transparent 1px); background-size: 15px 15px;"></div>
+<span class="material-symbols-outlined text-amber-200 text-6xl transition-transform group-hover:scale-110 duration-500">lightbulb</span>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-lg">Ideia</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary transition-colors">Expansão Small Caps</h3>
+<p class="text-stone-500 text-xs line-clamp-2 leading-relaxed mb-4">Foco em consultoria de gestão de caixa queima-lenta para startups Seed.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span class="text-[10px] text-stone-400 font-medium">Prioridade Alta</span>
+</div>
+<span class="text-[10px] text-stone-400">24 Out</span>
+</div>
+</div>
+</div>
+<!-- Observation Card -->
+<div class="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-100 flex flex-col">
+<div class="h-40 bg-stone-50 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-stone-200 text-6xl transition-transform group-hover:scale-110 duration-500">visibility</span>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-stone-200 text-stone-600 text-[10px] font-black uppercase tracking-widest rounded-lg">Observação</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="font-bold text-stone-900 leading-tight mb-2 group-hover:text-primary transition-colors">Ajuste de Fluxo API</h3>
+<p class="text-stone-500 text-xs line-clamp-2 leading-relaxed mb-4">Atraso de 2 dias no processamento Cielo nas segundas-feiras. Verificar compensação.</p>
+<div class="mt-auto flex items-center justify-between">
+<span class="material-symbols-outlined text-stone-300 text-sm">lock</span>
+<span class="text-[10px] text-stone-400">22 Out</span>
+</div>
+</div>
+</div>
+<!-- Placeholder Add Card -->
+<div class="border-2 border-dashed border-stone-200 rounded-2xl p-6 flex flex-col items-center justify-center text-stone-300 hover:border-primary/40 hover:text-primary transition-all cursor-pointer min-h-[260px] group">
+<div class="w-12 h-12 rounded-full border-2 border-stone-200 flex items-center justify-center mb-3 group-hover:border-primary/40 group-hover:scale-110 transition-all">
+<span class="material-symbols-outlined text-2xl">post_add</span>
+</div>
+<span class="text-[10px] font-black uppercase tracking-widest">Nova Pasta ou Nota</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full rounded-t-[32px] md:hidden bg-white/95 backdrop-blur-lg flex justify-around items-center h-20 pb-4 z-50 border-t border-stone-200/20 shadow-[0px_-12px_32px_rgba(0,0,0,0.04)]">
+<a class="text-stone-400" href="#"><span class="material-symbols-outlined text-2xl">home</span></a>
+<a class="text-stone-400" href="#"><span class="material-symbols-outlined text-2xl">business</span></a>
+<a class="text-stone-400" href="#"><span class="material-symbols-outlined text-2xl">payments</span></a>
+<a class="text-stone-400" href="#"><span class="material-symbols-outlined text-2xl">psychology</span></a>
+<a class="text-primary" href="#"><span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">edit_note</span></a>
+</nav>
+<!-- FAB for Mobile -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-50 md:hidden">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</body></html>

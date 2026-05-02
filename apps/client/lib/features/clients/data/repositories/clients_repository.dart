@@ -32,4 +32,8 @@ class ClientsRepository {
   Future<ClientModel> upsert(ClientModel client) {
     return remoteDataSource.upsert(client);
   }
+
+  Future<void> deleteById(String id) {
+    return remoteDataSource.deleteById(id);
+  }
 }

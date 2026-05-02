@@ -143,6 +143,44 @@ class ExpensesService extends ChangeNotifier {
     return created;
   }
 
+  Future<void> updateExpense(ExpenseModel expense) async {
+    final updated = expense.copyWith(updatedAt: DateTime.now().toUtc());
+    _replace(updated);
+    await _repository.cacheAll(_expenses);
+    notifyListeners();
+
+    try {
+      final saved = await _repository.upsert(updated);
+      _replace(saved);
+      await _repository.cacheAll(_expenses);
+      _errorMessage = null;
+    } catch (_) {
+      _errorMessage =
+          'Gasto atualizado localmente. A sincronizacao com Supabase falhou.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteExpense(String id) async {
+    final previous = _expenses;
+    _expenses =
+        _expenses.where((expense) => expense.id != id).toList(growable: false);
+    await _repository.cacheAll(_expenses);
+    notifyListeners();
+
+    try {
+      await _repository.deleteById(id);
+      _errorMessage = null;
+    } catch (_) {
+      _expenses = previous;
+      await _repository.cacheAll(_expenses);
+      _errorMessage = 'Nao foi possivel excluir gasto agora.';
+    } finally {
+      notifyListeners();
+    }
+  }
+
   int _sortByDate(ExpenseModel left, ExpenseModel right) {
     return right.expenseDate.compareTo(left.expenseDate);
   }

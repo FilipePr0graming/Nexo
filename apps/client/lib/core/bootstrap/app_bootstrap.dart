@@ -19,6 +19,11 @@ import '../../features/finance/data/repositories/expenses_repository.dart';
 import '../../features/finance/data/repositories/sales_repository.dart';
 import '../../features/finance/services/expenses_service.dart';
 import '../../features/finance/services/sales_service.dart';
+import '../../features/goals/services/goals_service.dart';
+import '../../features/notes/services/notes_service.dart';
+import '../../features/partners/services/partner_payments_service.dart';
+import '../../features/projects/services/projects_service.dart';
+import '../../features/reminders/services/reminders_service.dart';
 import '../app/app_services.dart';
 import '../config/app_environment.dart';
 import '../services/supabase_service.dart';
@@ -71,6 +76,26 @@ class AppBootstrap {
       clientAutofill: ClientAutofillService(clientAutofillRepository),
       sales: SalesService(salesRepository),
       expenses: ExpensesService(expensesRepository),
+      projects: ProjectsService(
+        client: supabaseClient,
+        localStore: localStore,
+      ),
+      goals: GoalsService(
+        client: supabaseClient,
+        localStore: localStore,
+      ),
+      reminders: RemindersService(
+        client: supabaseClient,
+        localStore: localStore,
+      ),
+      notes: NotesService(
+        client: supabaseClient,
+        localStore: localStore,
+      ),
+      partnerPayments: PartnerPaymentsService(
+        client: supabaseClient,
+        localStore: localStore,
+      ),
       supabaseEnabled: AppEnvironment.hasSupabase,
     );
 
