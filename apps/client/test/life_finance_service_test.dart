@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nexo_client/core/models/life_finance_summary.dart';
 import 'package:nexo_client/core/services/life_finance_service.dart';
 import 'package:nexo_client/features/finance/models/expense_model.dart';
 import 'package:nexo_client/features/finance/models/sale_model.dart';
@@ -36,6 +37,10 @@ void main() {
     expect(summary.freeMoney, 2850);
     expect(summary.realProfit, 2850);
     expect(summary.partner.remaining, 1650);
+    expect(summary.today.saldoTotal, 4500);
+    expect(summary.today.dinheiroComprometido, 1650);
+    expect(summary.today.dinheiroLivreHoje, 1750);
+    expect(summary.today.statusDoDia, TodayMoneyStatus.atencao);
   });
 
   test('mostra proximos 7 dias, cliente atrasado e casa paga pela empresa', () {
@@ -75,6 +80,8 @@ void main() {
 
     expect(summary.toReceive7Days, 1200);
     expect(summary.toPay7Days, 300);
+    expect(summary.today.contasProximos7Dias, 300);
+    expect(summary.today.statusDoDia, TodayMoneyStatus.risco);
     expect(summary.housePaidByCompany, 300);
     expect(summary.alerts.any((alert) => alert.title == 'Cliente atrasado'),
         isTrue);
@@ -150,12 +157,29 @@ void main() {
       ],
     );
 
-    expect(summary.todayActions.any((item) => item.title == 'Cobrar clientes'),
+    expect(summary.todayActions.any((item) => item.title == 'Cobrar Cliente'),
         isTrue);
     expect(summary.forecasts.map((item) => item.days), [7, 15, 30]);
-    expect(summary.forecasts.first.projectedMoney, 1500);
+    expect(summary.today.entradasHoje, 2000);
+    expect(summary.today.contasProximos7Dias, 1000);
+    expect(summary.today.dinheiroLivreHoje, -100);
+    expect(summary.forecasts.first.projectedMoney, 400);
     expect(summary.incomeSuggestions.first.title, 'Pagar primeiro');
     expect(summary.incomeSuggestions.first.amount, 1000);
+  });
+
+  test('sem dados mostra mensagem segura antes de sugerir gasto', () {
+    final summary = LifeFinanceService.summarize(
+      now: DateTime(2026, 5, 1, 12),
+      sales: const [],
+      expenses: const [],
+    );
+
+    expect(summary.today.statusDoDia, TodayMoneyStatus.semDados);
+    expect(
+      summary.today.mensagemPrincipal,
+      contains('Registre entradas e gastos'),
+    );
   });
 
   test('identifica cliente que atrasa e alerta impacto', () {

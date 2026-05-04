@@ -21,6 +21,7 @@ import '../../../../shared/components/lists/nexo_movement_list_item.dart';
 import '../../../../shared/components/lists/nexo_section_header.dart';
 import '../../../finance/models/expense_model.dart';
 import '../../../finance/models/sale_model.dart';
+import '../../../reminders/models/reminder_model.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({
@@ -46,6 +47,7 @@ class DashboardScreen extends StatelessWidget {
         salesService,
         expensesService,
         services.goals,
+        services.reminders,
       ]),
       builder: (context, _) {
         final sales = salesService.sales;
@@ -63,13 +65,14 @@ class DashboardScreen extends StatelessWidget {
 
         return NexoPageScaffold(
           title: 'Hoje',
-          subtitle: 'Abra aqui e decida o que fazer com o dinheiro.',
+          subtitle: 'Veja o que fazer com seu dinheiro hoje.',
           trailing: NexoIconButton(
             icon: NexoIcons.refresh,
             tooltip: 'Atualizar',
             onPressed: () {
               salesService.refresh();
               expensesService.refresh();
+              services.reminders.refresh();
             },
           ),
           child: Column(
@@ -99,6 +102,17 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: NexoSpacing.lg),
               _DailyAnswerCard(summary: summary),
+              const SizedBox(height: NexoSpacing.xl),
+              _ReminderCenter(
+                reminders: _todayReminders(services.reminders.reminders),
+                onNewReminder: () => _showReminderSheet(context),
+                onEditReminder: (reminder) => _showReminderSheet(
+                  context,
+                  reminder: reminder,
+                ),
+                onDoneReminder: services.reminders.markDone,
+                onDeleteReminder: services.reminders.deleteReminder,
+              ),
               const SizedBox(height: NexoSpacing.xl),
               _MemoryCard(memory: memory),
               const SizedBox(height: NexoSpacing.x2l),
@@ -173,6 +187,22 @@ class DashboardScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  List<ReminderModel> _todayReminders(List<ReminderModel> reminders) {
+    final now = DateTime.now();
+    final limit = now.add(const Duration(days: 7));
+    final items = reminders
+        .where((reminder) =>
+            reminder.status == ReminderStatus.open &&
+            !DateTime(
+              reminder.dueDate.toLocal().year,
+              reminder.dueDate.toLocal().month,
+              reminder.dueDate.toLocal().day,
+            ).isAfter(DateTime(limit.year, limit.month, limit.day)))
+        .toList(growable: false)
+      ..sort((left, right) => left.dueDate.compareTo(right.dueDate));
+    return items.take(5).toList(growable: false);
   }
 
   List<_DashboardMovement> _buildRecentMovements(
@@ -443,6 +473,130 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _showReminderSheet(
+    BuildContext context, {
+    ReminderModel? reminder,
+  }) {
+    final titleController = TextEditingController(text: reminder?.title ?? '');
+    final descriptionController =
+        TextEditingController(text: reminder?.description ?? '');
+    final due = reminder?.dueDate.toLocal() ??
+        DateTime.now().add(const Duration(days: 1));
+    final dateController = TextEditingController(
+      text:
+          '${due.day.toString().padLeft(2, '0')}/${due.month.toString().padLeft(2, '0')}/${due.year}',
+    );
+    final timeController = TextEditingController(
+      text:
+          '${due.hour.toString().padLeft(2, '0')}:${due.minute.toString().padLeft(2, '0')}',
+    );
+
+    return _showQuickSheet(
+      context,
+      title: reminder == null ? 'Novo lembrete' : 'Editar lembrete',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NexoTextField(
+            label: 'Titulo',
+            hint: 'Ex.: Cobrar Anderson',
+            controller: titleController,
+          ),
+          const SizedBox(height: NexoSpacing.md),
+          NexoTextField(
+            label: 'Descricao',
+            hint: 'Detalhe curto',
+            controller: descriptionController,
+            maxLines: 3,
+          ),
+          const SizedBox(height: NexoSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: NexoTextField(
+                  label: 'Data',
+                  hint: 'dd/mm/aaaa',
+                  controller: dateController,
+                  keyboardType: TextInputType.datetime,
+                ),
+              ),
+              const SizedBox(width: NexoSpacing.md),
+              SizedBox(
+                width: 104,
+                child: NexoTextField(
+                  label: 'Hora',
+                  hint: '09:00',
+                  controller: timeController,
+                  keyboardType: TextInputType.datetime,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: NexoSpacing.lg),
+          FilledButton.icon(
+            onPressed: () async {
+              final title = titleController.text.trim();
+              final parsedDue = _parseReminderDue(
+                dateController.text,
+                timeController.text,
+              );
+              if (title.isEmpty || parsedDue == null) {
+                return;
+              }
+
+              final reminders = NexoScope.of(context).reminders;
+              if (reminder == null) {
+                await reminders.createReminder(
+                  title: title,
+                  description: descriptionController.text,
+                  dueDate: parsedDue,
+                );
+              } else {
+                await reminders.updateReminder(
+                  reminder.copyWith(
+                    title: title,
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
+                    dueDate: parsedDue,
+                  ),
+                );
+              }
+
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            icon: const Icon(NexoIcons.add, size: 18),
+            label: Text(reminder == null ? 'Criar lembrete' : 'Salvar'),
+          ),
+        ],
+      ),
+    ).whenComplete(() {
+      titleController.dispose();
+      descriptionController.dispose();
+      dateController.dispose();
+      timeController.dispose();
+    });
+  }
+
+  DateTime? _parseReminderDue(String date, String time) {
+    final dateParts = date.split('/');
+    final timeParts = time.split(':');
+    if (dateParts.length != 3 || timeParts.length < 2) {
+      return null;
+    }
+    final day = int.tryParse(dateParts[0]);
+    final month = int.tryParse(dateParts[1]);
+    final year = int.tryParse(dateParts[2]);
+    final hour = int.tryParse(timeParts[0]);
+    final minute = int.tryParse(timeParts[1]);
+    if ([day, month, year, hour, minute].any((value) => value == null)) {
+      return null;
+    }
+    return DateTime(year!, month!, day!, hour!, minute!).toUtc();
+  }
+
   Future<T?> _showQuickSheet<T>(
     BuildContext context, {
     required String title,
@@ -500,35 +654,36 @@ class _FocusModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mainMessage = summary.forecasts.any(
-      (forecast) => forecast.projectedMoney < 0,
-    )
-        ? 'Voce esta apertado nos proximos dias'
-        : summary.freeMoney - summary.toPay7Days >= 300
-            ? 'Voce pode gastar hoje'
-            : 'Melhor nao comprar isso agora';
+    final today = summary.today;
 
     return NexoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Modo foco',
+            today.title,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: NexoSpacing.sm),
           Text(
-            mainMessage,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            today.mensagemPrincipal,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: NexoColors.ink,
                   fontWeight: FontWeight.w800,
                 ),
           ),
           const SizedBox(height: NexoSpacing.md),
+          _TodayMetricsGrid(today: today),
+          const SizedBox(height: NexoSpacing.lg),
+          Text(
+            'O que fazer agora',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: NexoSpacing.sm),
           if (summary.todayActions.isEmpty)
             const Text('Registre o que entrar e sair hoje.')
           else
-            ...summary.todayActions.take(3).map(
+            ...summary.todayActions.take(5).map(
                   (action) => Padding(
                     padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
                     child: _ActionRow(action: action),
@@ -539,26 +694,22 @@ class _FocusModeCard extends StatelessWidget {
             buttons: [
               _FocusButtonData(
                 icon: NexoIcons.income,
-                label: summary.upcomingReceipts.isEmpty
-                    ? 'Recebi dinheiro'
-                    : 'Recebi ${summary.upcomingReceipts.first.clientName}',
+                label: 'Recebi',
                 onTap: onReceiveMoney,
               ),
               _FocusButtonData(
                 icon: Icons.receipt_long_rounded,
-                label: 'Pagar conta',
+                label: 'Conta',
                 onTap: onPayBill,
               ),
               _FocusButtonData(
                 icon: NexoIcons.newExpense,
-                label: memory.commonExpenseAmount > 0
-                    ? 'Gasto comum'
-                    : 'Adicionar gasto',
+                label: 'Gasto',
                 onTap: onAddExpense,
               ),
               _FocusButtonData(
                 icon: Icons.chat_bubble_outline_rounded,
-                label: 'Cobrar cliente',
+                label: 'Cobrar',
                 onTap: onChargeClient,
               ),
             ],
@@ -567,6 +718,86 @@ class _FocusModeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TodayMetricsGrid extends StatelessWidget {
+  const _TodayMetricsGrid({
+    required this.today,
+  });
+
+  final TodayMoneySnapshot today;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _MetricLine(
+          'Dinheiro livre hoje', MoneyUtils.format(today.dinheiroLivreHoje)),
+      _MetricLine('Entrou hoje', MoneyUtils.format(today.entradasHoje)),
+      _MetricLine(
+          'A pagar em 7 dias', MoneyUtils.format(today.contasProximos7Dias)),
+      _MetricLine(
+          'A cobrar em 7 dias', MoneyUtils.format(today.entradasProximos7Dias)),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 640 ? 4 : 2;
+        final width =
+            (constraints.maxWidth - (NexoSpacing.sm * (columns - 1))) / columns;
+        return Wrap(
+          spacing: NexoSpacing.sm,
+          runSpacing: NexoSpacing.sm,
+          children: items
+              .map(
+                (item) => SizedBox(
+                  width: width,
+                  child: Container(
+                    padding: const EdgeInsets.all(NexoSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: NexoColors.surfaceMuted,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: NexoColors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: NexoColors.inkMedium,
+                                  ),
+                        ),
+                        const SizedBox(height: NexoSpacing.xxs),
+                        Text(
+                          item.value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: NexoColors.ink,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+              .toList(growable: false),
+        );
+      },
+    );
+  }
+}
+
+class _MetricLine {
+  const _MetricLine(this.label, this.value);
+
+  final String label;
+  final String value;
 }
 
 class _FocusButtonGrid extends StatelessWidget {
@@ -580,21 +811,26 @@ class _FocusButtonGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth >= 720
-            ? (constraints.maxWidth - NexoSpacing.md) / 2
-            : constraints.maxWidth;
+        final columns = constraints.maxWidth >= 560 ? 4 : 2;
+        final width =
+            (constraints.maxWidth - (NexoSpacing.sm * (columns - 1))) / columns;
 
         return Wrap(
-          spacing: NexoSpacing.md,
+          spacing: NexoSpacing.sm,
           runSpacing: NexoSpacing.sm,
           children: buttons
               .map(
                 (button) => SizedBox(
+                  height: 44,
                   width: width,
-                  child: FilledButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: button.onTap,
                     icon: Icon(button.icon, size: 18),
-                    label: Text(button.label),
+                    label: Text(
+                      button.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               )
@@ -626,10 +862,13 @@ class _DailyAnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canSpend = summary.freeMoney - summary.toPay7Days;
-    final phrase = canSpend >= 300
-        ? 'Voce pode gastar ${MoneyUtils.format(canSpend)} com cuidado.'
-        : 'Nao compre isso agora. Priorize contas e cobranças.';
+    final today = summary.today;
+    final phrase = today.mensagemPrincipal;
+    final details = summary.today.entradasHoje > 0
+        ? 'Voce recebeu ${MoneyUtils.format(summary.today.entradasHoje)} hoje. Antes de gastar, confira contas dos proximos 7 dias.'
+        : summary.toPay7Days > 0
+            ? 'Ha ${MoneyUtils.format(summary.toPay7Days)} em contas proximas. Cobre antes de assumir gasto novo.'
+            : 'Sem conta urgente no radar. Continue registrando entradas e saidas para manter o calculo confiavel.';
 
     return NexoCard(
       backgroundColor: NexoColors.surfaceElevated,
@@ -644,9 +883,19 @@ class _DailyAnswerCard extends StatelessWidget {
           Text(
             phrase,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color:
-                      canSpend >= 300 ? NexoColors.success : NexoColors.error,
+                  color: today.statusDoDia == TodayMoneyStatus.risco
+                      ? NexoColors.error
+                      : today.statusDoDia == TodayMoneyStatus.seguro
+                          ? NexoColors.success
+                          : NexoColors.accent,
                   fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(
+            details,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: NexoColors.inkMedium,
                 ),
           ),
           const SizedBox(height: NexoSpacing.lg),
@@ -715,6 +964,148 @@ class _MemoryCard extends StatelessWidget {
   }
 }
 
+class _ReminderCenter extends StatelessWidget {
+  const _ReminderCenter({
+    required this.reminders,
+    required this.onNewReminder,
+    required this.onEditReminder,
+    required this.onDoneReminder,
+    required this.onDeleteReminder,
+  });
+
+  final List<ReminderModel> reminders;
+  final VoidCallback onNewReminder;
+  final ValueChanged<ReminderModel> onEditReminder;
+  final Future<void> Function(String id) onDoneReminder;
+  final Future<void> Function(String id) onDeleteReminder;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      backgroundColor: NexoColors.surfaceElevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Lembretes',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onNewReminder,
+                icon: const Icon(NexoIcons.add, size: 18),
+                label: const Text('Novo'),
+              ),
+            ],
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          if (reminders.isEmpty)
+            Text(
+              'Nenhum lembrete aberto para os proximos dias.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: NexoColors.inkMedium,
+                  ),
+            )
+          else
+            ...reminders.map(
+              (reminder) => Padding(
+                padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+                child: _ReminderRow(
+                  reminder: reminder,
+                  onEdit: () => onEditReminder(reminder),
+                  onDone: () => onDoneReminder(reminder.id),
+                  onDelete: () => onDeleteReminder(reminder.id),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReminderRow extends StatelessWidget {
+  const _ReminderRow({
+    required this.reminder,
+    required this.onEdit,
+    required this.onDone,
+    required this.onDelete,
+  });
+
+  final ReminderModel reminder;
+  final VoidCallback onEdit;
+  final VoidCallback onDone;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(NexoSpacing.sm),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: NexoColors.border),
+        color: NexoColors.surface,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.notifications_none_rounded,
+            size: 20,
+            color: NexoColors.accent,
+          ),
+          const SizedBox(width: NexoSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reminder.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: NexoSpacing.xxs),
+                Text(
+                  [
+                    DateLabelUtils.dayLabel(reminder.dueDate.toLocal()),
+                    if (reminder.description?.isNotEmpty == true)
+                      reminder.description!,
+                  ].join(' | '),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: NexoColors.inkMedium,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: NexoSpacing.xs),
+          IconButton(
+            tooltip: 'Concluir lembrete',
+            onPressed: onDone,
+            icon: const Icon(Icons.check_rounded),
+          ),
+          IconButton(
+            tooltip: 'Editar lembrete',
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined),
+          ),
+          IconButton(
+            tooltip: 'Excluir lembrete',
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ActionRow extends StatelessWidget {
   const _ActionRow({
     required this.action,
@@ -749,11 +1140,15 @@ class _ActionRow extends StatelessWidget {
             children: [
               Text(
                 action.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: NexoSpacing.xxs),
               Text(
                 action.message,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: NexoColors.inkMedium,
                     ),
@@ -895,35 +1290,59 @@ class _SuggestionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                suggestion.title,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: NexoSpacing.xxs),
-              Text(
-                suggestion.message,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: NexoColors.inkLow,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: NexoSpacing.md),
-        Text(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 360;
+        final text = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              suggestion.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: NexoSpacing.xxs),
+            Text(
+              suggestion.message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: NexoColors.inkLow,
+                  ),
+            ),
+          ],
+        );
+        final amount = Text(
           MoneyUtils.format(suggestion.amount),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: NexoColors.ink,
               ),
-        ),
-      ],
+        );
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              text,
+              const SizedBox(height: NexoSpacing.xxs),
+              amount,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: text),
+            const SizedBox(width: NexoSpacing.md),
+            Flexible(
+                child: Align(alignment: Alignment.topRight, child: amount)),
+          ],
+        );
+      },
     );
   }
 }
@@ -1361,6 +1780,8 @@ class _DueActionRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: NexoColors.ink,
                         ),
@@ -1368,6 +1789,8 @@ class _DueActionRow extends StatelessWidget {
                   const SizedBox(height: NexoSpacing.xxs),
                   Text(
                     subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: NexoColors.inkLow,
                         ),
@@ -1378,6 +1801,8 @@ class _DueActionRow extends StatelessWidget {
             const SizedBox(width: NexoSpacing.md),
             Text(
               value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             if (actionLabel != null) ...[
@@ -1412,21 +1837,46 @@ class _PlanRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-        Text(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 360;
+        final labelText = Text(
+          label,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          softWrap: true,
+          style: Theme.of(context).textTheme.bodyMedium,
+        );
+        final valueText = Text(
           value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          textAlign: compact ? TextAlign.start : TextAlign.end,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: strong ? NexoColors.accent : NexoColors.ink,
               ),
-        ),
-      ],
+        );
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              labelText,
+              const SizedBox(height: NexoSpacing.xxs),
+              valueText,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: labelText),
+            const SizedBox(width: NexoSpacing.md),
+            Flexible(child: valueText),
+          ],
+        );
+      },
     );
   }
 }

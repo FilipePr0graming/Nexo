@@ -4,6 +4,7 @@ import '../../shared/components/cards/nexo_alert_card.dart';
 
 class LifeFinanceSummary {
   const LifeFinanceSummary({
+    required this.today,
     required this.confirmedEntries,
     required this.businessExpenses,
     required this.personalExpenses,
@@ -27,6 +28,7 @@ class LifeFinanceSummary {
     required this.upcomingBills,
   });
 
+  final TodayMoneySnapshot today;
   final double confirmedEntries;
   final double businessExpenses;
   final double personalExpenses;
@@ -48,6 +50,50 @@ class LifeFinanceSummary {
   final List<MoneyAlert> alerts;
   final List<SaleModel> upcomingReceipts;
   final List<ExpenseModel> upcomingBills;
+}
+
+enum TodayMoneyStatus {
+  seguro,
+  atencao,
+  risco,
+  semDados,
+}
+
+class TodayMoneySnapshot {
+  const TodayMoneySnapshot({
+    required this.saldoTotal,
+    required this.entradasHoje,
+    required this.entradasProximos7Dias,
+    required this.contasProximos7Dias,
+    required this.dinheiroComprometido,
+    required this.reservaMinima,
+    required this.dinheiroLivreHoje,
+    required this.statusDoDia,
+    required this.mensagemPrincipal,
+  });
+
+  final double saldoTotal;
+  final double entradasHoje;
+  final double entradasProximos7Dias;
+  final double contasProximos7Dias;
+  final double dinheiroComprometido;
+  final double reservaMinima;
+  final double dinheiroLivreHoje;
+  final TodayMoneyStatus statusDoDia;
+  final String mensagemPrincipal;
+
+  bool get hasEnoughData {
+    return statusDoDia != TodayMoneyStatus.semDados;
+  }
+
+  String get title {
+    return switch (statusDoDia) {
+      TodayMoneyStatus.seguro => 'Tudo sob controle',
+      TodayMoneyStatus.atencao => 'Use com cuidado',
+      TodayMoneyStatus.risco => 'Segure gastos agora',
+      TodayMoneyStatus.semDados => 'Registre seus movimentos',
+    };
+  }
 }
 
 class MoneyDecision {

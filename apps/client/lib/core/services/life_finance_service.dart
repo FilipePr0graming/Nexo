@@ -60,6 +60,10 @@ class LifeFinanceService {
     final toReceive7Days =
         _sum(upcomingReceipts.map((sale) => sale.ownerAmount));
     final toPay7Days = _sum(upcomingBills.map((expense) => expense.amount));
+    final entriesToday = _sum(received.where((sale) {
+      final date = (sale.receivedDate ?? sale.movementDate).toLocal();
+      return DateLabelUtils.isSameDay(date, today);
+    }).map((sale) => sale.netAmount));
     final housePaidByCompany = _sum(expenses
         .where((expense) =>
             expense.scope == ExpenseScope.personal &&
@@ -72,8 +76,21 @@ class LifeFinanceService {
       goals: goals,
       today: today,
     );
+    final todayMoney = _todayMoneySnapshot(
+      saldoTotal:
+          _money(confirmedEntries - businessExpenses - personalExpenses),
+      entradasHoje: entriesToday,
+      entradasProximos7Dias: toReceive7Days,
+      contasProximos7Dias: toPay7Days,
+      partnerRemaining: partner.remaining,
+      futureInstallments: futureInstallments,
+      goal: goal,
+      hasProtectedGoal: goals.any((goal) => goal.status == GoalStatus.active),
+      sales: sales,
+      expenses: expenses,
+    );
     final forecasts = _forecasts(
-      freeMoney: freeMoney,
+      freeMoney: todayMoney.dinheiroLivreHoje,
       openSales: openSales,
       expenses: expenses,
       today: today,
@@ -113,6 +130,7 @@ class LifeFinanceService {
     );
 
     return LifeFinanceSummary(
+      today: todayMoney,
       confirmedEntries: confirmedEntries,
       businessExpenses: businessExpenses,
       personalExpenses: personalExpenses,
@@ -137,6 +155,93 @@ class LifeFinanceService {
     );
   }
 
+  static TodayMoneySnapshot _todayMoneySnapshot({
+    required double saldoTotal,
+    required double entradasHoje,
+    required double entradasProximos7Dias,
+    required double contasProximos7Dias,
+    required double partnerRemaining,
+    required double futureInstallments,
+    required GoalSummary goal,
+    required bool hasProtectedGoal,
+    required List<SaleModel> sales,
+    required List<ExpenseModel> expenses,
+  }) {
+    final hasFinancialData = sales.isNotEmpty || expenses.isNotEmpty;
+    final protectedGoal = hasProtectedGoal && goal.saved > 0 ? goal.saved : 0.0;
+    final reserveMinimum = _reserveMinimum(
+      saldoTotal: saldoTotal,
+      contasProximos7Dias: contasProximos7Dias,
+      protectedGoal: protectedGoal,
+      hasFinancialData: hasFinancialData,
+    );
+    final committed = _money(
+      partnerRemaining + futureInstallments + protectedGoal,
+    );
+    final freeToday = _money(
+      saldoTotal - contasProximos7Dias - committed - reserveMinimum,
+    );
+
+    if (!hasFinancialData) {
+      return const TodayMoneySnapshot(
+        saldoTotal: 0,
+        entradasHoje: 0,
+        entradasProximos7Dias: 0,
+        contasProximos7Dias: 0,
+        dinheiroComprometido: 0,
+        reservaMinima: 0,
+        dinheiroLivreHoje: 0,
+        statusDoDia: TodayMoneyStatus.semDados,
+        mensagemPrincipal:
+            'Registre entradas e gastos para eu calcular seu dinheiro livre com seguranca.',
+      );
+    }
+
+    final status = freeToday < 0 || saldoTotal < contasProximos7Dias
+        ? TodayMoneyStatus.risco
+        : freeToday < 300 || contasProximos7Dias > 0
+            ? TodayMoneyStatus.atencao
+            : TodayMoneyStatus.seguro;
+    final message = switch (status) {
+      TodayMoneyStatus.seguro =>
+        'Voce tem ${MoneyUtils.format(freeToday)} livre hoje, depois de separar contas e compromissos.',
+      TodayMoneyStatus.atencao =>
+        'Voce tem ${MoneyUtils.format(freeToday)} disponivel, mas use com cuidado. Ha contas proximas.',
+      TodayMoneyStatus.risco =>
+        'Melhor segurar gastos agora. Seu caixa pode apertar nos proximos dias.',
+      TodayMoneyStatus.semDados =>
+        'Registre entradas e gastos para eu calcular seu dinheiro livre com seguranca.',
+    };
+
+    return TodayMoneySnapshot(
+      saldoTotal: saldoTotal,
+      entradasHoje: entradasHoje,
+      entradasProximos7Dias: entradasProximos7Dias,
+      contasProximos7Dias: contasProximos7Dias,
+      dinheiroComprometido: committed,
+      reservaMinima: reserveMinimum,
+      dinheiroLivreHoje: freeToday,
+      statusDoDia: status,
+      mensagemPrincipal: message,
+    );
+  }
+
+  static double _reserveMinimum({
+    required double saldoTotal,
+    required double contasProximos7Dias,
+    required double protectedGoal,
+    required bool hasFinancialData,
+  }) {
+    if (!hasFinancialData || saldoTotal <= 0) {
+      return 0;
+    }
+    if (protectedGoal > 0) {
+      return 0;
+    }
+    final base = contasProximos7Dias > 0 ? contasProximos7Dias * 0.1 : 100.0;
+    return _money(base.clamp(0, saldoTotal * 0.2).toDouble());
+  }
+
   static List<TodayAction> _todayActions({
     required double freeMoney,
     required double toReceive7Days,
@@ -154,9 +259,9 @@ class LifeFinanceService {
       final first = upcomingReceipts.first;
       actions.add(
         TodayAction(
-          title: 'Cobrar clientes',
+          title: 'Cobrar ${first.clientName}',
           message:
-              'Comece por ${first.clientName}. Tem ${MoneyUtils.format(toReceive7Days)} para entrar nos proximos 7 dias.',
+              '${MoneyUtils.format(toReceive7Days)} previstos para entrar nos proximos 7 dias.',
           priority: ActionPriority.high,
         ),
       );
@@ -166,9 +271,9 @@ class LifeFinanceService {
       final first = upcomingBills.first;
       actions.add(
         TodayAction(
-          title: 'Pagar contas',
+          title: 'Pagar ${first.title}',
           message:
-              'Priorize ${first.title}. Separe ${MoneyUtils.format(toPay7Days)} para a semana.',
+              'Separe ${MoneyUtils.format(toPay7Days)} para contas da semana.',
           priority: ActionPriority.high,
         ),
       );
@@ -177,8 +282,8 @@ class LifeFinanceService {
     if (freeMoney - toPay7Days < 300 || riskyForecast) {
       actions.add(
         TodayAction(
-          title: 'Evitar gastos',
-          message: 'Nao compre isso agora. Voce esta no limite.',
+          title: 'Segurar gastos extras',
+          message: 'O dinheiro livre pode apertar depois das contas.',
           priority: ActionPriority.high,
         ),
       );
@@ -187,7 +292,7 @@ class LifeFinanceService {
     if (freeMoney - toPay7Days >= 500 && goal.progress < 1) {
       actions.add(
         TodayAction(
-          title: 'Guardar dinheiro',
+          title: 'Revisar meta ${goal.title}',
           message:
               'Separe pelo menos ${MoneyUtils.format((freeMoney - toPay7Days) * 0.2)} para a reserva.',
           priority: ActionPriority.medium,
@@ -228,8 +333,8 @@ class LifeFinanceService {
       final message = projected < 0
           ? 'Risco de faltar ${MoneyUtils.format(projected.abs())}.'
           : projected < 500
-              ? 'Vai sobrar pouco. Segure gastos.'
-              : 'Voce pode gastar com cuidado.';
+              ? 'Sobra pouco depois de entradas e contas.'
+              : 'Caixa fica positivo depois de cobranças e contas.';
 
       return CashForecast(
         days: days,
@@ -283,7 +388,7 @@ class LifeFinanceService {
         message: 'Vai para a reserva, antes de gastar.',
       ),
       IncomeSuggestion(
-        title: 'Voce pode gastar',
+        title: 'Uso livre depois',
         amount: freeUse,
         message: freeUse <= 0
             ? 'Por enquanto nao sobra para compras.'

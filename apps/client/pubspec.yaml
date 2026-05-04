@@ -1,7 +1,7 @@
 name: nexo_client
 description: Nexo minimal finance client
 publish_to: "none"
-version: 0.1.2+3
+version: 0.1.3+4
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -13,6 +13,8 @@ dependencies:
   http: ^1.2.2
   supabase_flutter: ^2.12.2
   shared_preferences: ^2.5.5
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
 
 dev_dependencies:
   flutter_test:

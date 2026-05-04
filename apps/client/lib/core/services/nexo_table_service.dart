@@ -122,7 +122,6 @@ class NexoTableService<T> extends ChangeNotifier {
   }
 
   Future<void> deleteById(String id) async {
-    final previous = _items;
     _items = _items.where((item) => idOf(item) != id).toList(growable: false);
     await _cacheAll();
     notifyListeners();
@@ -135,8 +134,6 @@ class NexoTableService<T> extends ChangeNotifier {
       await _client.from(table).delete().eq('id', id);
       _errorMessage = null;
     } catch (_) {
-      _items = previous;
-      await _cacheAll();
       _errorMessage = syncErrorMessage;
     } finally {
       notifyListeners();

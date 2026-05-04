@@ -5,6 +5,7 @@ import '../../../core/services/nexo_table_service.dart';
 import '../../../core/storage/local_json_store.dart';
 import '../../../core/utils/id_generator.dart';
 import '../models/reminder_model.dart';
+import 'local_reminder_notifications.dart';
 
 class RemindersService extends ChangeNotifier {
   RemindersService({
@@ -27,14 +28,26 @@ class RemindersService extends ChangeNotifier {
   }
 
   final NexoTableService<ReminderModel> _store;
+  final LocalReminderNotifications _notifications =
+      LocalReminderNotifications();
 
   List<ReminderModel> get reminders => _store.items;
   bool get isLoading => _store.isLoading;
   bool get isSyncing => _store.isSyncing;
   String? get errorMessage => _store.errorMessage;
 
-  Future<void> initialize() => _store.initialize();
-  Future<void> refresh() => _store.refresh();
+  Future<void> initialize() async {
+    await Future.wait<void>([
+      _store.initialize(),
+      _notifications.initialize(),
+    ]);
+    await _scheduleOpenReminders();
+  }
+
+  Future<void> refresh() async {
+    await _store.refresh();
+    await _scheduleOpenReminders();
+  }
 
   Future<void> createReminder({
     required String title,
@@ -43,31 +56,35 @@ class RemindersService extends ChangeNotifier {
     String? recurrence,
     String? relatedTable,
     String? relatedId,
-  }) {
+  }) async {
     final timestamp = DateTime.now().toUtc();
-    return _store.upsertItem(
-      ReminderModel(
-        id: IdGenerator.next('reminder'),
-        title: title.trim(),
-        description: _emptyToNull(description),
-        dueDate: dueDate.toUtc(),
-        status: ReminderStatus.open,
-        recurrence: _emptyToNull(recurrence),
-        relatedTable: _emptyToNull(relatedTable),
-        relatedId: _emptyToNull(relatedId),
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      ),
+    final reminder = ReminderModel(
+      id: IdGenerator.next('reminder'),
+      title: title.trim(),
+      description: _emptyToNull(description),
+      dueDate: dueDate.toUtc(),
+      status: ReminderStatus.open,
+      recurrence: _emptyToNull(recurrence),
+      relatedTable: _emptyToNull(relatedTable),
+      relatedId: _emptyToNull(relatedId),
+      createdAt: timestamp,
+      updatedAt: timestamp,
     );
+    await _store.upsertItem(reminder);
+    await _notifications.schedule(reminder);
   }
 
-  Future<void> updateReminder(ReminderModel reminder) {
-    return _store.upsertItem(
-      reminder.copyWith(updatedAt: DateTime.now().toUtc()),
-    );
+  Future<void> updateReminder(ReminderModel reminder) async {
+    final updated = reminder.copyWith(updatedAt: DateTime.now().toUtc());
+    await _store.upsertItem(updated);
+    if (updated.status == ReminderStatus.open) {
+      await _notifications.schedule(updated);
+    } else {
+      await _notifications.cancel(updated.id);
+    }
   }
 
-  Future<void> markDone(String id) {
+  Future<void> markDone(String id) async {
     final reminder = reminders.cast<ReminderModel?>().firstWhere(
           (item) => item?.id == id,
           orElse: () => null,
@@ -75,10 +92,22 @@ class RemindersService extends ChangeNotifier {
     if (reminder == null) {
       return Future<void>.value();
     }
-    return updateReminder(reminder.copyWith(status: ReminderStatus.done));
+    await updateReminder(reminder.copyWith(status: ReminderStatus.done));
+    await _notifications.cancel(id);
   }
 
-  Future<void> deleteReminder(String id) => _store.deleteById(id);
+  Future<void> deleteReminder(String id) async {
+    await _store.deleteById(id);
+    await _notifications.cancel(id);
+  }
+
+  Future<void> _scheduleOpenReminders() async {
+    for (final reminder in reminders.where(
+      (item) => item.status == ReminderStatus.open,
+    )) {
+      await _notifications.schedule(reminder);
+    }
+  }
 
   @override
   void dispose() {

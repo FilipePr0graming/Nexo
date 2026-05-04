@@ -46,7 +46,7 @@ class CasaScreen extends StatelessWidget {
                 eyebrow: 'Saldo da casa',
                 value: MoneyUtils.format(-monthlyTotal),
                 message: safeToday > 0
-                    ? 'Voce pode gastar ${MoneyUtils.format(safeToday)} hoje sem apertar a semana.'
+                    ? 'Ha ${MoneyUtils.format(safeToday)} livre depois das contas da semana.'
                     : 'Melhor nao comprar isso agora. O caixa esta justo.',
               ),
               _SectionTitle('Gastos por categoria'),
@@ -1921,7 +1921,7 @@ class _PromptBar extends StatelessWidget {
           Expanded(
             child: Text(
               safe > 0
-                  ? 'Pergunta respondida: voce pode gastar ${MoneyUtils.format(safe)} hoje.'
+                  ? 'Pergunta respondida: ha ${MoneyUtils.format(safe)} livre depois das contas.'
                   : 'Pergunta respondida: melhor segurar gastos hoje.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
