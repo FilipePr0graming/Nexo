@@ -30,7 +30,7 @@ class _NexoAppState extends State<NexoApp> {
     return NexoScope(
       services: widget.services,
       child: MaterialApp(
-        title: 'Nexo',
+        title: 'NEXO',
         debugShowCheckedModeBanner: false,
         theme: NexoTheme.light(),
         home: _AuthGate(services: widget.services),

@@ -10,15 +10,18 @@ class NexoMetricCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.footnote,
+    this.onTap,
   });
 
   final String label;
   final String value;
   final String? footnote;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return NexoCard(
+      onTap: onTap,
       backgroundColor: NexoColors.surfaceElevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,14 +7,22 @@ import '../../../core/design_system/nexo_spacing.dart';
 class NexoQuickActionSheet extends StatelessWidget {
   const NexoQuickActionSheet({
     super.key,
-    required this.onNewSale,
-    required this.onNewExpense,
-    required this.onNewClient,
+    required this.onReceiveMoney,
+    required this.onPayBill,
+    required this.onAddExpense,
+    required this.onChargeClient,
+    required this.onNewReminder,
+    required this.onNewNote,
+    required this.onOpenCalculator,
   });
 
-  final VoidCallback onNewSale;
-  final VoidCallback onNewExpense;
-  final VoidCallback onNewClient;
+  final VoidCallback onReceiveMoney;
+  final VoidCallback onPayBill;
+  final VoidCallback onAddExpense;
+  final VoidCallback onChargeClient;
+  final VoidCallback onNewReminder;
+  final VoidCallback onNewNote;
+  final VoidCallback onOpenCalculator;
 
   @override
   Widget build(BuildContext context) {
@@ -34,33 +42,47 @@ class NexoQuickActionSheet extends StatelessWidget {
               'Registrar',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: NexoSpacing.xs),
-            Text(
-              'Escolha a acao principal do momento.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: NexoColors.inkMedium,
-                  ),
-            ),
             const SizedBox(height: NexoSpacing.lg),
             _SheetAction(
               icon: NexoIcons.newSale,
-              title: 'Nova venda',
-              subtitle: 'Registrar uma entrada com liquido e comissao.',
-              onTap: onNewSale,
+              title: 'Recebi dinheiro',
+              onTap: onReceiveMoney,
+            ),
+            const SizedBox(height: NexoSpacing.sm),
+            _SheetAction(
+              icon: Icons.receipt_long_rounded,
+              title: 'Paguei conta',
+              onTap: onPayBill,
             ),
             const SizedBox(height: NexoSpacing.sm),
             _SheetAction(
               icon: NexoIcons.newExpense,
-              title: 'Novo gasto',
-              subtitle: 'Lancar um gasto pessoal ou da empresa.',
-              onTap: onNewExpense,
+              title: 'Registrei gasto',
+              onTap: onAddExpense,
             ),
             const SizedBox(height: NexoSpacing.sm),
             _SheetAction(
-              icon: NexoIcons.newClient,
-              title: 'Novo cliente',
-              subtitle: 'Cadastrar um contato novo e ligar depois com vendas.',
-              onTap: onNewClient,
+              icon: NexoIcons.clients,
+              title: 'Cobrar cliente',
+              onTap: onChargeClient,
+            ),
+            const SizedBox(height: NexoSpacing.sm),
+            _SheetAction(
+              icon: Icons.notifications_none_rounded,
+              title: 'Criar lembrete',
+              onTap: onNewReminder,
+            ),
+            const SizedBox(height: NexoSpacing.sm),
+            _SheetAction(
+              icon: NexoIcons.notes,
+              title: 'Nova anotação',
+              onTap: onNewNote,
+            ),
+            const SizedBox(height: NexoSpacing.sm),
+            _SheetAction(
+              icon: Icons.calculate_rounded,
+              title: 'Calculadora',
+              onTap: onOpenCalculator,
             ),
           ],
         ),
@@ -73,13 +95,11 @@ class _SheetAction extends StatelessWidget {
   const _SheetAction({
     required this.icon,
     required this.title,
-    required this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
-  final String subtitle;
   final VoidCallback onTap;
 
   @override
@@ -114,11 +134,6 @@ class _SheetAction extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: NexoSpacing.xxs),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),

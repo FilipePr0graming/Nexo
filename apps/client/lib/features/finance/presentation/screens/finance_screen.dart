@@ -1,8 +1,9 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/app/nexo_scope.dart';
 import '../../../../core/design_system/nexo_colors.dart';
-import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../core/models/life_finance_summary.dart';
 import '../../../../core/services/life_finance_service.dart';
@@ -12,7 +13,6 @@ import '../../../../shared/components/app/nexo_page_scaffold.dart';
 import '../../../../shared/components/cards/nexo_card.dart';
 import '../../../../shared/components/cards/nexo_empty_state_card.dart';
 import '../../../../shared/components/cards/nexo_metric_card.dart';
-import '../../../../shared/components/cards/nexo_quick_action_card.dart';
 import '../../../../shared/components/inputs/nexo_text_field.dart';
 import '../../../../shared/components/lists/nexo_movement_list_item.dart';
 import '../../../../shared/components/lists/nexo_section_header.dart';
@@ -67,96 +67,121 @@ class FinanceScreen extends StatelessWidget {
         ]..sort((left, right) => right.date.compareTo(left.date));
 
         return NexoPageScaffold(
-          title: 'Financeiro',
-          subtitle:
-              'Veja entradas, gastos, contas e o que ainda esta reservado.',
+          title: 'Finanças',
+          subtitle: 'Contas, cartões, bancos e movimentos.',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              _FinanceMetricGrid(
+                summary: summary,
+                onTap: (title, value) => _openSimpleFinanceSheet(
+                  context,
+                  title: title,
+                  value: value,
+                ),
+              ),
+              const SizedBox(height: NexoSpacing.xl),
+              _FinanceSection(
+                title: 'Contas',
+                children: _defaultAccounts(context, expensesService.expenses)
+                    .where((item) =>
+                        !item.title.toLowerCase().contains('cora') &&
+                        !item.category.toLowerCase().contains('limpar nome'))
+                    .take(5)
+                    .map((item) => _FinanceItemTile(item: item))
+                    .toList(growable: false),
+              ),
+              const SizedBox(height: NexoSpacing.xl),
+              _FinanceSection(
+                title: 'Cartões',
                 children: [
-                  Expanded(
-                    child: NexoMetricCard(
-                      label: 'Dinheiro livre',
-                      value: MoneyUtils.format(summary.freeMoney),
-                      footnote: 'Dinheiro que voce pode movimentar agora.',
-                    ),
-                  ),
-                  const SizedBox(width: NexoSpacing.md),
-                  Expanded(
-                    child: NexoMetricCard(
-                      label: 'Reservado',
-                      value: MoneyUtils.format(summary.lockedMoney),
-                      footnote: 'Contas, parceiros, parcelas e metas.',
+                  _FinanceItemTile(
+                    item: _specialFinanceItem(
+                      expensesService.expenses,
+                      title: 'Cora - Fatura Abril',
+                      amount: 531.17,
+                      category: 'Cartão de crédito',
+                      scope: ExpenseScope.business,
+                      wallet: 'Cora Cartão',
+                      day: 4,
+                      note: 'Original: R\$ 499,52. Encargos: R\$ 31,65.',
+                      match: (expense) {
+                        final text =
+                            '${expense.title} ${expense.category} ${expense.accountName}'
+                                .toLowerCase();
+                        return text.contains('cora') && text.contains('fatura');
+                      },
+                      status: ExpensePaymentStatus.paid,
+                      paid: 531.17,
+                      cardOriginalAmount: 499.52,
+                      cardPaidWithInterest: 531.17,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: NexoSpacing.md),
-              Row(
+              const SizedBox(height: NexoSpacing.xl),
+              _FinanceSection(
+                title: 'Bancos',
                 children: [
-                  Expanded(
-                    child: NexoMetricCard(
-                      label: 'A pagar',
-                      value: MoneyUtils.format(summary.toPay7Days),
-                      footnote: 'Proximos 7 dias',
-                    ),
-                  ),
-                  const SizedBox(width: NexoSpacing.md),
-                  Expanded(
-                    child: NexoMetricCard(
-                      label: 'Resultado do mes',
-                      value: MoneyUtils.format(summary.realProfit),
-                      footnote:
-                          'O que realmente sobrou depois de gastos e compromissos.',
-                    ),
-                  ),
+                  ...summary.wallets
+                      .where((wallet) => wallet.name != 'Outro')
+                      .take(4)
+                      .map((wallet) => _WalletTile(wallet: wallet)),
+                  const _TransferTile(),
                 ],
               ),
               const SizedBox(height: NexoSpacing.xl),
-              _AccountsPanel(expenses: expensesService.expenses),
-              const SizedBox(height: NexoSpacing.xl),
-              _PlannedPurchasesPanel(expenses: expensesService.expenses),
-              const SizedBox(height: NexoSpacing.xl),
-              _MoneySeparation(summary: summary),
-              const SizedBox(height: NexoSpacing.xl),
-              _PartnerPanel(partner: summary.partner),
-              const SizedBox(height: NexoSpacing.xl),
-              _GoalPanel(goal: summary.goal),
-              const SizedBox(height: NexoSpacing.xl),
-              const NexoSectionHeader(title: 'Registrar agora'),
-              const SizedBox(height: NexoSpacing.md),
-              NexoQuickActionCard(
-                icon: NexoIcons.newSale,
-                title: 'Nova venda',
-                caption: 'Abrir formulario rapido de venda.',
-                onTap: onNewSale,
+              _FinanceSection(
+                title: 'Compras',
+                children: [
+                  _FinanceItemTile(
+                    item: _specialFinanceItem(
+                      expensesService.expenses,
+                      title: 'Supermercado Nobre',
+                      amount: 133.79,
+                      category: 'Casa / Mercado',
+                      scope: ExpenseScope.personal,
+                      wallet: 'BTG',
+                      day: 4,
+                      note: 'Mercado pago.',
+                      match: (expense) =>
+                          expense.title.toLowerCase().contains(
+                                'supermercado nobre',
+                              ) ||
+                          expense.title.toLowerCase().contains('mercado'),
+                      status: ExpensePaymentStatus.paid,
+                      paid: 133.79,
+                    ),
+                  ),
+                  ..._defaultPurchases(context, expensesService.expenses)
+                      .take(3)
+                      .map((item) => _FinanceItemTile(item: item)),
+                ],
               ),
-              const SizedBox(height: NexoSpacing.sm),
-              NexoQuickActionCard(
-                icon: NexoIcons.newExpense,
-                title: 'Novo gasto',
-                caption: 'Abrir formulario rapido de gasto.',
-                onTap: onNewExpense,
+              const SizedBox(height: NexoSpacing.xl),
+              _FinanceSection(
+                title: 'Dívidas',
+                children: [
+                  ..._defaultAccounts(context, expensesService.expenses)
+                      .where((item) =>
+                          item.category.toLowerCase().contains('limpar nome'))
+                      .map((item) => _FinanceItemTile(item: item)),
+                  _PartnerPanel(partner: summary.partner),
+                ],
               ),
               const SizedBox(height: NexoSpacing.xl),
-              const NexoSectionHeader(title: 'Movimentos recentes'),
-              const SizedBox(height: NexoSpacing.md),
-              if (movements.isEmpty)
-                const NexoEmptyStateCard(
-                  title: 'Sem registros ainda',
-                  message:
-                      'Assim que voce salvar vendas e gastos, a trilha financeira aparece aqui.',
-                )
-              else
-                Column(
-                  children: movements
-                      .take(6)
-                      .map(
-                        (movement) => Padding(
-                          padding:
-                              const EdgeInsets.only(bottom: NexoSpacing.sm),
-                          child: NexoMovementListItem(
+              _FinanceSection(
+                title: 'Movimentos',
+                children: [
+                  if (movements.isEmpty)
+                    const NexoEmptyStateCard(
+                      title: 'Sem registros ainda',
+                      message:
+                          'Assim que você salvar vendas e gastos, a trilha financeira aparece aqui.',
+                    )
+                  else
+                    ...movements.take(6).map(
+                          (movement) => NexoMovementListItem(
                             title: movement.title,
                             subtitle:
                                 '${movement.subtitle} | ${DateLabelUtils.dayLabel(movement.date)}',
@@ -165,15 +190,270 @@ class FinanceScreen extends StatelessWidget {
                             isExpense: movement.isExpense,
                           ),
                         ),
-                      )
-                      .toList(growable: false),
-                ),
+                ],
+              ),
+              const SizedBox(height: NexoSpacing.md),
             ],
           ),
         );
       },
     );
   }
+}
+
+class _FinanceMetricGrid extends StatelessWidget {
+  const _FinanceMetricGrid({
+    required this.summary,
+    required this.onTap,
+  });
+
+  final LifeFinanceSummary summary;
+  final void Function(String title, String value) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final metrics = [
+      ('Saldo disponível', MoneyUtils.format(summary.freeMoney)),
+      ('Separado', MoneyUtils.format(summary.lockedMoney)),
+      ('A pagar', MoneyUtils.format(summary.toPay7Days)),
+      ('A receber', MoneyUtils.format(summary.toReceive7Days)),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900
+            ? 4
+            : constraints.maxWidth >= 560
+                ? 2
+                : 1;
+        final width =
+            (constraints.maxWidth - (NexoSpacing.md * (columns - 1))) / columns;
+
+        return Wrap(
+          spacing: NexoSpacing.md,
+          runSpacing: NexoSpacing.md,
+          children: metrics.map((metric) {
+            return SizedBox(
+              width: width,
+              child: NexoMetricCard(
+                label: metric.$1,
+                value: metric.$2,
+                onTap: () => onTap(metric.$1, metric.$2),
+              ),
+            );
+          }).toList(growable: false),
+        );
+      },
+    );
+  }
+}
+
+class _FinanceSection extends StatelessWidget {
+  const _FinanceSection({
+    required this.title,
+    required this.children,
+  });
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: NexoSpacing.md),
+        if (children.isEmpty)
+          const NexoEmptyStateCard(
+            title: 'Nada em aberto',
+            message: 'Sem registros para mostrar aqui.',
+          )
+        else
+          ...children.map(
+            (child) => Padding(
+              padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+              child: child,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _WalletTile extends StatelessWidget {
+  const _WalletTile({required this.wallet});
+
+  final WalletBalance wallet;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      padding: const EdgeInsets.all(NexoSpacing.md),
+      onTap: () => _openSimpleFinanceSheet(
+        context,
+        title: wallet.name,
+        value: MoneyUtils.format(wallet.balance),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.account_balance_wallet_rounded,
+              color: NexoColors.accent),
+          const SizedBox(width: NexoSpacing.md),
+          Expanded(
+            child: Text(
+              wallet.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ),
+          const SizedBox(width: NexoSpacing.md),
+          Text(
+            MoneyUtils.format(wallet.balance),
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransferTile extends StatelessWidget {
+  const _TransferTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      padding: const EdgeInsets.all(NexoSpacing.md),
+      onTap: () => _openSimpleFinanceSheet(
+        context,
+        title: 'Transferência Cora Pix -> BTG',
+        value: MoneyUtils.format(193.83),
+        detail: 'Tipo: Transferência. Não conta como gasto.',
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.swap_horiz_rounded, color: NexoColors.accent),
+          const SizedBox(width: NexoSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Transferência Cora Pix -> BTG',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: NexoSpacing.xxs),
+                Text(
+                  'Tipo: Transferência',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: NexoColors.inkMedium,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: NexoSpacing.md),
+          Text(
+            MoneyUtils.format(193.83),
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _openSimpleFinanceSheet(
+  BuildContext context, {
+  required String title,
+  required String value,
+  String? detail,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    showDragHandle: true,
+    backgroundColor: NexoColors.surface,
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(NexoSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: NexoSpacing.md),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            if (detail != null) ...[
+              const SizedBox(height: NexoSpacing.md),
+              Text(detail, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ],
+        ),
+      );
+    },
+  );
+}
+
+_FinanceItem _specialFinanceItem(
+  List<ExpenseModel> expenses, {
+  required String title,
+  required double amount,
+  required String category,
+  required ExpenseScope scope,
+  required String wallet,
+  required int day,
+  required String note,
+  required bool Function(ExpenseModel expense) match,
+  ExpensePaymentStatus status = ExpensePaymentStatus.paid,
+  double paid = 0,
+  double? cardOriginalAmount,
+  double? cardPaidWithInterest,
+}) {
+  final existing = expenses.cast<ExpenseModel?>().firstWhere(
+        (expense) => expense != null && match(expense),
+        orElse: () => null,
+      );
+  if (existing != null) {
+    final details = ExpenseDetails.fromExpense(existing);
+    return _FinanceItem(
+      title: title,
+      category: existing.category,
+      scope: existing.scope,
+      wallet: details.wallet ?? existing.accountName,
+      note: ExpenseDetails.plainNote(existing.notes) ?? note,
+      details: details,
+      expense: existing,
+    );
+  }
+
+  final dueDate = DateTime(2026, 5, day, 9);
+  return _FinanceItem(
+    title: title,
+    category: category,
+    scope: scope,
+    wallet: wallet,
+    note: note,
+    details: ExpenseDetails(
+      status: status,
+      originalAmount: amount,
+      paidAmount: paid,
+      dueDate: dueDate,
+      paymentDate: status == ExpensePaymentStatus.paid ? dueDate : null,
+      recurrenceKind: ExpenseRecurrenceKind.once,
+      wallet: wallet,
+      humanNote: note,
+      cardOriginalAmount: cardOriginalAmount,
+      cardPaidWithInterest: cardPaidWithInterest,
+    ),
+  );
 }
 
 class _MoneySeparation extends StatelessWidget {

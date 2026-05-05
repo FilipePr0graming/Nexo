@@ -477,8 +477,8 @@ class LifeFinanceService {
       final message = lateCount >= 2
           ? 'Atrasa demais. Cobre antes de aceitar mais trabalho.'
           : profit <= 0 && openAmount > 0
-              ? 'So vale manter se pagar o que falta.'
-              : 'Vale manter. Da lucro e nao pesa no caixa.';
+              ? 'Precisa quitar o pendente antes de novo trabalho.'
+              : 'Em dia.';
 
       return ClientInsight(
         clientName: entry.key,

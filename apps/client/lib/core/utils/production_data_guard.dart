@@ -1,6 +1,6 @@
 abstract final class ProductionDataGuard {
   static final RegExp _blocked = RegExp(
-    r'(E2E|CLEANED|CLEANED_RECORD|REGISTRO REMOVIDO|NEXO_SAFE_TEST|SAFE_TEST|DEBUG|debug_)',
+    r'(E2E|CLEANED|CLEANED_RECORD|REGISTRO REMOVIDO|NEXO_[A-Z_]*TEST|SAFE_TEST|\bTEST\b|DEBUG|debug_)',
     caseSensitive: false,
   );
 

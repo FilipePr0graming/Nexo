@@ -814,7 +814,7 @@ class InteligenciaScreen extends StatelessWidget {
     return _FinancePageBuilder(
       builder: (context, data) {
         return NexoPageScaffold(
-          title: 'Inteligencia',
+          title: 'Análise',
           subtitle: 'Recomendacoes baseadas nos dados reais do Nexo.',
           maxWidth: 900,
           child: Column(

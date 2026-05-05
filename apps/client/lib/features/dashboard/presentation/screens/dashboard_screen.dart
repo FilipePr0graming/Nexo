@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,13 +14,10 @@ import '../../../../core/utils/date_label_utils.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/components/actions/nexo_icon_button.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
-import '../../../../shared/components/cards/nexo_alert_card.dart';
 import '../../../../shared/components/cards/nexo_card.dart';
 import '../../../../shared/components/cards/nexo_empty_state_card.dart';
 import '../../../../shared/components/inputs/nexo_segmented_field.dart';
 import '../../../../shared/components/inputs/nexo_text_field.dart';
-import '../../../../shared/components/lists/nexo_movement_list_item.dart';
-import '../../../../shared/components/lists/nexo_section_header.dart';
 import '../../../finance/models/expense_model.dart';
 import '../../../finance/models/expense_details.dart';
 import '../../../finance/models/sale_model.dart';
@@ -64,8 +63,6 @@ class DashboardScreen extends StatelessWidget {
           expenses: expenses,
           goals: services.goals.goals,
         );
-        final movements = _buildRecentMovements(sales, expenses);
-
         return NexoPageScaffold(
           title: 'Hoje',
           subtitle: 'Veja o que precisa fazer com seu dinheiro.',
@@ -81,9 +78,36 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _FocusModeCard(
+              _BalanceNowCard(
                 summary: summary,
-                memory: memory,
+                onTap: () => _showBalanceDetails(context, summary),
+              ),
+              const SizedBox(height: NexoSpacing.lg),
+              _DoTodayCard(
+                summary: summary,
+                reminders: _todayReminders(services.reminders.reminders),
+                onChargeClient: () => _showChargeClientSheet(context, summary),
+                onPayBill: () => _showQuickExpenseSheet(
+                  context,
+                  title: 'Paguei conta',
+                  memory: memory,
+                  defaultScope: ExpenseScope.business,
+                ),
+                onAddExpense: () => _showQuickExpenseSheet(
+                  context,
+                  title: 'Registrar gasto',
+                  memory: memory,
+                  defaultScope: ExpenseScope.personal,
+                ),
+                onOpenReminder: (reminder) => _showReminderSheet(
+                  context,
+                  reminder: reminder,
+                ),
+              ),
+              const SizedBox(height: NexoSpacing.lg),
+              _RealFlowCard(sales: sales, expenses: expenses),
+              const SizedBox(height: NexoSpacing.lg),
+              _QuickActionsCard(
                 onReceiveMoney: () => _receiveMoneyNow(
                   context,
                   summary,
@@ -91,96 +115,18 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 onPayBill: () => _showQuickExpenseSheet(
                   context,
-                  title: 'Pagar conta',
+                  title: 'Paguei conta',
                   memory: memory,
                   defaultScope: ExpenseScope.business,
                 ),
                 onAddExpense: () => _showQuickExpenseSheet(
                   context,
-                  title: 'Adicionar gasto',
+                  title: 'Registrar gasto',
                   memory: memory,
                   defaultScope: ExpenseScope.personal,
                 ),
-                onChargeClient: () => _showChargeClientSheet(context, summary),
                 onNewReminder: () => _showReminderSheet(context),
-                onOpenCalculator: onOpenCalculator,
               ),
-              const SizedBox(height: NexoSpacing.lg),
-              _DailyAnswerCard(summary: summary),
-              const SizedBox(height: NexoSpacing.xl),
-              _RealFlowCard(sales: sales, expenses: expenses),
-              const SizedBox(height: NexoSpacing.xl),
-              _IntelligenceCard(summary: summary),
-              const SizedBox(height: NexoSpacing.xl),
-              _ReminderCenter(
-                reminders: _todayReminders(services.reminders.reminders),
-                onNewReminder: () => _showReminderSheet(context),
-                onEditReminder: (reminder) => _showReminderSheet(
-                  context,
-                  reminder: reminder,
-                ),
-                onDoneReminder: services.reminders.markDone,
-                onDeleteReminder: services.reminders.deleteReminder,
-              ),
-              const SizedBox(height: NexoSpacing.xl),
-              _MemoryCard(memory: memory),
-              const SizedBox(height: NexoSpacing.x2l),
-              _ForecastGrid(forecasts: summary.forecasts),
-              const SizedBox(height: NexoSpacing.x2l),
-              _IncomeSuggestionCard(suggestions: summary.incomeSuggestions),
-              const SizedBox(height: NexoSpacing.x2l),
-              _ClientInsightsCard(insights: summary.clientInsights),
-              const SizedBox(height: NexoSpacing.x2l),
-              const NexoSectionHeader(title: 'Alertas importantes'),
-              const SizedBox(height: NexoSpacing.md),
-              Column(
-                children: summary.alerts
-                    .map(
-                      (alert) => Padding(
-                        padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
-                        child: NexoAlertCard(
-                          title: alert.title,
-                          message: alert.message,
-                          tone: alert.tone,
-                        ),
-                      ),
-                    )
-                    .toList(growable: false),
-              ),
-              const SizedBox(height: NexoSpacing.x2l),
-              _CashBreakdown(summary: summary),
-              const SizedBox(height: NexoSpacing.x2l),
-              _TodayPlan(
-                summary: summary,
-                onMarkReceived: salesService.markAsReceived,
-              ),
-              const SizedBox(height: NexoSpacing.x2l),
-              const NexoSectionHeader(title: 'Movimentos recentes'),
-              const SizedBox(height: NexoSpacing.md),
-              if (movements.isEmpty)
-                const NexoEmptyStateCard(
-                  title: 'Nenhum movimento salvo ainda',
-                  message:
-                      'Registre uma venda ou gasto para o painel comecar a refletir sua operacao real.',
-                )
-              else
-                Column(
-                  children: movements
-                      .map(
-                        (movement) => Padding(
-                          padding:
-                              const EdgeInsets.only(bottom: NexoSpacing.sm),
-                          child: NexoMovementListItem(
-                            title: movement.title,
-                            subtitle: movement.subtitle,
-                            amount: MoneyUtils.format(movement.amount)
-                                .replaceFirst('R\$ ', ''),
-                            isExpense: movement.isExpense,
-                          ),
-                        ),
-                      )
-                      .toList(growable: false),
-                ),
               if (salesService.errorMessage != null ||
                   expensesService.errorMessage != null) ...[
                 const SizedBox(height: NexoSpacing.lg),
@@ -200,7 +146,7 @@ class DashboardScreen extends StatelessWidget {
 
   List<ReminderModel> _todayReminders(List<ReminderModel> reminders) {
     final now = DateTime.now();
-    final limit = now.add(const Duration(days: 7));
+    final today = DateTime(now.year, now.month, now.day);
     final items = reminders
         .where((reminder) =>
             reminder.status == ReminderStatus.open &&
@@ -208,10 +154,10 @@ class DashboardScreen extends StatelessWidget {
               reminder.dueDate.toLocal().year,
               reminder.dueDate.toLocal().month,
               reminder.dueDate.toLocal().day,
-            ).isAfter(DateTime(limit.year, limit.month, limit.day)))
+            ).isAfter(today))
         .toList(growable: false)
       ..sort((left, right) => left.dueDate.compareTo(right.dueDate));
-    return items.take(5).toList(growable: false);
+    return items.take(3).toList(growable: false);
   }
 
   List<_DashboardMovement> _buildRecentMovements(
@@ -243,6 +189,34 @@ class DashboardScreen extends StatelessWidget {
 
     movements.sort((left, right) => right.date.compareTo(left.date));
     return movements.take(6).toList(growable: false);
+  }
+
+  Future<void> _showBalanceDetails(
+    BuildContext context,
+    LifeFinanceSummary summary,
+  ) {
+    return _showQuickSheet(
+      context,
+      title: 'Saldo disponível',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _DetailLine('Saldo disponível', MoneyUtils.format(summary.freeMoney)),
+          _DetailLine(
+            'Livre seguro',
+            MoneyUtils.format(summary.today.dinheiroLivreHoje),
+          ),
+          _DetailLine(
+            'Separado para contas',
+            MoneyUtils.format(summary.toPay7Days),
+          ),
+          _DetailLine(
+            'Parceiros e compromissos',
+            MoneyUtils.format(summary.committedMoney),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _receiveMoneyNow(
@@ -690,7 +664,7 @@ class _IntelligenceCardState extends State<_IntelligenceCard> {
             children: [
               Expanded(
                 child: Text(
-                  'Inteligencia financeira',
+                  'Análise do dia',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -712,7 +686,7 @@ class _IntelligenceCardState extends State<_IntelligenceCard> {
           Text(
             _source == 'groq'
                 ? 'Analise atualizada com seguranca.'
-                : 'Analise local usada enquanto a inteligencia esta indisponivel.',
+                : 'Análise automática ainda não disponível. Use o resumo local por enquanto.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: NexoColors.inkLow,
                 ),
@@ -775,14 +749,14 @@ class _RealFlowCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Resumo do dinheiro de Anderson',
+            'Resumo rápido',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: NexoSpacing.sm),
           Text(
-            'Recebi ${MoneyUtils.format(anderson)}. Paguei ${MoneyUtils.format(cora)} no cartao Cora, gastei ${MoneyUtils.format(mercado)} no Supermercado Nobre e sobraram ${MoneyUtils.format(remaining)}.',
+            'Recebi ${MoneyUtils.format(anderson)} do Anderson. Paguei ${MoneyUtils.format(cora)} no Cora, gastei ${MoneyUtils.format(mercado)} no Supermercado Nobre e sobraram ${MoneyUtils.format(remaining)}.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: NexoColors.inkMedium,
                 ),
@@ -790,13 +764,19 @@ class _RealFlowCard extends StatelessWidget {
           if (interest > 0) ...[
             const SizedBox(height: NexoSpacing.sm),
             Text(
-              'Encargos do cartao: ${MoneyUtils.format(interest)}.',
+              'Encargos do cartão: ${MoneyUtils.format(interest)}.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: NexoColors.warning,
                     fontWeight: FontWeight.w700,
                   ),
             ),
           ],
+          const SizedBox(height: NexoSpacing.md),
+          TextButton(
+            onPressed: () => _showRealFlowDetails(
+                context, anderson, cora, mercado, interest),
+            child: const Text('Ver detalhes'),
+          ),
         ],
       ),
     );
@@ -839,7 +819,7 @@ class _RealFlowCard extends StatelessWidget {
               _DetailLine('Sobra final', MoneyUtils.format(remaining)),
               const SizedBox(height: NexoSpacing.sm),
               Text(
-                'Transferencia entre carteiras nao entra como gasto.',
+                'Transferência entre carteiras não entra como gasto.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: NexoColors.inkMedium,
                     ),
@@ -877,6 +857,299 @@ class _DetailLine extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BalanceNowCard extends StatelessWidget {
+  const _BalanceNowCard({
+    required this.summary,
+    required this.onTap,
+  });
+
+  final LifeFinanceSummary summary;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      onTap: onTap,
+      backgroundColor: NexoColors.surfaceMuted,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Saldo disponível',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(
+            MoneyUtils.format(summary.freeMoney),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: NexoColors.ink,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: NexoSpacing.lg),
+          Wrap(
+            spacing: NexoSpacing.md,
+            runSpacing: NexoSpacing.sm,
+            children: [
+              _BalanceMiniLine(
+                label: 'Livre seguro',
+                value: MoneyUtils.format(summary.today.dinheiroLivreHoje),
+              ),
+              _BalanceMiniLine(
+                label: 'Separado para contas',
+                value: MoneyUtils.format(summary.toPay7Days),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BalanceMiniLine extends StatelessWidget {
+  const _BalanceMiniLine({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 180),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: NexoColors.inkMedium,
+                ),
+          ),
+          const SizedBox(height: NexoSpacing.xxs),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DoTodayCard extends StatelessWidget {
+  const _DoTodayCard({
+    required this.summary,
+    required this.reminders,
+    required this.onChargeClient,
+    required this.onPayBill,
+    required this.onAddExpense,
+    required this.onOpenReminder,
+  });
+
+  final LifeFinanceSummary summary;
+  final List<ReminderModel> reminders;
+  final VoidCallback onChargeClient;
+  final VoidCallback onPayBill;
+  final VoidCallback onAddExpense;
+  final ValueChanged<ReminderModel> onOpenReminder;
+
+  @override
+  Widget build(BuildContext context) {
+    final tasks = <Widget>[];
+
+    if (summary.upcomingReceipts.isNotEmpty) {
+      final sale = summary.upcomingReceipts.first;
+      tasks.add(
+        _TodayTaskRow(
+          icon: Icons.chat_bubble_outline_rounded,
+          title: 'Cobrar ${sale.clientName}',
+          detail: MoneyUtils.format(sale.ownerAmount),
+          onTap: onChargeClient,
+        ),
+      );
+    }
+
+    if (summary.upcomingBills.isNotEmpty) {
+      final bill = summary.upcomingBills.first;
+      tasks.add(
+        _TodayTaskRow(
+          icon: Icons.receipt_long_rounded,
+          title: 'Conferir ${bill.title}',
+          detail: DateLabelUtils.dayLabel(bill.expenseDate.toLocal()),
+          onTap: onPayBill,
+        ),
+      );
+    }
+
+    for (final reminder in reminders) {
+      if (tasks.length >= 3) {
+        break;
+      }
+      tasks.add(
+        _TodayTaskRow(
+          icon: Icons.notifications_none_rounded,
+          title: reminder.title,
+          detail: DateLabelUtils.dayLabel(reminder.dueDate.toLocal()),
+          onTap: () => onOpenReminder(reminder),
+        ),
+      );
+    }
+
+    return NexoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Fazer hoje', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: NexoSpacing.md),
+          if (tasks.isEmpty)
+            Text(
+              'Sem urgência agora. Só registre o que entrar ou sair.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: NexoColors.inkMedium,
+                  ),
+            )
+          else
+            ...tasks.take(3).map(
+                  (task) => Padding(
+                    padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+                    child: task,
+                  ),
+                ),
+          if (tasks.length < 3 && tasks.isNotEmpty) ...[
+            const SizedBox(height: NexoSpacing.xs),
+            _TodayTaskRow(
+              icon: NexoIcons.newExpense,
+              title: 'Registrar gastos se sair dinheiro hoje',
+              detail: '',
+              onTap: onAddExpense,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TodayTaskRow extends StatelessWidget {
+  const _TodayTaskRow({
+    required this.icon,
+    required this.title,
+    required this.detail,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String detail;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: NexoColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: NexoColors.border),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(NexoSpacing.md),
+          child: Row(
+            children: [
+              Icon(icon, color: NexoColors.accent),
+              const SizedBox(width: NexoSpacing.md),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              if (detail.isNotEmpty) ...[
+                const SizedBox(width: NexoSpacing.sm),
+                Flexible(
+                  child: Text(
+                    detail,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: NexoColors.inkMedium,
+                        ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickActionsCard extends StatelessWidget {
+  const _QuickActionsCard({
+    required this.onReceiveMoney,
+    required this.onPayBill,
+    required this.onAddExpense,
+    required this.onNewReminder,
+  });
+
+  final VoidCallback onReceiveMoney;
+  final VoidCallback onPayBill;
+  final VoidCallback onAddExpense;
+  final VoidCallback onNewReminder;
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Ações rápidas', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: NexoSpacing.md),
+          _FocusButtonGrid(
+            buttons: [
+              _FocusButtonData(
+                icon: NexoIcons.income,
+                label: 'Recebi',
+                onTap: onReceiveMoney,
+              ),
+              _FocusButtonData(
+                icon: Icons.receipt_long_rounded,
+                label: 'Paguei',
+                onTap: onPayBill,
+              ),
+              _FocusButtonData(
+                icon: NexoIcons.newExpense,
+                label: 'Gastei',
+                onTap: onAddExpense,
+              ),
+              _FocusButtonData(
+                icon: Icons.notifications_none_rounded,
+                label: 'Lembrete',
+                onTap: onNewReminder,
+              ),
+            ],
           ),
         ],
       ),
@@ -1199,7 +1472,7 @@ class _MemoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sugestoes automaticas',
+            'Padrões recentes',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: NexoSpacing.md),
@@ -1622,7 +1895,7 @@ class _ClientInsightsCard extends StatelessWidget {
     if (insights.isEmpty) {
       return const NexoEmptyStateCard(
         title: 'Sem leitura de clientes ainda',
-        message: 'Quando houver vendas, o app mostra quem vale manter.',
+        message: 'Quando houver vendas, o app mostra quem está em dia.',
       );
     }
 
@@ -1631,7 +1904,7 @@ class _ClientInsightsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Clientes para decidir',
+            'Clientes com pendência',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: NexoSpacing.md),
@@ -1907,12 +2180,12 @@ class _CashBreakdown extends StatelessWidget {
           ),
           const SizedBox(height: NexoSpacing.sm),
           _PlanRow(
-            label: 'Menos Daniel',
+            label: 'Parceiros e compromissos',
             value: MoneyUtils.format(summary.committedMoney),
           ),
           const SizedBox(height: NexoSpacing.sm),
           _PlanRow(
-            label: 'Menos parcelas futuras',
+            label: 'Parcelas futuras',
             value: MoneyUtils.format(summary.futureInstallments),
           ),
           const Divider(height: NexoSpacing.xl),

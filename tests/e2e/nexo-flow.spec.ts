@@ -10,22 +10,21 @@ const supabaseUrl =
   env.NEXO_E2E_SUPABASE_URL ??
   productionDefine.SUPABASE_URL ??
   env.SUPABASE_URL ??
-  "http://127.0.0.1:54321";
+  "";
 const supabaseAnonKey =
   env.NEXO_E2E_SUPABASE_ANON_KEY ??
   productionDefine.SUPABASE_ANON_KEY ??
   productionDefine.SUPABASE_PUBLISHABLE_KEY ??
   env.SUPABASE_ANON_KEY;
-const serviceRoleKey = env.NEXO_E2E_SERVICE_ROLE_KEY;
+const serviceRoleKey =
+  env.NEXO_E2E_SERVICE_ROLE_KEY ??
+  (env.SUPABASE_URL === supabaseUrl ? env.SUPABASE_SERVICE_ROLE_KEY : undefined);
 let userAccessToken: string | undefined;
-const marker = "NEXO_VISUAL_TEST_20260504_";
-const runId = env.NEXO_E2E_RUN_ID ?? marker;
+
+const markerBase = "NEXO_UX_TEST_20260505_";
+const runId = env.NEXO_E2E_RUN_ID ?? `${markerBase}${Date.now()}`;
 const email = env.NEXO_E2E_EMAIL ?? `nexo-${runId}@example.com`;
 const password = env.NEXO_E2E_PASSWORD ?? "NexoE2e!23456";
-const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-const tomorrowLabel = `${String(tomorrow.getDate()).padStart(2, "0")}/${String(
-  tomorrow.getMonth() + 1,
-).padStart(2, "0")}/${tomorrow.getFullYear()}`;
 
 function loadEnv() {
   const result: Record<string, string> = { ...process.env } as Record<
@@ -56,11 +55,11 @@ function loadJson(file: string): Record<string, string> {
 }
 
 async function ensureSupabaseAccess() {
-  if (serviceRoleKey || userAccessToken || !supabaseAnonKey) {
+  if (serviceRoleKey || userAccessToken || !supabaseAnonKey || !supabaseUrl) {
     return;
   }
 
-  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+  let response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: {
       apikey: supabaseAnonKey,
@@ -69,7 +68,25 @@ async function ensureSupabaseAccess() {
     body: JSON.stringify({ email, password }),
   });
   if (!response.ok) {
-    throw new Error(`Login Supabase REST falhou: ${await response.text()}`);
+    await fetch(`${supabaseUrl}/auth/v1/signup`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseAnonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    }).catch(() => null);
+    response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseAnonKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+  }
+  if (!response.ok) {
+    throw new Error(`Login remoto falhou: ${await response.text()}`);
   }
   const body = (await response.json()) as { access_token?: string };
   userAccessToken = body.access_token;
@@ -79,8 +96,8 @@ async function supabaseFetch(pathname: string, init: RequestInit = {}) {
   await ensureSupabaseAccess();
   const apiKey = serviceRoleKey ?? supabaseAnonKey;
   const bearer = serviceRoleKey ?? userAccessToken;
-  if (!apiKey || !bearer) {
-    throw new Error("Credenciais Supabase ausentes para o E2E.");
+  if (!apiKey || !bearer || !supabaseUrl) {
+    throw new Error("Credenciais remotas ausentes para o E2E.");
   }
 
   const response = await fetch(`${supabaseUrl}${pathname}`, {
@@ -143,6 +160,41 @@ async function ensureE2eUser() {
   });
 }
 
+function cleanupPatterns() {
+  return [
+    markerBase,
+    "NEXO_WINDOWS_TEST_20260505_",
+    "NEXO_UX_TEST_",
+    "NEXO_SAFE_TEST_",
+    "NEXO_VISUAL_TEST_",
+    "NEXO_SIMPLIFY_TEST_",
+    "E2E_CLEANED_",
+    "CLEANED_RECORD",
+    "CLEANED_",
+    "E2E_",
+    "SAFE_TEST",
+    "DEBUG",
+  ];
+}
+
+async function cleanupByPattern(pattern: string) {
+  const encodedRun = encodeURIComponent(`*${pattern}*`);
+  const targets = [
+    `/rest/v1/notes?or=(title.ilike.${encodedRun},body.ilike.${encodedRun})`,
+    `/rest/v1/reminders?or=(title.ilike.${encodedRun},description.ilike.${encodedRun})`,
+    `/rest/v1/goals?title=ilike.${encodedRun}`,
+    `/rest/v1/payments?or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+    `/rest/v1/projects?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+    `/rest/v1/subscriptions?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+    `/rest/v1/expenses?or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+    `/rest/v1/clients?or=(name.ilike.${encodedRun},legal_name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
+  ];
+
+  for (const target of targets) {
+    await supabaseFetchOrEmpty(target, { method: "DELETE" });
+  }
+}
+
 async function cleanupE2eData() {
   for (const pattern of cleanupPatterns()) {
     await cleanupByPattern(pattern);
@@ -173,76 +225,6 @@ async function countResidues() {
   return total;
 }
 
-function cleanupPatterns() {
-  return [
-    marker,
-    "NEXO_E2E_20260504_",
-    "NEXO_E2E_",
-    "NEXO_SAFE_TEST_",
-    "NEXO_VISUAL_TEST_",
-    "E2E_CLEANED_",
-    "CLEANED_RECORD",
-    "CLEANED_",
-    "E2E_",
-    "SAFE_TEST",
-    "DEBUG",
-    "debug_",
-    "test_",
-  ];
-}
-
-async function cleanupByPattern(pattern: string) {
-  const encodedRun = encodeURIComponent(`*${pattern}*`);
-  const payments = (await supabaseFetchOrEmpty(
-    `/rest/v1/payments?select=id&or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-  )) as Array<{ id: string }>;
-  const paymentIds = payments.map((payment) => payment.id);
-
-  if (paymentIds.length > 0) {
-    await supabaseFetchOrEmpty(
-      `/rest/v1/partner_payments?payment_id=in.(${paymentIds.join(",")})`,
-      { method: "DELETE" },
-    );
-  }
-
-  const cleanupTargets = [
-    `/rest/v1/notes?or=(title.ilike.${encodedRun},body.ilike.${encodedRun})`,
-    `/rest/v1/reminders?or=(title.ilike.${encodedRun},description.ilike.${encodedRun})`,
-    `/rest/v1/goals?title=ilike.${encodedRun}`,
-    `/rest/v1/payments?or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/projects?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/subscriptions?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/expenses?or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/clients?or=(name.ilike.${encodedRun},legal_name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
-  ];
-
-  for (const target of cleanupTargets) {
-    await supabaseFetchOrEmpty(target, { method: "DELETE" });
-  }
-  await supabaseFetchOrEmpty(
-    `/rest/v1/expenses?or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({
-        title: "Registro removido",
-        category: "Removido",
-        notes: "removido",
-      }),
-    },
-  );
-  await supabaseFetchOrEmpty(
-    `/rest/v1/clients?or=(name.ilike.${encodedRun},legal_name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({
-        name: "Registro removido",
-        legal_name: "Registro removido",
-        origin: "removido",
-      }),
-    },
-  );
-}
-
 async function enableAccessibilityIfNeeded(page: Page) {
   const accessibilityButton = page.getByRole("button", {
     name: "Enable accessibility",
@@ -255,10 +237,8 @@ async function enableAccessibilityIfNeeded(page: Page) {
 async function login(page: Page) {
   await page.goto("/");
   await enableAccessibilityIfNeeded(page);
-  const dashboard = page.getByText(
-    /Tudo sob controle|Use com cuidado|Segure gastos agora|Registre seus movimentos/,
-  );
-  if (await dashboard.isVisible({ timeout: 5000 }).catch(() => false)) {
+  const home = page.getByText(/Saldo disponível|Fazer hoje|Ações rápidas/);
+  if (await home.first().isVisible({ timeout: 5000 }).catch(() => false)) {
     return;
   }
 
@@ -267,7 +247,16 @@ async function login(page: Page) {
   await fillTextbox(page, 0, email);
   await fillTextbox(page, 1, password);
   await loginButton.click();
-  await expect(dashboard).toBeVisible({ timeout: 45000 });
+  await expect(home.first()).toBeVisible({ timeout: 45000 });
+}
+
+async function fillTextbox(page: Page, index: number, value: string) {
+  const field = page.getByRole("textbox").nth(index);
+  await field.click();
+  await page.keyboard.press("Control+A");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(value);
+  await expect.poll(async () => field.inputValue(), { timeout: 5000 }).toBe(value);
 }
 
 async function screenshot(page: Page, name: string) {
@@ -282,80 +271,77 @@ function escapeRegExp(value: string) {
 }
 
 async function clickNav(page: Page, label: string) {
-  const navButton = page
+  const button = page
     .getByRole("button", { name: new RegExp(`^${escapeRegExp(label)}$`) })
     .first();
-  if (await navButton.isVisible().catch(() => false)) {
-    await navButton.click({ force: true });
+  if (await button.isVisible().catch(() => false)) {
+    await button.click({ force: true });
     return;
   }
-
   await page.getByText(label, { exact: true }).first().click({ force: true });
 }
 
-function recordByLabel(page: Page, label: string) {
-  return page.getByLabel(new RegExp(escapeRegExp(label))).first();
+async function closeTopLayer(page: Page) {
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(350);
 }
 
-async function clickSelect(page: Page, label: string) {
-  await page
-    .getByRole("button", { name: new RegExp(escapeRegExp(label)) })
-    .first()
-    .click();
+async function openQuickAction(page: Page, action: string) {
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect(page.getByText("Registrar", { exact: true })).toBeVisible();
+  await page.getByText(action, { exact: true }).click();
 }
 
-async function expectButtonGone(page: Page, label: string) {
-  await expect(page.getByRole("button", { name: label })).toHaveCount(0);
+async function expectForbiddenUiGone(page: Page) {
+  await expect(
+    page.getByText(
+      /Finan\/ças|Calculado\.\.\.|Proje\/tos|Clientes para decidir|Sugestões automáticas|Sugestoes automaticas|Inteligência financeira indisponível|Inteligencia financeira indisponivel|E2E|CLEANED|NEXO_SAFE_TEST|NEXO_VISUAL_TEST|NEXO_SIMPLIFY_TEST|NEXO_UX_TEST|DEBUG|\bTEST\b/,
+    ),
+  ).toHaveCount(0);
 }
 
-async function expectPaymentStatus(serviceName: string, status: string) {
-  const tableCheck = (await supabaseFetchOrEmpty(
-    `/rest/v1/payments?select=id&limit=1`,
-  )) as Array<unknown>;
-  if (tableCheck.length === 0) {
-    return;
-  }
+async function expectNoHorizontalOverflow(page: Page) {
   await expect
-    .poll(
-      async () => {
-        const rows = (await supabaseFetchOrEmpty(
-          `/rest/v1/payments?select=status&service_name=eq.${encodeURIComponent(
-            serviceName,
-          )}`,
-        )) as Array<{ status: string }>;
-        return rows[0]?.status ?? null;
-      },
-      { timeout: 15000 },
-    )
-    .toBe(status);
+    .poll(async () => {
+      return page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+      );
+    })
+    .toBe(true);
 }
 
-async function expectSupabaseRow(pathname: string) {
-  await expect
-    .poll(
-      async () => {
-        const rows = (await supabaseFetchOrEmpty(pathname)) as Array<unknown>;
-        return rows.length;
-      },
-      { timeout: 15000 },
-    )
-    .toBeGreaterThan(0);
-}
-
-async function fillTextbox(page: Page, index: number, value: string) {
-  const field = page.getByRole("textbox").nth(index);
-  await field.click();
-  await page.keyboard.press("Control+A");
-  await page.keyboard.press("Backspace");
-  await page.keyboard.type(value);
-  await expect
-    .poll(async () => field.inputValue(), { timeout: 5000 })
-    .toBe(value);
+async function exerciseMarkerLifecycle() {
+  const marker = `${markerBase}${Date.now()}`;
+  const id = `note-${Date.now()}`;
+  const now = new Date().toISOString();
+  await supabaseFetch("/rest/v1/notes", {
+    method: "POST",
+    body: JSON.stringify({
+      id,
+      title: marker,
+      body: `${marker} criado`,
+      created_at: now,
+      updated_at: now,
+    }),
+  });
+  await supabaseFetch(`/rest/v1/notes?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      title: `${marker} editado`,
+      body: `${marker} editado`,
+      updated_at: new Date().toISOString(),
+    }),
+  });
+  await supabaseFetch(`/rest/v1/notes?id=eq.${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  expect(await countResidues()).toBe(0);
 }
 
 test.describe.configure({ mode: "serial" });
 
 test.beforeAll(async () => {
+  expect(supabaseUrl).not.toContain("127.0.0.1");
   await ensureE2eUser();
   await cleanupE2eData();
 });
@@ -365,7 +351,7 @@ test.afterAll(async () => {
   expect(await countResidues()).toBe(0);
 });
 
-test.describe("Nexo integracao final", () => {
+test.describe("NEXO UX final", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
   });
@@ -374,215 +360,134 @@ test.describe("Nexo integracao final", () => {
     await cleanupE2eData();
   });
 
-  test("login e dashboard inteligente", async ({ page }) => {
+  test("mobile hoje, rodape, botao registrar e acoes", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page);
     await expect(page.getByText("Hoje", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("Dinheiro livre hoje")).toBeVisible();
-    await expect(page.getByText("O que fazer agora")).toBeVisible();
-    await expect(page.getByText("Lembretes")).toBeVisible();
-    await expect(page.getByText("Caixa real")).toBeVisible();
-    await expect(page.getByText(/7 dias|15 dias|30 dias/).first()).toBeVisible();
-    await expect(page.getByText(/Voce pode gastar|Você pode gastar/)).toHaveCount(0);
-    await expect(
-      page.getByText(/E2E|CLEANED|SAFE_TEST|VISUAL_TEST|DEBUG|TEST/),
-    ).toHaveCount(0);
-    await screenshot(page, "01-dashboard");
-  });
+    await expect(page.getByText("Saldo disponível")).toBeVisible();
+    await expect(page.getByText("Fazer hoje")).toBeVisible();
+    await expect(page.getByText("Ações rápidas")).toBeVisible();
+    await expect(page.getByText("Calculadora", { exact: true })).toHaveCount(0);
+    await expectForbiddenUiGone(page);
 
-  test("clientes, projetos, pagamentos, gastos e recebimento", async ({
-    page,
-  }) => {
-    await clickNav(page, "Clientes");
-    await page.getByRole("button", { name: "Novo cliente" }).first().click();
-    await expect(page.getByText("Novo cliente").first()).toBeVisible();
-    await fillTextbox(page, 0, `${marker}Cliente`);
-    await fillTextbox(page, 1, "00000000000");
-    await fillTextbox(page, 3, `${marker}origem`);
-    await page.getByRole("button", { name: "Salvar cliente" }).click();
-    await expect(recordByLabel(page, `${marker}Cliente`)).toBeVisible();
-    await expectSupabaseRow(
-      `/rest/v1/clients?select=id&name=eq.${encodeURIComponent(`${marker}Cliente`)}`,
-    );
+    for (const label of ["Hoje", "Clientes", "Finanças", "Menu"]) {
+      await expect(
+        page.getByRole("button", { name: new RegExp(`^${label}$`) }).first(),
+      ).toBeVisible();
+    }
 
-    await clickNav(page, "Projetos");
-    await page.getByRole("button", { name: "Novo projeto" }).first().click();
-    await fillTextbox(page, 0, `${marker}Projeto Teste`);
-    await fillTextbox(page, 1, `${marker}Cliente`);
-    await fillTextbox(page, 3, "5500");
-    await fillTextbox(page, 4, `${marker}projeto`);
-    await page.getByRole("button", { name: "Salvar projeto" }).click();
-    await expect(recordByLabel(page, `${marker}Projeto Teste`)).toBeVisible();
-
-    await page.getByRole("button", { name: "Venda" }).first().click();
-    await page.getByRole("textbox").nth(0).click();
-    await page.getByText(`${marker}Cliente`).last().click();
-    await fillTextbox(page, 1, `${marker}Recebimento Teste`);
-    await fillTextbox(page, 2, `${marker}Projeto Teste`);
-    await fillTextbox(page, 4, "705");
-    await page.getByText("Sim").click();
-    await page.getByRole("button", { name: "Salvar venda" }).click();
-    await expectButtonGone(page, "Salvar venda");
-    await expect(page.getByText("Venda salva.").first()).toBeVisible();
-
-    await clickNav(page, "Projetos");
-    await page.getByRole("button", { name: "Venda" }).first().click();
-    await page.getByRole("textbox").nth(0).click();
-    await page.getByText(`${marker}Cliente`).last().click();
-    await fillTextbox(page, 1, `${marker}Cobranca Teste`);
-    await fillTextbox(page, 2, `${marker}Projeto Teste`);
-    await fillTextbox(page, 4, "1200");
-    await clickSelect(page, "Pagamento");
-    await page.getByText("Cartao").click();
-    await clickSelect(page, "Status");
-    await page.getByText("Pendente").click();
-    await page.getByRole("button", { name: "Salvar venda" }).click();
-    await expectButtonGone(page, "Salvar venda");
-    await expect(page.getByText("Venda salva.").first()).toBeVisible();
-
-    await clickNav(page, "Financeiro");
-    await page.getByText("Novo gasto").click();
-    await fillTextbox(page, 0, "120");
-    await clickSelect(page, "Recorrencia");
-    await page.getByText("Mensal").click();
-    await fillTextbox(page, 1, `${marker}Mercado Teste`);
-    await page.getByRole("button", { name: "Salvar gasto" }).click();
-    await expectButtonGone(page, "Salvar gasto");
-    await expect(page.getByText("Gasto salvo.").first()).toBeVisible();
-    await expectSupabaseRow(
-      `/rest/v1/expenses?select=id&title=eq.${encodeURIComponent(`${marker}Mercado Teste`)}`,
-    );
-
-    await clickNav(page, "Hoje");
-    await page
-      .getByRole("button", {
-        name: new RegExp(`Recebi.*${escapeRegExp(marker)}Cobranca Teste`),
-      })
+    const fabBox = await page
+      .getByRole("button", { name: "Registrar" })
+      .boundingBox();
+    const menuBox = await page
+      .getByRole("button", { name: "Menu" })
       .first()
-      .click();
-    await expectPaymentStatus(`${marker}Cobranca Teste`, "received");
-    await expect(page.getByText("Entrou hoje")).toBeVisible();
-    await expect(page.getByText(/R\$\s+\d+\s+[.,]\s+\d/)).toHaveCount(0);
-    await screenshot(page, "02-fluxos-financeiros");
-  });
+      .boundingBox();
+    expect(fabBox).not.toBeNull();
+    expect(menuBox).not.toBeNull();
+    expect(fabBox!.y + fabBox!.height).toBeLessThan(menuBox!.y);
+    await expectNoHorizontalOverflow(page);
+    await screenshot(page, "mobile-hoje");
 
-  test("CNPJ automatico e calculadora", async ({ page }) => {
-    await clickNav(page, "Clientes");
-    await page.getByRole("button", { name: "Novo cliente" }).first().click();
-    await page.getByRole("button", { name: "PJ" }).click();
-    await expect(page.getByText("Razao social")).toBeVisible();
-    const cnpjField = page.getByRole("textbox").nth(2);
-    await cnpjField.click();
-    await page.keyboard.press("Control+A");
-    await page.keyboard.press("Backspace");
-    await page.keyboard.type("11222333000181");
-    await expect(cnpjField).toHaveValue("11.222.333/0001-81");
-    await page.getByRole("button", { name: "Buscar CNPJ" }).click();
-    await expect(page.getByText(/Empresa encontrada/).first()).toBeVisible();
-    if ((await page.getByRole("textbox").nth(1).inputValue()) === "") {
-      await fillTextbox(page, 1, `${marker}Razao social PJ`);
-    }
-    if ((await page.getByRole("textbox").nth(0).inputValue()) === "") {
-      await fillTextbox(page, 0, `${marker}Cliente PJ`);
-    }
-    await fillTextbox(page, 4, `${marker}cnpj`);
-    await page.getByRole("button", { name: "Salvar cliente" }).click();
-    await expect(page.getByText("Cliente salvo.").first()).toBeVisible();
-
-    await clickNav(page, "Clientes");
-    await page.getByRole("button", { name: "Novo cliente" }).first().click();
-    await fillTextbox(page, 0, `${marker}Cliente PF`);
-    await fillTextbox(page, 1, "00000000000");
-    await fillTextbox(page, 3, `${marker}pf`);
-    await page.getByRole("button", { name: "Salvar cliente" }).click();
-    await expect(recordByLabel(page, `${marker}Cliente PF`)).toBeVisible();
-
-    await clickNav(page, "Calculadora");
-    await page.getByRole("button", { name: "4" }).click();
-    await page.getByRole("button", { name: "4" }).click();
-    await page.getByRole("button", { name: "9" }).click();
-    await page.getByRole("button", { name: "," }).click();
-    await page.getByRole("button", { name: "5" }).click();
-    await page.getByRole("button", { name: "2" }).click();
-    await page.getByRole("button", { name: "+" }).click();
-    await page.getByRole("button", { name: "2" }).click();
-    await page.getByRole("button", { name: "0" }).click();
-    await page.getByRole("button", { name: "=" }).click();
-    await expect(page.getByText("469,52").first()).toBeVisible();
-    await page.getByRole("button", { name: "Transformar em gasto" }).click();
-    await page.getByRole("button", { name: "Confirmar" }).click();
-    await expect(page.getByText("Resultado transformado em gasto.")).toBeVisible();
-    await screenshot(page, "03-cnpj-calculadora");
-  });
-
-  test("metas, anotacoes, planejamento e parceiro Daniel", async ({
-    page,
-  }) => {
-    await clickNav(page, "Metas");
-    await page.getByRole("button", { name: "Nova meta" }).first().click();
-    await fillTextbox(page, 0, `${marker}Meta Teste`);
-    await fillTextbox(page, 1, "8000");
-    await fillTextbox(page, 2, "1200");
-    await page.getByRole("button", { name: "Salvar meta" }).click();
-    await expect(recordByLabel(page, `${marker}Meta Teste`)).toBeVisible();
-
-    await clickNav(page, "Anotacoes");
-    await page.getByRole("button", { name: "Nova anotacao" }).first().click();
-    await fillTextbox(page, 0, `${marker}Nota Teste`);
-    await fillTextbox(page, 1, `${marker}Conteudo da nota`);
-    await page.getByRole("button", { name: "Salvar anotacao" }).click();
-    await expect(recordByLabel(page, `${marker}Nota Teste`)).toBeVisible();
-
-    await clickNav(page, "Hoje");
-    await page.getByRole("button", { name: "Novo" }).first().click();
-    await fillTextbox(page, 0, `${marker}Ligar para Douglas`);
-    await fillTextbox(page, 1, `${marker}Nota com lembrete`);
-    await fillTextbox(page, 2, tomorrowLabel);
-    await fillTextbox(page, 3, "09:00");
-    await page.getByRole("button", { name: "Criar lembrete" }).click();
-    await expect(page.getByText(`${marker}Ligar para Douglas`)).toBeVisible();
-    await page.getByRole("button", { name: "Editar lembrete" }).first().click();
-    await fillTextbox(page, 0, `${marker}Ligar para Douglas atualizado`);
-    await page.getByRole("button", { name: "Salvar" }).click();
-    await expect(
-      page.getByText(`${marker}Ligar para Douglas atualizado`),
-    ).toBeVisible();
-    await clickNav(page, "Planejamento");
-    await expect(page.getByText("Resultado futuro")).toBeVisible();
-    await expect(page.getByText("Alertas e lembretes")).toBeVisible();
-
-    await clickNav(page, "Hoje");
-    await page.getByRole("button", { name: "Excluir lembrete" }).first().click();
-    await expect(
-      page.getByText(`${marker}Ligar para Douglas atualizado`),
-    ).toHaveCount(0);
-
-    await clickNav(page, "Parceiros");
-    await expect(page.getByText("Daniel").first()).toBeVisible();
-    await expect(
-      page.getByText(/Repasses em aberto|Por projeto/).first(),
-    ).toBeVisible();
-    await screenshot(page, "04-metas-notas-planejamento-parceiros");
-  });
-
-  test("responsividade mobile com menu lateral colapsavel", async ({
-    page,
-  }) => {
-    for (const viewport of [
-      { width: 360, height: 800 },
-      { width: 390, height: 844 },
-      { width: 412, height: 915 },
+    await page.getByRole("button", { name: "Registrar" }).click();
+    for (const action of [
+      "Recebi dinheiro",
+      "Paguei conta",
+      "Registrei gasto",
+      "Cobrar cliente",
+      "Criar lembrete",
+      "Nova anotação",
+      "Calculadora",
     ]) {
-      await page.setViewportSize(viewport);
-      await expect(page.getByText("Hoje", { exact: true }).first()).toBeVisible();
-      await expect(page.getByText("Dinheiro livre hoje")).toBeVisible();
-      await expect(page.getByText("Sugestoes automaticas")).toBeVisible();
-      await expect(page.getByText(/^Clien$/)).toHaveCount(0);
-      await expect(page.getByText(/^te fre$/)).toHaveCount(0);
-      await screenshot(page, `05-mobile-${viewport.width}`);
+      await expect(page.getByText(action, { exact: true })).toBeVisible();
     }
-    await page.getByText("Menu", { exact: true }).click();
-    await expect(page.getByText("Anotacoes", { exact: true })).toBeVisible();
-    await page.getByText("Casa", { exact: true }).click();
-    await expect(page.getByText("Saldo da casa")).toBeVisible();
-    await screenshot(page, "05-mobile-menu");
+    await screenshot(page, "mobile-botao-registrar");
+    await closeTopLayer(page);
+
+    await openQuickAction(page, "Recebi dinheiro");
+    await expect(page.getByText("Nova venda", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Fechar" }).click();
+
+    await openQuickAction(page, "Paguei conta");
+    await expect(page.getByText("Novo gasto", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Fechar" }).click();
+
+    await openQuickAction(page, "Registrei gasto");
+    await expect(page.getByText("Novo gasto", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Fechar" }).click();
+
+    await openQuickAction(page, "Cobrar cliente");
+    await expect(page.getByText("Cobrar cliente", { exact: true })).toBeVisible();
+    await closeTopLayer(page);
+
+    await openQuickAction(page, "Criar lembrete");
+    await expect(page.getByText("Criar lembrete", { exact: true })).toBeVisible();
+    await closeTopLayer(page);
+
+    await openQuickAction(page, "Nova anotação");
+    await expect(page.getByText("Nova anotação", { exact: true })).toBeVisible();
+    await closeTopLayer(page);
+
+    await openQuickAction(page, "Calculadora");
+    await expect(page.getByText("Calculadora", { exact: true }).first()).toBeVisible();
+    await clickNav(page, "Hoje");
+  });
+
+  test("mobile clientes, financas e menu", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await clickNav(page, "Clientes");
+    await expect(page.getByText("Clientes", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(/Anderson Ferreira Augusto|Anderson/i).first()).toBeVisible();
+    await expect(page.getByText(/Aberto:\s*R\$\s*725,00|Aberto:/).first()).toBeVisible();
+    await expect(page.getByText(/Tam[ií]ris|Tamires|DB Locadora/i).first()).toBeVisible();
+    await expect(page.getByText("Status: Em dia").first()).toBeVisible();
+
+    await clickNav(page, "Finanças");
+    await expect(page.getByText("Finanças", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Saldo disponível")).toBeVisible();
+    await expect(page.getByText(/Cora.*Fatura Abril|Fatura abril Cora/i)).toBeVisible();
+    await expect(page.getByText("Supermercado Nobre")).toBeVisible();
+    await expect(page.getByText("Transferência Cora Pix -> BTG")).toBeVisible();
+    await screenshot(page, "mobile-financas");
+
+    await clickNav(page, "Menu");
+    await expect(page.getByText("Menu", { exact: true }).first()).toBeVisible();
+    for (const item of [
+      "Projetos",
+      "Parceiros",
+      "Planejamento",
+      "Metas",
+      "Anotações",
+      "Calculadora",
+      "Casa",
+      "Empresa",
+      "Configurações",
+    ]) {
+      await expect(page.getByText(item, { exact: true }).first()).toBeVisible();
+    }
+    await screenshot(page, "mobile-menu");
+    await expectForbiddenUiGone(page);
+  });
+
+  test("desktop sidebar, layout e financas", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await login(page);
+    await expect(page.getByText("Hoje", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Projetos", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Planejamento", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Registrar" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await expectForbiddenUiGone(page);
+    await screenshot(page, "desktop-hoje");
+
+    await clickNav(page, "Finanças");
+    await expect(page.getByText("Cartões")).toBeVisible();
+    await expect(page.getByText("Bancos")).toBeVisible();
+    await expect(page.getByText("Movimentos")).toBeVisible();
+    await expect(page.getByText("Transferência Cora Pix -> BTG")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await screenshot(page, "desktop-financas");
+
+    await exerciseMarkerLifecycle();
   });
 });

@@ -19,17 +19,14 @@ class NexoSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = const [
-      _SidebarDestination(NexoIcons.dashboard, 'Hoje'),
-      _SidebarDestination(NexoIcons.clients, 'Clientes'),
-      _SidebarDestination(NexoIcons.projects, 'Projetos'),
-      _SidebarDestination(NexoIcons.finance, 'Financeiro'),
-      _SidebarDestination(NexoIcons.partners, 'Parceiros'),
-      _SidebarDestination(NexoIcons.planning, 'Planejamento'),
-      _SidebarDestination(NexoIcons.goals, 'Metas'),
-      _SidebarDestination(NexoIcons.notes, 'Anotacoes'),
-      _SidebarDestination(NexoIcons.company, 'Empresa'),
-      _SidebarDestination(NexoIcons.home, 'Casa'),
-      _SidebarDestination(Icons.calculate_rounded, 'Calculadora'),
+      _SidebarDestination(NexoIcons.dashboard, 'Hoje', 0),
+      _SidebarDestination(NexoIcons.clients, 'Clientes', 1),
+      _SidebarDestination(NexoIcons.finance, 'Finanças', 2),
+      _SidebarDestination(NexoIcons.projects, 'Projetos', 4),
+      _SidebarDestination(NexoIcons.planning, 'Planejamento', 6),
+      _SidebarDestination(NexoIcons.goals, 'Metas', 7),
+      _SidebarDestination(NexoIcons.notes, 'Anotações', 8),
+      _SidebarDestination(Icons.menu_rounded, 'Menu', 3),
     ];
 
     return Padding(
@@ -44,7 +41,7 @@ class NexoSidebar extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: NexoColors.surfaceMuted,
-            borderRadius: BorderRadius.circular(NexoRadius.xl),
+            borderRadius: BorderRadius.circular(NexoRadius.lg),
             border: Border.all(color: NexoColors.divider),
           ),
           padding: const EdgeInsets.all(NexoSpacing.md),
@@ -62,13 +59,12 @@ class NexoSidebar extends StatelessWidget {
                     return _SidebarItem(
                       icon: item.icon,
                       label: item.label,
-                      selected: selectedIndex == index,
-                      onTap: () => onSelected(index),
+                      selected: selectedIndex == item.index,
+                      onTap: () => onSelected(item.index),
                     );
                   },
                 ),
               ),
-              const _SidebarHint(),
             ],
           ),
         ),
@@ -180,31 +176,10 @@ class _SidebarItem extends StatelessWidget {
   }
 }
 
-class _SidebarHint extends StatelessWidget {
-  const _SidebarHint();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(NexoSpacing.md),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(NexoRadius.lg),
-        color: NexoColors.surfaceElevated,
-        border: Border.all(color: NexoColors.divider),
-      ),
-      child: Text(
-        'Atalhos: use Registrar para criar venda, gasto ou cliente.',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: NexoColors.inkLow,
-            ),
-      ),
-    );
-  }
-}
-
 class _SidebarDestination {
-  const _SidebarDestination(this.icon, this.label);
+  const _SidebarDestination(this.icon, this.label, this.index);
 
   final IconData icon;
   final String label;
+  final int index;
 }

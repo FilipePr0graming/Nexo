@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/app/nexo_scope.dart';
 import '../../../../core/design_system/nexo_colors.dart';
@@ -7,9 +8,9 @@ import '../../../../core/utils/money_utils.dart';
 import '../../../../shared/components/actions/nexo_icon_button.dart';
 import '../../../../shared/components/actions/nexo_button.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
+import '../../../../shared/components/cards/nexo_card.dart';
 import '../../../../shared/components/cards/nexo_empty_state_card.dart';
 import '../../../../shared/components/inputs/nexo_text_field.dart';
-import '../../../../shared/components/lists/nexo_list_tile_card.dart';
 import '../../../../shared/components/lists/nexo_section_header.dart';
 import '../../../finance/models/sale_model.dart';
 import '../../models/client_model.dart';
@@ -83,8 +84,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
         return NexoPageScaffold(
           title: 'Clientes',
-          subtitle:
-              'Historico real por cliente, sem prender cadastro a um servico.',
+          subtitle: 'Clientes e cobranças.',
           trailing: NexoIconButton(
             icon: Icons.add_rounded,
             tooltip: 'Novo cliente',
@@ -147,47 +147,28 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       (total, sale) => total + sale.ownerAmount,
                     );
 
-                    final subtitleParts = <String>[
-                      client.clientType.label,
-                      client.billingType.label,
-                      if (client.cityStateLabel != null) client.cityStateLabel!,
-                    ];
-
-                    final detailParts = <String>[
-                      'Total ${MoneyUtils.format(totalSold)}',
-                      'Em aberto ${MoneyUtils.format(openAmount)}',
-                      if (client.document?.trim().isNotEmpty == true)
-                        '${client.documentLabel} ${client.document!.trim()}',
-                    ];
+                    final pendingSale =
+                        clientSales.cast<SaleModel?>().firstWhere(
+                              (sale) =>
+                                  sale != null &&
+                                  (sale.status == SaleStatus.pending ||
+                                      sale.status == SaleStatus.late),
+                              orElse: () => null,
+                            );
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
-                      child: NexoListTileCard(
-                        title: client.name,
-                        subtitle: subtitleParts.join(' | '),
-                        detail: detailParts.join(' | '),
-                        trailing: PopupMenuButton<String>(
-                          tooltip: 'Acoes do cliente',
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _openEditClientSheet(client);
-                            }
-                            if (value == 'delete') {
-                              clientsService.deleteClient(client.id);
-                            }
-                          },
-                          itemBuilder: (context) => const [
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Text('Editar'),
-                            ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Excluir'),
-                            ),
-                          ],
-                        ),
+                      child: _ClientCard(
+                        client: client,
+                        totalSold: totalSold,
+                        openAmount: openAmount,
+                        pendingSale: pendingSale,
                         onTap: () => _openClientDetail(client.id),
+                        onEdit: () => _openEditClientSheet(client),
+                        onDelete: () => clientsService.deleteClient(client.id),
+                        onMarkReceived: pendingSale == null
+                            ? null
+                            : () => salesService.markAsReceived(pendingSale.id),
                       ),
                     );
                   }).toList(growable: false),
@@ -361,5 +342,139 @@ class _ClientsScreenState extends State<ClientsScreen> {
   static String? _emptyToNull(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+}
+
+class _ClientCard extends StatelessWidget {
+  const _ClientCard({
+    required this.client,
+    required this.totalSold,
+    required this.openAmount,
+    required this.pendingSale,
+    required this.onTap,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onMarkReceived,
+  });
+
+  final ClientModel client;
+  final double totalSold;
+  final double openAmount;
+  final SaleModel? pendingSale;
+  final VoidCallback onTap;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final Future<void> Function()? onMarkReceived;
+
+  @override
+  Widget build(BuildContext context) {
+    final statusText = openAmount > 0
+        ? 'Aberto: ${MoneyUtils.format(openAmount)}'
+        : 'Status: Em dia';
+    final statusColor =
+        openAmount > 0 ? NexoColors.warning : NexoColors.success;
+
+    return Semantics(
+      button: true,
+      label: '${client.name}\n$statusText',
+      child: NexoCard(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        client.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: NexoSpacing.xxs),
+                      Text(
+                        statusText,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: statusColor,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  tooltip: 'Ações do cliente',
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      onEdit();
+                    }
+                    if (value == 'delete') {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(value: 'edit', child: Text('Editar')),
+                    PopupMenuItem(value: 'delete', child: Text('Excluir')),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: NexoSpacing.sm),
+            Text(
+              [
+                client.billingType.label,
+                if (client.cityStateLabel != null) client.cityStateLabel!,
+                'Total ${MoneyUtils.format(totalSold)}',
+              ].join(' | '),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: NexoColors.inkMedium,
+                  ),
+            ),
+            if (openAmount > 0 && pendingSale != null) ...[
+              const SizedBox(height: NexoSpacing.md),
+              Wrap(
+                spacing: NexoSpacing.sm,
+                runSpacing: NexoSpacing.xs,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final message =
+                          'Oi, ${client.name}. Passando para lembrar do pagamento de ${MoneyUtils.format(openAmount)}.';
+                      await Clipboard.setData(ClipboardData(text: message));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Cobrança copiada.')),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 18),
+                    label: const Text('Copiar cobrança'),
+                  ),
+                  FilledButton.icon(
+                    onPressed: () async {
+                      await onMarkReceived?.call();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Recebimento marcado.'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.check_rounded, size: 18),
+                    label: const Text('Marcar recebido'),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
