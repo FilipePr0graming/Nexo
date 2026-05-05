@@ -6,6 +6,7 @@ import '../../../core/design_system/nexo_radius.dart';
 import '../../../core/design_system/nexo_spacing.dart';
 import '../../../features/clients/presentation/screens/clients_screen.dart';
 import '../../../features/clients/presentation/screens/new_client_screen.dart';
+import '../../../features/calculator/presentation/screens/calculator_screen.dart';
 import '../../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../../features/final_ui/presentation/screens/final_pages.dart';
 import '../../../features/finance/presentation/screens/finance_screen.dart';
@@ -33,6 +34,7 @@ class _NexoShellState extends State<NexoShell> {
         onNewSale: _openNewSale,
         onNewExpense: _openNewExpense,
         onOpenClients: () => setState(() => _currentIndex = 1),
+        onOpenCalculator: () => setState(() => _currentIndex = 10),
       ),
       ClientsScreen(
         onNewClient: _openNewClient,
@@ -51,6 +53,7 @@ class _NexoShellState extends State<NexoShell> {
         onNewExpense: _openNewExpense,
       ),
       const CasaScreen(),
+      const CalculatorScreen(),
     ];
   }
 
@@ -226,6 +229,14 @@ class _NexoShellState extends State<NexoShell> {
                     icon: NexoIcons.finance,
                     selected: _currentIndex == 3,
                     onTap: () => setState(() => _currentIndex = 3),
+                  ),
+                ),
+                Expanded(
+                  child: _BottomNavItem(
+                    label: 'Calc',
+                    icon: Icons.calculate_rounded,
+                    selected: _currentIndex == 10,
+                    onTap: () => setState(() => _currentIndex = 10),
                   ),
                 ),
                 Expanded(

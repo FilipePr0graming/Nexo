@@ -1,4 +1,5 @@
 import '../../features/finance/models/expense_model.dart';
+import '../../features/finance/models/expense_details.dart';
 import '../../features/finance/models/sale_model.dart';
 import '../../features/goals/models/goal_model.dart';
 import '../../shared/components/cards/nexo_alert_card.dart';
@@ -28,11 +29,15 @@ class LifeFinanceService {
 
     final confirmedEntries = _sum(received.map((sale) => sale.netAmount));
     final businessExpenses = _sum(expenses
-        .where((expense) => expense.scope == ExpenseScope.business)
-        .map((expense) => expense.amount));
+        .where((expense) =>
+            expense.scope == ExpenseScope.business &&
+            !ExpenseDetails.fromExpense(expense).isPlannedPurchase)
+        .map((expense) => ExpenseDetails.fromExpense(expense).cashImpact));
     final personalExpenses = _sum(expenses
-        .where((expense) => expense.scope == ExpenseScope.personal)
-        .map((expense) => expense.amount));
+        .where((expense) =>
+            expense.scope == ExpenseScope.personal &&
+            !ExpenseDetails.fromExpense(expense).isPlannedPurchase)
+        .map((expense) => ExpenseDetails.fromExpense(expense).cashImpact));
 
     final partner = _partnerSummary(received, expenses);
     final committedMoney = partner.remaining;
@@ -52,14 +57,20 @@ class LifeFinanceService {
       ..sort((left, right) => left.expectedDate.compareTo(right.expectedDate));
 
     final upcomingBills = expenses.where((expense) {
-      final due = expense.expenseDate.toLocal();
+      final details = ExpenseDetails.fromExpense(expense);
+      if (!details.isOpen || details.status == ExpensePaymentStatus.forecast) {
+        return false;
+      }
+      final due = details.dueDate.toLocal();
       return !_isBeforeDay(due, today) && !due.isAfter(weekLimit);
     }).toList(growable: false)
       ..sort((left, right) => left.expenseDate.compareTo(right.expenseDate));
 
     final toReceive7Days =
         _sum(upcomingReceipts.map((sale) => sale.ownerAmount));
-    final toPay7Days = _sum(upcomingBills.map((expense) => expense.amount));
+    final toPay7Days = _sum(upcomingBills.map(
+      (expense) => ExpenseDetails.fromExpense(expense).pendingAmount,
+    ));
     final entriesToday = _sum(received.where((sale) {
       final date = (sale.receivedDate ?? sale.movementDate).toLocal();
       return DateLabelUtils.isSameDay(date, today);
@@ -68,7 +79,7 @@ class LifeFinanceService {
         .where((expense) =>
             expense.scope == ExpenseScope.personal &&
             _containsBusinessAccount(expense.accountName))
-        .map((expense) => expense.amount));
+        .map((expense) => ExpenseDetails.fromExpense(expense).cashImpact));
 
     final goal = _goalSummary(
       freeMoney: freeMoney,
@@ -152,7 +163,41 @@ class LifeFinanceService {
       alerts: alerts,
       upcomingReceipts: upcomingReceipts,
       upcomingBills: upcomingBills,
+      wallets: _walletBalances(
+        confirmedEntries: confirmedEntries,
+        expenses: expenses,
+      ),
     );
+  }
+
+  static List<WalletBalance> _walletBalances({
+    required double confirmedEntries,
+    required List<ExpenseModel> expenses,
+  }) {
+    final balances = <String, double>{
+      'BTG': 0,
+      'Cora': 0,
+      'Dinheiro': 0,
+      'Outro': 0,
+      'Indefinido': confirmedEntries,
+    };
+
+    for (final expense in expenses) {
+      final details = ExpenseDetails.fromExpense(expense);
+      final wallet = details.wallet?.trim().isNotEmpty == true
+          ? details.wallet!.trim()
+          : ExpenseDetails.walletFromAccount(expense.accountName);
+      balances.update(
+        balances.containsKey(wallet) ? wallet : 'Outro',
+        (value) => _money(value - details.cashImpact),
+        ifAbsent: () => _money(-details.cashImpact),
+      );
+    }
+
+    return balances.entries
+        .map((entry) =>
+            WalletBalance(name: entry.key, balance: _money(entry.value)))
+        .toList(growable: false);
   }
 
   static TodayMoneySnapshot _todayMoneySnapshot({
@@ -326,9 +371,14 @@ class LifeFinanceService {
         return !_isBeforeDay(due, today) && !due.isAfter(limit);
       }).map((sale) => sale.ownerAmount));
       final toPay = _sum(expenses.where((expense) {
-        final due = expense.expenseDate.toLocal();
+        final details = ExpenseDetails.fromExpense(expense);
+        if (!details.isOpen ||
+            details.status == ExpensePaymentStatus.forecast) {
+          return false;
+        }
+        final due = details.dueDate.toLocal();
         return !_isBeforeDay(due, today) && !due.isAfter(limit);
-      }).map((expense) => expense.amount));
+      }).map((expense) => ExpenseDetails.fromExpense(expense).pendingAmount));
       final projected = _money(freeMoney + toReceive - toPay);
       final message = projected < 0
           ? 'Risco de faltar ${MoneyUtils.format(projected.abs())}.'
@@ -593,7 +643,11 @@ class LifeFinanceService {
     }).toList(growable: false);
 
     final billsDueSoon = expenses.where((expense) {
-      final due = expense.expenseDate.toLocal();
+      final details = ExpenseDetails.fromExpense(expense);
+      if (!details.isOpen || details.status == ExpensePaymentStatus.forecast) {
+        return false;
+      }
+      final due = details.dueDate.toLocal();
       return !_isBeforeDay(due, today) && !due.isAfter(weekLimit);
     }).toList(growable: false);
     final mixedExpenses = expenses.where((expense) {

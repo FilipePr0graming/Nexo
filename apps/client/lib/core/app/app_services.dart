@@ -12,6 +12,7 @@ import '../../features/partners/services/partner_payments_service.dart';
 import '../../features/projects/services/projects_service.dart';
 import '../../features/reminders/services/reminders_service.dart';
 import '../services/supabase_service.dart';
+import '../services/nexo_intelligence_service.dart';
 
 class AppServices {
   AppServices({
@@ -25,6 +26,7 @@ class AppServices {
     required this.reminders,
     required this.notes,
     required this.partnerPayments,
+    required this.intelligence,
     required this.supabaseEnabled,
   });
 
@@ -38,6 +40,7 @@ class AppServices {
   final RemindersService reminders;
   final NotesService notes;
   final PartnerPaymentsService partnerPayments;
+  final NexoIntelligenceService intelligence;
   final bool supabaseEnabled;
 
   final List<RealtimeChannel> _channels = <RealtimeChannel>[];

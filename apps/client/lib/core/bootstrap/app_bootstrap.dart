@@ -27,6 +27,7 @@ import '../../features/reminders/services/reminders_service.dart';
 import '../app/app_services.dart';
 import '../config/app_environment.dart';
 import '../services/supabase_service.dart';
+import '../services/nexo_intelligence_service.dart';
 import '../storage/local_json_store.dart';
 
 class AppBootstrap {
@@ -96,6 +97,7 @@ class AppBootstrap {
         client: supabaseClient,
         localStore: localStore,
       ),
+      intelligence: NexoIntelligenceService(supabaseClient),
       supabaseEnabled: AppEnvironment.hasSupabase,
     );
 

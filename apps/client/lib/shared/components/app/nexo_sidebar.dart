@@ -29,6 +29,7 @@ class NexoSidebar extends StatelessWidget {
       _SidebarDestination(NexoIcons.notes, 'Anotacoes'),
       _SidebarDestination(NexoIcons.company, 'Empresa'),
       _SidebarDestination(NexoIcons.home, 'Casa'),
+      _SidebarDestination(Icons.calculate_rounded, 'Calculadora'),
     ];
 
     return Padding(

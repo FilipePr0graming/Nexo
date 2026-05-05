@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/id_generator.dart';
+import '../../../core/utils/money_utils.dart';
+import '../models/expense_details.dart';
 import '../data/repositories/expenses_repository.dart';
 import '../models/expense_model.dart';
 
@@ -66,8 +68,50 @@ class ExpensesService extends ChangeNotifier {
     required DateTime expenseDate,
     String? recurrence,
     String? notes,
+    ExpensePaymentStatus status = ExpensePaymentStatus.paid,
+    double? paidAmount,
+    DateTime? dueDate,
+    DateTime? paymentDate,
+    ExpenseRecurrenceKind? recurrenceKind,
+    int? fixedDueDay,
+    int? installmentTotal,
+    int? installmentCurrent,
+    String? wallet,
+    String? person,
+    String? priority,
+    String? plannedPaymentMethod,
+    double? cardOriginalAmount,
+    double? cardPaidWithInterest,
   }) async {
     final timestamp = DateTime.now().toUtc();
+    final details = ExpenseDetails(
+      status: status,
+      originalAmount: amount,
+      paidAmount:
+          paidAmount ?? (status == ExpensePaymentStatus.paid ? amount : 0),
+      dueDate: dueDate ?? expenseDate,
+      paymentDate: paymentDate ??
+          (status == ExpensePaymentStatus.paid ? expenseDate : null),
+      recurrenceKind: recurrenceKind ??
+          switch (recurrence) {
+            'monthly' => ExpenseRecurrenceKind.monthly,
+            'annual' => ExpenseRecurrenceKind.annual,
+            _ => ExpenseRecurrenceKind.once,
+          },
+      fixedDueDay: fixedDueDay,
+      installmentTotal: installmentTotal,
+      installmentCurrent: installmentCurrent,
+      wallet: wallet ?? ExpenseDetails.walletFromAccount(accountName),
+      person: person,
+      priority: priority,
+      plannedPaymentMethod: plannedPaymentMethod,
+      cardOriginalAmount: cardOriginalAmount,
+      cardPaidWithInterest: cardPaidWithInterest,
+      changeHistory: [
+        'Criado em ${timestamp.toLocal().toIso8601String()}',
+      ],
+      humanNote: notes,
+    );
     final expense = ExpenseModel(
       id: IdGenerator.next('expense'),
       title: title.trim(),
@@ -78,7 +122,7 @@ class ExpensesService extends ChangeNotifier {
       accountName: accountName,
       expenseDate: expenseDate,
       recurrence: _emptyToNull(recurrence),
-      notes: _emptyToNull(notes),
+      notes: ExpenseDetails.encode(details: details, note: notes),
       createdAt: timestamp,
       updatedAt: timestamp,
     );
@@ -160,6 +204,55 @@ class ExpensesService extends ChangeNotifier {
     } finally {
       notifyListeners();
     }
+  }
+
+  Future<void> updateExpenseDetails(
+    ExpenseModel expense,
+    ExpenseDetails details, {
+    String? note,
+  }) {
+    final nextDetails = details.copyWith(
+      changeHistory: [
+        ...details.changeHistory,
+        'Atualizado em ${DateTime.now().toLocal().toIso8601String()}',
+      ],
+    );
+    return updateExpense(
+      expense.copyWith(
+        amount: MoneyUtils.roundMoney(nextDetails.originalAmount),
+        expenseDate: nextDetails.dueDate.toUtc(),
+        accountName: nextDetails.wallet ?? expense.accountName,
+        recurrence: nextDetails.recurrenceKind.legacyStorage,
+        notes: ExpenseDetails.encode(details: nextDetails, note: note),
+      ),
+    );
+  }
+
+  Future<void> markAsPaid(ExpenseModel expense, {double? paidAmount}) {
+    final details = ExpenseDetails.fromExpense(expense);
+    final amount = paidAmount ?? details.originalAmount;
+    return updateExpenseDetails(
+      expense,
+      details.copyWith(
+        status: ExpensePaymentStatus.paid,
+        paidAmount: amount,
+        paymentDate: DateTime.now().toUtc(),
+      ),
+      note: details.humanNote,
+    );
+  }
+
+  Future<void> markPartial(ExpenseModel expense, double paidAmount) {
+    final details = ExpenseDetails.fromExpense(expense);
+    return updateExpenseDetails(
+      expense,
+      details.copyWith(
+        status: ExpensePaymentStatus.partial,
+        paidAmount: paidAmount,
+        paymentDate: DateTime.now().toUtc(),
+      ),
+      note: details.humanNote,
+    );
   }
 
   Future<void> deleteExpense(String id) async {

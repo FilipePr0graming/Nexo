@@ -34,6 +34,10 @@ class MoneyUtils {
     return '$sign${format(value.abs()).replaceFirst('R\$ ', '')}';
   }
 
+  static double roundMoney(num value) {
+    return (value * 100).roundToDouble() / 100;
+  }
+
   static String _group(int value) {
     final digits = value.toString();
     final buffer = StringBuffer();

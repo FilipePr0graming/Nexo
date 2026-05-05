@@ -39,8 +39,8 @@ void main() {
     expect(summary.partner.remaining, 1650);
     expect(summary.today.saldoTotal, 4500);
     expect(summary.today.dinheiroComprometido, 1650);
-    expect(summary.today.dinheiroLivreHoje, 1750);
-    expect(summary.today.statusDoDia, TodayMoneyStatus.atencao);
+    expect(summary.today.dinheiroLivreHoje, 2750);
+    expect(summary.today.statusDoDia, TodayMoneyStatus.seguro);
   });
 
   test('mostra proximos 7 dias, cliente atrasado e casa paga pela empresa', () {
@@ -82,7 +82,7 @@ void main() {
     expect(summary.toPay7Days, 300);
     expect(summary.today.contasProximos7Dias, 300);
     expect(summary.today.statusDoDia, TodayMoneyStatus.risco);
-    expect(summary.housePaidByCompany, 300);
+    expect(summary.housePaidByCompany, 0);
     expect(summary.alerts.any((alert) => alert.title == 'Cliente atrasado'),
         isTrue);
     expect(
@@ -162,8 +162,8 @@ void main() {
     expect(summary.forecasts.map((item) => item.days), [7, 15, 30]);
     expect(summary.today.entradasHoje, 2000);
     expect(summary.today.contasProximos7Dias, 1000);
-    expect(summary.today.dinheiroLivreHoje, -100);
-    expect(summary.forecasts.first.projectedMoney, 400);
+    expect(summary.today.dinheiroLivreHoje, 900);
+    expect(summary.forecasts.first.projectedMoney, 1400);
     expect(summary.incomeSuggestions.first.title, 'Pagar primeiro');
     expect(summary.incomeSuggestions.first.amount, 1000);
   });

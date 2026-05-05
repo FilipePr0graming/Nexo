@@ -29,11 +29,13 @@ class DashboardScreen extends StatelessWidget {
     required this.onNewSale,
     required this.onNewExpense,
     required this.onOpenClients,
+    required this.onOpenCalculator,
   });
 
   final VoidCallback onNewSale;
   final VoidCallback onNewExpense;
   final VoidCallback onOpenClients;
+  final VoidCallback onOpenCalculator;
 
   @override
   Widget build(BuildContext context) {
@@ -99,9 +101,13 @@ class DashboardScreen extends StatelessWidget {
                   defaultScope: ExpenseScope.personal,
                 ),
                 onChargeClient: () => _showChargeClientSheet(context, summary),
+                onNewReminder: () => _showReminderSheet(context),
+                onOpenCalculator: onOpenCalculator,
               ),
               const SizedBox(height: NexoSpacing.lg),
               _DailyAnswerCard(summary: summary),
+              const SizedBox(height: NexoSpacing.xl),
+              _IntelligenceCard(summary: summary),
               const SizedBox(height: NexoSpacing.xl),
               _ReminderCenter(
                 reminders: _todayReminders(services.reminders.reminders),
@@ -635,6 +641,85 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
+class _IntelligenceCard extends StatefulWidget {
+  const _IntelligenceCard({required this.summary});
+
+  final LifeFinanceSummary summary;
+
+  @override
+  State<_IntelligenceCard> createState() => _IntelligenceCardState();
+}
+
+class _IntelligenceCardState extends State<_IntelligenceCard> {
+  String? _summary;
+  String _source = 'fallback';
+  bool _loading = false;
+
+  Future<void> _ask() async {
+    setState(() => _loading = true);
+    final result = await NexoScope.of(context).intelligence.ask(
+      type: 'daily_summary',
+      payload: {
+        'dinheiroLivreHoje': widget.summary.today.dinheiroLivreHoje,
+        'saldoTotal': widget.summary.today.saldoTotal,
+        'contasProximos7Dias': widget.summary.today.contasProximos7Dias,
+        'entradasProximos7Dias': widget.summary.today.entradasProximos7Dias,
+        'statusDoDia': widget.summary.today.statusDoDia.name,
+      },
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _summary = result.summary;
+      _source = result.source;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NexoCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Inteligencia financeira',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _loading ? null : _ask,
+                icon: const Icon(Icons.psychology_rounded, size: 18),
+                label: Text(_loading ? 'Analisando...' : 'Analisar'),
+              ),
+            ],
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(
+            _summary ?? widget.summary.today.mensagemPrincipal,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: NexoColors.inkMedium,
+                ),
+          ),
+          const SizedBox(height: NexoSpacing.xs),
+          Text(
+            _source == 'groq'
+                ? 'Gerado via Groq seguro no Supabase.'
+                : 'Fallback local ativo se a IA estiver indisponivel.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: NexoColors.inkLow,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FocusModeCard extends StatelessWidget {
   const _FocusModeCard({
     required this.summary,
@@ -643,6 +728,8 @@ class _FocusModeCard extends StatelessWidget {
     required this.onPayBill,
     required this.onAddExpense,
     required this.onChargeClient,
+    required this.onNewReminder,
+    required this.onOpenCalculator,
   });
 
   final LifeFinanceSummary summary;
@@ -651,6 +738,8 @@ class _FocusModeCard extends StatelessWidget {
   final VoidCallback onPayBill;
   final VoidCallback onAddExpense;
   final VoidCallback onChargeClient;
+  final VoidCallback onNewReminder;
+  final VoidCallback onOpenCalculator;
 
   @override
   Widget build(BuildContext context) {
@@ -711,6 +800,16 @@ class _FocusModeCard extends StatelessWidget {
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'Cobrar',
                 onTap: onChargeClient,
+              ),
+              _FocusButtonData(
+                icon: Icons.notifications_none_rounded,
+                label: 'Lembrete',
+                onTap: onNewReminder,
+              ),
+              _FocusButtonData(
+                icon: Icons.calculate_rounded,
+                label: 'Calculadora',
+                onTap: onOpenCalculator,
               ),
             ],
           ),

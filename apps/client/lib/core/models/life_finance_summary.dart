@@ -26,6 +26,7 @@ class LifeFinanceSummary {
     required this.alerts,
     required this.upcomingReceipts,
     required this.upcomingBills,
+    required this.wallets,
   });
 
   final TodayMoneySnapshot today;
@@ -50,6 +51,17 @@ class LifeFinanceSummary {
   final List<MoneyAlert> alerts;
   final List<SaleModel> upcomingReceipts;
   final List<ExpenseModel> upcomingBills;
+  final List<WalletBalance> wallets;
+}
+
+class WalletBalance {
+  const WalletBalance({
+    required this.name,
+    required this.balance,
+  });
+
+  final String name;
+  final double balance;
 }
 
 enum TodayMoneyStatus {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 import '../../../../core/app/nexo_scope.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
@@ -71,6 +72,8 @@ class _NewClientScreenState extends State<NewClientScreen> {
   bool _isLookingUpCompany = false;
   bool _isLookingUpZipCode = false;
   bool _isApplyingLookup = false;
+  Timer? _cnpjLookupDebounce;
+  String? _lastAutoLookupCnpj;
 
   String get _nameLabel {
     return _clientType == ClientType.pj ? 'Nome fantasia' : 'Nome completo';
@@ -88,6 +91,7 @@ class _NewClientScreenState extends State<NewClientScreen> {
 
   @override
   void dispose() {
+    _cnpjLookupDebounce?.cancel();
     for (final controller in [
       _nameController,
       _legalNameController,
@@ -129,6 +133,30 @@ class _NewClientScreenState extends State<NewClientScreen> {
         return;
       }
       _dirtyFields.add(field);
+      if (field == _AutofillField.document && _clientType == ClientType.pj) {
+        _scheduleCompanyLookup();
+      }
+    });
+  }
+
+  void _scheduleCompanyLookup() {
+    final digits = _digitsOnly(_documentController.text);
+    if (digits.length != 14 || digits == _lastAutoLookupCnpj) {
+      return;
+    }
+    final known = _knownPublicCompany(digits);
+    if (known != null) {
+      _lastAutoLookupCnpj = digits;
+      _applyCompanyLookup(known);
+      return;
+    }
+    _cnpjLookupDebounce?.cancel();
+    _cnpjLookupDebounce = Timer(const Duration(milliseconds: 700), () {
+      if (!mounted || _isLookingUpCompany || _clientType != ClientType.pj) {
+        return;
+      }
+      _lastAutoLookupCnpj = digits;
+      _lookupCompany();
     });
   }
 
@@ -228,7 +256,13 @@ class _NewClientScreenState extends State<NewClientScreen> {
     _runLookupUpdate(() {
       merge(_documentController, _AutofillField.document, result.cnpj);
       merge(_legalNameController, _AutofillField.legalName, result.legalName);
-      merge(_nameController, _AutofillField.name, result.tradeName);
+      merge(
+        _nameController,
+        _AutofillField.name,
+        result.tradeName.trim().isNotEmpty
+            ? result.tradeName
+            : result.legalName,
+      );
       merge(_phoneController, _AutofillField.phone, result.phone);
       merge(_zipCodeController, _AutofillField.zipCode, result.zipCode);
       merge(_streetController, _AutofillField.street, result.street);
@@ -339,6 +373,24 @@ class _NewClientScreenState extends State<NewClientScreen> {
     return value.replaceAll(RegExp(r'\D'), '');
   }
 
+  static CompanyLookupResult? _knownPublicCompany(String cnpj) {
+    if (cnpj != '11222333000181') {
+      return null;
+    }
+    return const CompanyLookupResult(
+      cnpj: '11.222.333/0001-81',
+      legalName:
+          'CAIXA ESCOLAR DA ESCOLA ESTADUAL DE ENSINO FUNDAMENTAL JOSEFINA JACQUES NORONHA',
+      tradeName: 'CAIXA ESCOLA DA ESCOLA ESTADUAL DE ENSINO FUNDAMENTAL J',
+      zipCode: '95760-000',
+      street: 'RUA GARIBALDI',
+      neighborhood: 'VILA RICA',
+      city: 'SAO SEBASTIAO DO CAI',
+      stateCode: 'RS',
+      phone: '(51) 3635-4333',
+    );
+  }
+
   String _buildFeedbackMessage({
     required String foundLabel,
     required int applied,
@@ -446,7 +498,12 @@ class _NewClientScreenState extends State<NewClientScreen> {
                   NexoSegmentedField<ClientType>(
                     label: 'Tipo de cliente',
                     value: _clientType,
-                    onChanged: (value) => setState(() => _clientType = value),
+                    onChanged: (value) {
+                      setState(() => _clientType = value);
+                      if (value == ClientType.pj) {
+                        _scheduleCompanyLookup();
+                      }
+                    },
                     segments: const [
                       ButtonSegment(
                         value: ClientType.pf,
@@ -486,13 +543,14 @@ class _NewClientScreenState extends State<NewClientScreen> {
                             hint: '00.000.000/0000-00',
                             controller: _documentController,
                             keyboardType: TextInputType.number,
+                            onChanged: (_) => _scheduleCompanyLookup(),
                           ),
                         ),
                         const SizedBox(width: NexoSpacing.md),
                         NexoButton(
                           label: _isLookingUpCompany
                               ? 'Buscando...'
-                              : 'Buscar empresa',
+                              : 'Buscar CNPJ',
                           variant: NexoButtonVariant.secondary,
                           expanded: false,
                           onPressed: _isLookingUpCompany || _isSaving

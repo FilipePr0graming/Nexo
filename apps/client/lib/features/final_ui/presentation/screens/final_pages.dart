@@ -13,6 +13,7 @@ import '../../../../features/clients/models/client_model.dart';
 import '../../../../features/finance/models/expense_model.dart';
 import '../../../../features/finance/models/sale_model.dart';
 import '../../../../features/goals/models/goal_model.dart';
+import '../../../../features/notes/models/note_details.dart';
 import '../../../../features/notes/models/note_model.dart';
 import '../../../../features/partners/models/partner_payment_model.dart';
 import '../../../../features/projects/models/project_model.dart';
@@ -889,6 +890,7 @@ class AnotacoesScreen extends StatelessWidget {
                       .map(
                         (note) => _NoteRecordCard(
                           note: note,
+                          onEdit: () => _openNoteSheet(context, note: note),
                           onDelete: () => services.notes.deleteNote(note.id),
                         ),
                       )
@@ -901,9 +903,22 @@ class AnotacoesScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _openNoteSheet(BuildContext context) async {
-    final titleController = TextEditingController();
-    final bodyController = TextEditingController();
+  Future<void> _openNoteSheet(BuildContext context, {NoteModel? note}) async {
+    final details = note == null
+        ? const NoteDetails(content: '')
+        : NoteDetails.fromBody(note.body);
+    final titleController = TextEditingController(text: note?.title ?? '');
+    final bodyController = TextEditingController(text: details.content);
+    final categoryController =
+        TextEditingController(text: details.category ?? '');
+    final reminderController = TextEditingController(
+      text: details.reminderAt == null
+          ? ''
+          : '${details.reminderAt!.toLocal().day.toString().padLeft(2, '0')}/${details.reminderAt!.toLocal().month.toString().padLeft(2, '0')}/${details.reminderAt!.toLocal().year}',
+    );
+    var isPinned = details.isPinned;
+    var isImportant = details.isImportant;
+    var isDone = details.isDone;
 
     try {
       await showModalBottomSheet<void>(
@@ -925,10 +940,8 @@ class AnotacoesScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Nova anotacao',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text(note == null ? 'Nova anotacao' : 'Editar anotacao',
+                      style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: NexoSpacing.lg),
                   NexoTextField(
                     label: 'Titulo',
@@ -942,19 +955,105 @@ class AnotacoesScreen extends StatelessWidget {
                     controller: bodyController,
                     maxLines: 5,
                   ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Categoria',
+                    hint: 'Casa, cliente, compra, Serasa...',
+                    controller: categoryController,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  NexoTextField(
+                    label: 'Lembrete',
+                    hint: 'dd/mm/aaaa',
+                    controller: reminderController,
+                    keyboardType: TextInputType.datetime,
+                  ),
+                  const SizedBox(height: NexoSpacing.md),
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return Wrap(
+                        spacing: NexoSpacing.sm,
+                        children: [
+                          FilterChip(
+                            label: const Text('Fixada'),
+                            selected: isPinned,
+                            onSelected: (value) =>
+                                setState(() => isPinned = value),
+                          ),
+                          FilterChip(
+                            label: const Text('Importante'),
+                            selected: isImportant,
+                            onSelected: (value) =>
+                                setState(() => isImportant = value),
+                          ),
+                          FilterChip(
+                            label: const Text('Concluida'),
+                            selected: isDone,
+                            onSelected: (value) =>
+                                setState(() => isDone = value),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  if (details.previousContent?.isNotEmpty == true) ...[
+                    const SizedBox(height: NexoSpacing.md),
+                    TextButton.icon(
+                      onPressed: () =>
+                          bodyController.text = details.previousContent!,
+                      icon: const Icon(Icons.undo_rounded, size: 18),
+                      label: const Text('Desfazer ultima alteracao'),
+                    ),
+                  ],
                   const SizedBox(height: NexoSpacing.lg),
                   NexoButton(
-                    label: 'Salvar anotacao',
+                    label: note == null ? 'Salvar anotacao' : 'Salvar edicao',
                     icon: NexoIcons.add,
                     onPressed: () async {
                       final body = bodyController.text.trim();
                       if (body.isEmpty) {
                         return;
                       }
-                      await NexoScope.of(context).notes.createNote(
-                            title: titleController.text,
-                            body: body,
-                          );
+                      final reminderAt =
+                          _parseNoteDate(reminderController.text);
+                      final scope = NexoScope.of(context);
+                      final next = NoteDetails(
+                        content: body,
+                        category: categoryController.text,
+                        reminderAt: reminderAt,
+                        isPinned: isPinned,
+                        isImportant: isImportant,
+                        isDone: isDone,
+                        previousContent:
+                            details.content.isEmpty ? null : details.content,
+                      );
+                      if (note == null) {
+                        await scope.notes.createNote(
+                          title: titleController.text,
+                          body: body,
+                          category: categoryController.text,
+                          reminderAt: reminderAt,
+                          isPinned: isPinned,
+                          isImportant: isImportant,
+                        );
+                      } else {
+                        await scope.notes.updateNoteDetails(
+                          note,
+                          next,
+                          title: titleController.text,
+                        );
+                      }
+                      if (reminderAt != null) {
+                        await scope.reminders.createReminder(
+                          title: titleController.text.trim().isEmpty
+                              ? body.split('\n').first
+                              : titleController.text,
+                          description: body,
+                          dueDate: reminderAt,
+                          relatedTable: 'notes',
+                          relatedId: note?.id,
+                        );
+                      }
                       if (sheetContext.mounted) {
                         Navigator.of(sheetContext).pop();
                       }
@@ -969,7 +1068,23 @@ class AnotacoesScreen extends StatelessWidget {
     } finally {
       titleController.dispose();
       bodyController.dispose();
+      categoryController.dispose();
+      reminderController.dispose();
     }
+  }
+
+  DateTime? _parseNoteDate(String value) {
+    final parts = value.trim().split('/');
+    if (parts.length != 3) {
+      return null;
+    }
+    final day = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+    if (day == null || month == null || year == null) {
+      return null;
+    }
+    return DateTime(year, month, day, 9).toUtc();
   }
 }
 
@@ -1841,22 +1956,26 @@ class _InsightCard extends StatelessWidget {
 class _NoteRecordCard extends StatelessWidget {
   const _NoteRecordCard({
     required this.note,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final NoteModel note;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
+    final details = NoteDetails.fromBody(note.body);
     return Semantics(
       container: true,
       label: [
         note.title,
-        note.body,
+        details.content,
         DateLabelUtils.dayLabel(note.updatedAt.toLocal()),
       ].join('\n'),
       child: NexoCard(
+        onTap: onEdit,
         radius: NexoRadius.xl,
         backgroundColor: NexoColors.surfaceElevated,
         borderColor: NexoColors.border.withValues(alpha: 0.16),
@@ -1873,6 +1992,11 @@ class _NoteRecordCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
+                  tooltip: 'Editar anotacao',
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+                IconButton(
                   tooltip: 'Excluir anotacao',
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline_rounded),
@@ -1881,7 +2005,7 @@ class _NoteRecordCard extends StatelessWidget {
             ),
             const SizedBox(height: NexoSpacing.sm),
             Text(
-              note.body,
+              details.content,
               maxLines: 5,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1890,7 +2014,12 @@ class _NoteRecordCard extends StatelessWidget {
             ),
             const SizedBox(height: NexoSpacing.lg),
             Text(
-              DateLabelUtils.dayLabel(note.updatedAt.toLocal()),
+              [
+                if (details.category?.isNotEmpty == true) details.category!,
+                DateLabelUtils.dayLabel(note.updatedAt.toLocal()),
+                if (details.isPinned) 'Fixada',
+                if (details.isImportant) 'Importante',
+              ].join(' | '),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

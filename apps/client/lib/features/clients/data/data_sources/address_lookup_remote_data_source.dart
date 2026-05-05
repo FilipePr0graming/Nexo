@@ -24,7 +24,7 @@ class AddressLookupRemoteDataSource {
         headers: const {
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return _parser.parse(

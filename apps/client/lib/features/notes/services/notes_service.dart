@@ -5,6 +5,7 @@ import '../../../core/services/nexo_table_service.dart';
 import '../../../core/storage/local_json_store.dart';
 import '../../../core/utils/id_generator.dart';
 import '../models/note_model.dart';
+import '../models/note_details.dart';
 
 class NotesService extends ChangeNotifier {
   NotesService({
@@ -37,6 +38,11 @@ class NotesService extends ChangeNotifier {
   Future<void> createNote({
     required String title,
     required String body,
+    String? category,
+    String priority = 'normal',
+    DateTime? reminderAt,
+    bool isImportant = false,
+    bool isPinned = false,
     String? relatedTable,
     String? relatedId,
   }) {
@@ -45,7 +51,14 @@ class NotesService extends ChangeNotifier {
       NoteModel(
         id: IdGenerator.next('note'),
         title: title.trim().isEmpty ? 'Sem titulo' : title.trim(),
-        body: body.trim(),
+        body: NoteDetails(
+          content: body.trim(),
+          category: _emptyToNull(category),
+          priority: priority,
+          reminderAt: reminderAt?.toUtc(),
+          isImportant: isImportant,
+          isPinned: isPinned,
+        ).encode(),
         relatedTable: _emptyToNull(relatedTable),
         relatedId: _emptyToNull(relatedId),
         createdAt: timestamp,
@@ -56,6 +69,19 @@ class NotesService extends ChangeNotifier {
 
   Future<void> updateNote(NoteModel note) {
     return _store.upsertItem(note.copyWith(updatedAt: DateTime.now().toUtc()));
+  }
+
+  Future<void> updateNoteDetails(
+    NoteModel note,
+    NoteDetails details, {
+    String? title,
+  }) {
+    return updateNote(
+      note.copyWith(
+        title: title ?? note.title,
+        body: details.encode(),
+      ),
+    );
   }
 
   Future<void> deleteNote(String id) => _store.deleteById(id);

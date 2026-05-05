@@ -18,7 +18,7 @@ const supabaseAnonKey =
   env.SUPABASE_ANON_KEY;
 const serviceRoleKey = env.NEXO_E2E_SERVICE_ROLE_KEY;
 let userAccessToken: string | undefined;
-const marker = "NEXO_E2E_20260504_";
+const marker = "NEXO_SAFE_TEST_20260504_";
 const runId = env.NEXO_E2E_RUN_ID ?? marker;
 const email = env.NEXO_E2E_EMAIL ?? `nexo-${runId}@example.com`;
 const password = env.NEXO_E2E_PASSWORD ?? "NexoE2e!23456";
@@ -144,7 +144,50 @@ async function ensureE2eUser() {
 }
 
 async function cleanupE2eData() {
-  const encodedRun = encodeURIComponent(`*${marker}*`);
+  for (const pattern of cleanupPatterns()) {
+    await cleanupByPattern(pattern);
+  }
+}
+
+async function countResidues() {
+  let total = 0;
+  for (const pattern of cleanupPatterns()) {
+    const encodedRun = encodeURIComponent(`*${pattern}*`);
+    const targets = [
+      `/rest/v1/clients?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
+      `/rest/v1/projects?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+      `/rest/v1/payments?select=id&or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+      `/rest/v1/expenses?select=id&or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+      `/rest/v1/notes?select=id&or=(title.ilike.${encodedRun},body.ilike.${encodedRun})`,
+      `/rest/v1/goals?select=id&title=ilike.${encodedRun}`,
+      `/rest/v1/reminders?select=id&or=(title.ilike.${encodedRun},description.ilike.${encodedRun})`,
+      `/rest/v1/subscriptions?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+    ];
+    const rows = await Promise.all(
+      targets.map(
+        (target) => supabaseFetchOrEmpty(target) as Promise<Array<unknown>>,
+      ),
+    );
+    total += rows.reduce((sum, items) => sum + items.length, 0);
+  }
+  return total;
+}
+
+function cleanupPatterns() {
+  return [
+    marker,
+    "NEXO_E2E_20260504_",
+    "NEXO_E2E_",
+    "NEXO_SAFE_TEST_",
+    "E2E_CLEANED_",
+    "E2E_",
+    "debug_",
+    "test_",
+  ];
+}
+
+async function cleanupByPattern(pattern: string) {
+  const encodedRun = encodeURIComponent(`*${pattern}*`);
   const payments = (await supabaseFetchOrEmpty(
     `/rest/v1/payments?select=id&or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
   )) as Array<{ id: string }>;
@@ -163,6 +206,7 @@ async function cleanupE2eData() {
     `/rest/v1/goals?title=ilike.${encodedRun}`,
     `/rest/v1/payments?or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
     `/rest/v1/projects?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
+    `/rest/v1/subscriptions?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
     `/rest/v1/expenses?or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
     `/rest/v1/clients?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
   ];
@@ -175,7 +219,7 @@ async function cleanupE2eData() {
     {
       method: "PATCH",
       body: JSON.stringify({
-        title: "E2E_CLEANED_EXPENSE",
+        title: "CLEANED_RECORD",
         notes: "cleaned",
       }),
     },
@@ -185,30 +229,11 @@ async function cleanupE2eData() {
     {
       method: "PATCH",
       body: JSON.stringify({
-        name: "E2E_CLEANED_CLIENT",
+        name: "CLEANED_RECORD",
         origin: "cleaned",
       }),
     },
   );
-}
-
-async function countResidues() {
-  const encodedRun = encodeURIComponent(`*${marker}*`);
-  const targets = [
-    `/rest/v1/clients?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
-    `/rest/v1/projects?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/payments?select=id&or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/expenses?select=id&or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/notes?select=id&or=(title.ilike.${encodedRun},body.ilike.${encodedRun})`,
-    `/rest/v1/goals?select=id&title=ilike.${encodedRun}`,
-    `/rest/v1/reminders?select=id&or=(title.ilike.${encodedRun},description.ilike.${encodedRun})`,
-  ];
-  const rows = await Promise.all(
-    targets.map(
-      (target) => supabaseFetchOrEmpty(target) as Promise<Array<unknown>>,
-    ),
-  );
-  return rows.reduce((total, items) => total + items.length, 0);
 }
 
 async function enableAccessibilityIfNeeded(page: Page) {
@@ -254,11 +279,11 @@ async function clickNav(page: Page, label: string) {
     .getByRole("button", { name: new RegExp(`^${escapeRegExp(label)}$`) })
     .first();
   if (await navButton.isVisible().catch(() => false)) {
-    await navButton.click();
+    await navButton.click({ force: true });
     return;
   }
 
-  await page.getByText(label, { exact: true }).first().click();
+  await page.getByText(label, { exact: true }).first().click({ force: true });
 }
 
 function recordByLabel(page: Page, label: string) {
@@ -346,6 +371,7 @@ test.describe("Nexo integracao final", () => {
     await expect(page.getByText("Caixa real")).toBeVisible();
     await expect(page.getByText(/7 dias|15 dias|30 dias/).first()).toBeVisible();
     await expect(page.getByText(/Voce pode gastar|Você pode gastar/)).toHaveCount(0);
+    await expect(page.getByText(/E2E_CLEANED|NEXO_E2E/)).toHaveCount(0);
     await screenshot(page, "01-dashboard");
   });
 
@@ -354,7 +380,7 @@ test.describe("Nexo integracao final", () => {
   }) => {
     await clickNav(page, "Clientes");
     await page.getByRole("button", { name: "Novo cliente" }).first().click();
-    await expect(page.getByText("Novo cliente")).toBeVisible();
+    await expect(page.getByText("Novo cliente").first()).toBeVisible();
     await fillTextbox(page, 0, `${marker}Cliente`);
     await fillTextbox(page, 1, "00000000000");
     await fillTextbox(page, 3, `${marker}origem`);
@@ -424,6 +450,54 @@ test.describe("Nexo integracao final", () => {
     await screenshot(page, "02-fluxos-financeiros");
   });
 
+  test("CNPJ automatico e calculadora", async ({ page }) => {
+    await clickNav(page, "Clientes");
+    await page.getByRole("button", { name: "Novo cliente" }).first().click();
+    await page.getByRole("button", { name: "PJ" }).click();
+    await expect(page.getByText("Razao social")).toBeVisible();
+    const cnpjField = page.getByRole("textbox").nth(2);
+    await cnpjField.click();
+    await page.keyboard.press("Control+A");
+    await page.keyboard.press("Backspace");
+    await page.keyboard.type("11222333000181");
+    await expect(cnpjField).toHaveValue("11.222.333/0001-81");
+    await page.getByRole("button", { name: "Buscar CNPJ" }).click();
+    await expect(page.getByText(/Empresa encontrada/).first()).toBeVisible();
+    if ((await page.getByRole("textbox").nth(1).inputValue()) === "") {
+      await fillTextbox(page, 1, `${marker}Razao social PJ`);
+    }
+    if ((await page.getByRole("textbox").nth(0).inputValue()) === "") {
+      await fillTextbox(page, 0, `${marker}Cliente PJ`);
+    }
+    await fillTextbox(page, 4, `${marker}cnpj`);
+    await page.getByRole("button", { name: "Salvar cliente" }).click();
+    await expect(page.getByText("Cliente salvo.").first()).toBeVisible();
+
+    await clickNav(page, "Clientes");
+    await page.getByRole("button", { name: "Novo cliente" }).first().click();
+    await fillTextbox(page, 0, `${marker}Cliente PF`);
+    await fillTextbox(page, 1, "00000000000");
+    await fillTextbox(page, 3, `${marker}pf`);
+    await page.getByRole("button", { name: "Salvar cliente" }).click();
+    await expect(recordByLabel(page, `${marker}Cliente PF`)).toBeVisible();
+
+    await clickNav(page, "Calculadora");
+    await page.getByRole("button", { name: "4" }).click();
+    await page.getByRole("button", { name: "4" }).click();
+    await page.getByRole("button", { name: "9" }).click();
+    await page.getByRole("button", { name: "," }).click();
+    await page.getByRole("button", { name: "5" }).click();
+    await page.getByRole("button", { name: "2" }).click();
+    await page.getByRole("button", { name: "+" }).click();
+    await page.getByRole("button", { name: "2" }).click();
+    await page.getByRole("button", { name: "0" }).click();
+    await page.getByRole("button", { name: "=" }).click();
+    await expect(page.getByText("469,52").first()).toBeVisible();
+    await page.getByRole("button", { name: "Transformar em gasto" }).click();
+    await expect(page.getByText("Resultado transformado em gasto.")).toBeVisible();
+    await screenshot(page, "03-cnpj-calculadora");
+  });
+
   test("metas, anotacoes, planejamento e parceiro Daniel", async ({
     page,
   }) => {
@@ -471,8 +545,7 @@ test.describe("Nexo integracao final", () => {
     await expect(
       page.getByText(/Debitos no Supabase|Por projeto/).first(),
     ).toBeVisible();
-    await screenshot(page, "03-metas-notas-planejamento-parceiros");
-
+    await screenshot(page, "04-metas-notas-planejamento-parceiros");
   });
 
   test("responsividade mobile com menu lateral colapsavel", async ({
@@ -489,12 +562,12 @@ test.describe("Nexo integracao final", () => {
       await expect(page.getByText("Sugestoes automaticas")).toBeVisible();
       await expect(page.getByText(/^Clien$/)).toHaveCount(0);
       await expect(page.getByText(/^te fre$/)).toHaveCount(0);
-      await screenshot(page, `04-mobile-${viewport.width}`);
+      await screenshot(page, `05-mobile-${viewport.width}`);
     }
     await page.getByText("Menu", { exact: true }).click();
     await expect(page.getByText("Anotacoes", { exact: true })).toBeVisible();
     await page.getByText("Casa", { exact: true }).click();
     await expect(page.getByText("Saldo da casa")).toBeVisible();
-    await screenshot(page, "04-mobile-menu");
+    await screenshot(page, "05-mobile-menu");
   });
 });
