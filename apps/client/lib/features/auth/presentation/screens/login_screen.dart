@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: NexoSpacing.xs),
                         Text(
-                          'Entre para sincronizar seus dados com o Supabase.',
+                          'Entre para manter seus dados sincronizados.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: NexoSpacing.xl),

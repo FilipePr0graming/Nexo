@@ -77,7 +77,7 @@ class CasaScreen extends StatelessWidget {
                 title: 'Separacao real',
                 lines: [
                   if (data.summary.housePaidByCompany > 0)
-                    'A empresa bancou ${MoneyUtils.format(data.summary.housePaidByCompany)} da casa. Corrija isso para ver o lucro real.'
+                    'A empresa bancou ${MoneyUtils.format(data.summary.housePaidByCompany)} da casa. Corrija isso para enxergar o resultado real.'
                   else
                     'Casa e empresa estao separadas nos registros atuais.',
                 ],
@@ -128,7 +128,7 @@ class EmpresaScreen extends StatelessWidget {
                   ),
                   _KpiCard(
                     icon: NexoIcons.finance,
-                    label: 'Lucro real',
+                    label: 'Resultado real',
                     value: MoneyUtils.format(data.summary.realProfit),
                     footnote: 'Depois de gastos e parceiros',
                   ),
@@ -487,7 +487,7 @@ class ParceirosScreen extends StatelessWidget {
               ),
             ],
             right: [
-              _SectionTitle('Debitos no Supabase'),
+              _SectionTitle('Repasses em aberto'),
               if (openPartnerPayments.isEmpty)
                 const NexoEmptyStateCard(
                   title: 'Sem repasse aberto',
@@ -874,7 +874,7 @@ class AnotacoesScreen extends StatelessWidget {
                 eyebrow: 'Memoria do sistema',
                 value: services.notes.notes.length.toString(),
                 message:
-                    'Notas sincronizadas com Supabase para ideias, reunioes e detalhes financeiros.',
+                    'Notas sincronizadas para ideias, reunioes e detalhes financeiros.',
               ),
               const SizedBox(height: NexoSpacing.x2l),
               if (services.notes.notes.isEmpty)
@@ -1095,11 +1095,11 @@ class ConfiguracoesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const NexoPageScaffold(
       title: 'Configuracoes',
-      subtitle: 'Usuarios, integrações e regras do sistema.',
+      subtitle: 'Preferencias, usuarios e ajustes do aplicativo.',
       child: NexoEmptyStateCard(
         title: 'Sistema conectado',
         message:
-            'Supabase, cache local e regras financeiras continuam ativos. Ajustes de usuarios entram aqui sem alterar o schema.',
+            'Seus dados continuam sincronizados. Ajustes de usuarios e preferencias aparecem aqui.',
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../../../core/design_system/nexo_icons.dart';
 import '../../../../core/design_system/nexo_spacing.dart';
 import '../../../../core/utils/money_utils.dart';
 import '../../../../features/finance/models/expense_model.dart';
+import '../../../../features/finance/models/sale_model.dart';
 import '../../../../shared/components/app/nexo_page_scaffold.dart';
 import '../../../../shared/components/cards/nexo_card.dart';
 
@@ -98,6 +99,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     if (value <= 0) {
       return;
     }
+    final confirmed = await _confirm(
+      title: 'Registrar como gasto?',
+      message:
+          'Isso vai criar uma saida financeira de ${MoneyUtils.format(value)}.',
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
     await NexoScope.of(context).expenses.createExpense(
           title: 'Calculo salvo',
           category: 'Calculadora',
@@ -112,6 +121,94 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         const SnackBar(content: Text('Resultado transformado em gasto.')),
       );
     }
+  }
+
+  Future<void> _saveAsIncome() async {
+    final value = MoneyUtils.parseInput(_display);
+    if (value <= 0) {
+      return;
+    }
+    final confirmed = await _confirm(
+      title: 'Registrar como recebimento?',
+      message:
+          'Isso vai criar uma entrada financeira de ${MoneyUtils.format(value)}.',
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
+    final now = DateTime.now().toUtc();
+    await NexoScope.of(context).sales.createSale(
+          clientName: 'Recebimento da calculadora',
+          serviceName: 'Valor calculado',
+          grossAmount: value,
+          platform: 'Manual',
+          paymentMethod: 'Pix',
+          installments: 1,
+          saleDate: now,
+          expectedDate: now,
+          receivedDate: now,
+          status: SaleStatus.received,
+          platformFee: 0,
+          paymentFee: 0,
+          hasDanielParticipation: false,
+          danielPercent: 0,
+          notes: 'Criado pela calculadora: $_display',
+        );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Resultado transformado em recebimento.')),
+      );
+    }
+  }
+
+  Future<void> _saveAsGoal() async {
+    final value = MoneyUtils.parseInput(_display);
+    if (value <= 0) {
+      return;
+    }
+    final confirmed = await _confirm(
+      title: 'Criar meta com este valor?',
+      message:
+          'Isso vai criar uma meta planejada de ${MoneyUtils.format(value)}.',
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
+    await NexoScope.of(context).goals.createGoal(
+          title: 'Meta calculada',
+          targetAmount: value,
+        );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Resultado transformado em meta.')),
+      );
+    }
+  }
+
+  Future<bool> _confirm({
+    required String title,
+    required String message,
+  }) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(title),
+              content: Text(message),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 
   @override
@@ -188,6 +285,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       onPressed: _saveAsExpense,
                       icon: const Icon(NexoIcons.newExpense, size: 18),
                       label: const Text('Transformar em gasto'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _saveAsIncome,
+                      icon: const Icon(NexoIcons.newSale, size: 18),
+                      label: const Text('Transformar em recebimento'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _saveAsGoal,
+                      icon: const Icon(NexoIcons.goals, size: 18),
+                      label: const Text('Transformar em meta'),
                     ),
                   ],
                 ),

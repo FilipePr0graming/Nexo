@@ -306,8 +306,11 @@ class ExpenseDetails {
     if (lower.contains('btg')) {
       return 'BTG';
     }
-    if (lower.contains('cora') || lower.contains('cartao empresa')) {
-      return 'Cora';
+    if (lower.contains('cora') && lower.contains('cart')) {
+      return 'Cora Cartao';
+    }
+    if (lower.contains('cora') || lower.contains('pix empresa')) {
+      return 'Cora Pix';
     }
     if (lower.contains('dinheiro')) {
       return 'Dinheiro';

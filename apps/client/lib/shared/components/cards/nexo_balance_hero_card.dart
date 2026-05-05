@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/design_system/nexo_colors.dart';
 import '../../../core/design_system/nexo_radius.dart';
 import '../../../core/design_system/nexo_spacing.dart';
-import '../../../core/design_system/nexo_typography.dart';
 import 'nexo_glass_card.dart';
 
 class NexoBalanceHeroCard extends StatelessWidget {
@@ -73,13 +72,14 @@ class NexoBalanceHeroCard extends StatelessWidget {
                 },
                 child: Text(
                   balance,
-                  style: NexoTypography.monoStyle(
-                    size: 40,
-                    height: 1.08,
-                    weight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -1.2,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        height: 1.08,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                 ),
               ),
               const SizedBox(height: NexoSpacing.xl),
@@ -140,11 +140,13 @@ class _HeroMetric extends StatelessWidget {
           const SizedBox(height: NexoSpacing.xs),
           Text(
             value,
-            style: NexoTypography.monoStyle(
-              size: 16,
-              weight: FontWeight.w600,
-              color: Colors.white,
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
           ),
         ],
       ),

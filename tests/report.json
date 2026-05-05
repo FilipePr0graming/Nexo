@@ -73,7 +73,7 @@
         {
           "title": "Nexo integracao final",
           "file": "nexo-flow.spec.ts",
-          "line": 361,
+          "line": 368,
           "column": 6,
           "specs": [
             {
@@ -92,12 +92,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 7959,
+                      "duration": 36856,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-05T01:41:51.676Z",
+                      "startTime": "2026-05-05T02:44:11.491Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -107,7 +107,7 @@
               ],
               "id": "dcff1f75b6e552eaec48-03c8091ddc8034a4ddd8",
               "file": "nexo-flow.spec.ts",
-              "line": 366,
+              "line": 377,
               "column": 7
             },
             {
@@ -126,12 +126,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 45768,
+                      "duration": 79039,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-05T01:42:18.025Z",
+                      "startTime": "2026-05-05T02:45:17.070Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -141,7 +141,7 @@
               ],
               "id": "dcff1f75b6e552eaec48-aa1e1989e13c5bfecff6",
               "file": "nexo-flow.spec.ts",
-              "line": 378,
+              "line": 391,
               "column": 7
             },
             {
@@ -160,12 +160,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 29907,
+                      "duration": 84314,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-05T01:43:03.835Z",
+                      "startTime": "2026-05-05T02:46:36.172Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -175,7 +175,7 @@
               ],
               "id": "dcff1f75b6e552eaec48-01462a1adb614f28e197",
               "file": "nexo-flow.spec.ts",
-              "line": 453,
+              "line": 467,
               "column": 7
             },
             {
@@ -194,12 +194,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 41499,
+                      "duration": 113900,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-05T01:43:33.788Z",
+                      "startTime": "2026-05-05T02:48:00.800Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -209,7 +209,7 @@
               ],
               "id": "dcff1f75b6e552eaec48-a19ea3b605851ef499ce",
               "file": "nexo-flow.spec.ts",
-              "line": 501,
+              "line": 516,
               "column": 7
             },
             {
@@ -228,12 +228,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10681,
+                      "duration": 38837,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-05T01:44:15.331Z",
+                      "startTime": "2026-05-05T02:49:54.764Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -243,7 +243,7 @@
               ],
               "id": "dcff1f75b6e552eaec48-d50cd7087f34fa40111e",
               "file": "nexo-flow.spec.ts",
-              "line": 551,
+              "line": 566,
               "column": 7
             }
           ]
@@ -253,8 +253,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-05T01:41:48.205Z",
-    "duration": 176797.481,
+    "startTime": "2026-05-05T02:44:05.726Z",
+    "duration": 419607.041,
     "expected": 5,
     "skipped": 0,
     "unexpected": 0,

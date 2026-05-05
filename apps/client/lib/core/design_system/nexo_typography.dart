@@ -13,7 +13,7 @@ abstract final class NexoTypography {
         fontSize: 40,
         height: 1.15,
         fontWeight: FontWeight.w700,
-        letterSpacing: -1.2,
+        letterSpacing: 0,
         color: NexoColors.ink,
       ),
       displayMedium: TextStyle(
@@ -21,7 +21,7 @@ abstract final class NexoTypography {
         fontSize: 32,
         height: 1.18,
         fontWeight: FontWeight.w700,
-        letterSpacing: -1.0,
+        letterSpacing: 0,
         color: NexoColors.ink,
       ),
       headlineLarge: TextStyle(
@@ -29,7 +29,7 @@ abstract final class NexoTypography {
         fontSize: 24,
         height: 1.3,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.6,
+        letterSpacing: 0,
         color: NexoColors.ink,
       ),
       headlineMedium: TextStyle(
@@ -37,7 +37,7 @@ abstract final class NexoTypography {
         fontSize: 20,
         height: 1.3,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.4,
+        letterSpacing: 0,
         color: NexoColors.ink,
       ),
       titleLarge: TextStyle(
@@ -45,7 +45,7 @@ abstract final class NexoTypography {
         fontSize: 18,
         height: 1.35,
         fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
+        letterSpacing: 0,
         color: NexoColors.ink,
       ),
       titleMedium: TextStyle(
@@ -105,7 +105,7 @@ abstract final class NexoTypography {
     double height = 1.3,
     FontWeight weight = FontWeight.w600,
     Color color = NexoColors.ink,
-    double letterSpacing = -0.2,
+    double letterSpacing = 0,
   }) {
     return TextStyle(
       fontFamily: mono,

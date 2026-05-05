@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/nexo_table_service.dart';
 import '../../../core/storage/local_json_store.dart';
 import '../../../core/utils/id_generator.dart';
+import '../../../core/utils/production_data_guard.dart';
 import '../models/note_model.dart';
 import '../models/note_details.dart';
 
@@ -27,7 +28,14 @@ class NotesService extends ChangeNotifier {
 
   final NexoTableService<NoteModel> _store;
 
-  List<NoteModel> get notes => _store.items;
+  List<NoteModel> get notes => _store.items
+      .where((note) => ProductionDataGuard.visible([
+            note.title,
+            note.body,
+            note.relatedTable,
+            note.relatedId,
+          ]))
+      .toList(growable: false);
   bool get isLoading => _store.isLoading;
   bool get isSyncing => _store.isSyncing;
   String? get errorMessage => _store.errorMessage;

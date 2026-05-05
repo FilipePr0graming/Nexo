@@ -26,12 +26,17 @@ class NexoHeader extends StatelessWidget {
             children: [
               Text(
                 title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: NexoSpacing.xs),
                 Text(
                   subtitle!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: NexoColors.inkMedium,
                       ),

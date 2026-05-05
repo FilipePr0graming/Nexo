@@ -18,7 +18,7 @@ const supabaseAnonKey =
   env.SUPABASE_ANON_KEY;
 const serviceRoleKey = env.NEXO_E2E_SERVICE_ROLE_KEY;
 let userAccessToken: string | undefined;
-const marker = "NEXO_SAFE_TEST_20260504_";
+const marker = "NEXO_VISUAL_TEST_20260504_";
 const runId = env.NEXO_E2E_RUN_ID ?? marker;
 const email = env.NEXO_E2E_EMAIL ?? `nexo-${runId}@example.com`;
 const password = env.NEXO_E2E_PASSWORD ?? "NexoE2e!23456";
@@ -154,7 +154,7 @@ async function countResidues() {
   for (const pattern of cleanupPatterns()) {
     const encodedRun = encodeURIComponent(`*${pattern}*`);
     const targets = [
-      `/rest/v1/clients?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
+      `/rest/v1/clients?select=id&or=(name.ilike.${encodedRun},legal_name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
       `/rest/v1/projects?select=id&or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
       `/rest/v1/payments?select=id&or=(client_name.ilike.${encodedRun},service_name.ilike.${encodedRun},project_group.ilike.${encodedRun},notes.ilike.${encodedRun})`,
       `/rest/v1/expenses?select=id&or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
@@ -179,8 +179,13 @@ function cleanupPatterns() {
     "NEXO_E2E_20260504_",
     "NEXO_E2E_",
     "NEXO_SAFE_TEST_",
+    "NEXO_VISUAL_TEST_",
     "E2E_CLEANED_",
+    "CLEANED_RECORD",
+    "CLEANED_",
     "E2E_",
+    "SAFE_TEST",
+    "DEBUG",
     "debug_",
     "test_",
   ];
@@ -208,7 +213,7 @@ async function cleanupByPattern(pattern: string) {
     `/rest/v1/projects?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
     `/rest/v1/subscriptions?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun})`,
     `/rest/v1/expenses?or=(title.ilike.${encodedRun},category.ilike.${encodedRun},notes.ilike.${encodedRun})`,
-    `/rest/v1/clients?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
+    `/rest/v1/clients?or=(name.ilike.${encodedRun},legal_name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
   ];
 
   for (const target of cleanupTargets) {
@@ -219,18 +224,20 @@ async function cleanupByPattern(pattern: string) {
     {
       method: "PATCH",
       body: JSON.stringify({
-        title: "CLEANED_RECORD",
-        notes: "cleaned",
+        title: "Registro removido",
+        category: "Removido",
+        notes: "removido",
       }),
     },
   );
   await supabaseFetchOrEmpty(
-    `/rest/v1/clients?or=(name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
+    `/rest/v1/clients?or=(name.ilike.${encodedRun},legal_name.ilike.${encodedRun},notes.ilike.${encodedRun},origin.ilike.${encodedRun})`,
     {
       method: "PATCH",
       body: JSON.stringify({
-        name: "CLEANED_RECORD",
-        origin: "cleaned",
+        name: "Registro removido",
+        legal_name: "Registro removido",
+        origin: "removido",
       }),
     },
   );
@@ -363,6 +370,10 @@ test.describe("Nexo integracao final", () => {
     await login(page);
   });
 
+  test.afterEach(async () => {
+    await cleanupE2eData();
+  });
+
   test("login e dashboard inteligente", async ({ page }) => {
     await expect(page.getByText("Hoje", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("Dinheiro livre hoje")).toBeVisible();
@@ -371,7 +382,9 @@ test.describe("Nexo integracao final", () => {
     await expect(page.getByText("Caixa real")).toBeVisible();
     await expect(page.getByText(/7 dias|15 dias|30 dias/).first()).toBeVisible();
     await expect(page.getByText(/Voce pode gastar|Você pode gastar/)).toHaveCount(0);
-    await expect(page.getByText(/E2E_CLEANED|NEXO_E2E/)).toHaveCount(0);
+    await expect(
+      page.getByText(/E2E|CLEANED|SAFE_TEST|VISUAL_TEST|DEBUG|TEST/),
+    ).toHaveCount(0);
     await screenshot(page, "01-dashboard");
   });
 
@@ -447,6 +460,7 @@ test.describe("Nexo integracao final", () => {
       .click();
     await expectPaymentStatus(`${marker}Cobranca Teste`, "received");
     await expect(page.getByText("Entrou hoje")).toBeVisible();
+    await expect(page.getByText(/R\$\s+\d+\s+[.,]\s+\d/)).toHaveCount(0);
     await screenshot(page, "02-fluxos-financeiros");
   });
 
@@ -494,6 +508,7 @@ test.describe("Nexo integracao final", () => {
     await page.getByRole("button", { name: "=" }).click();
     await expect(page.getByText("469,52").first()).toBeVisible();
     await page.getByRole("button", { name: "Transformar em gasto" }).click();
+    await page.getByRole("button", { name: "Confirmar" }).click();
     await expect(page.getByText("Resultado transformado em gasto.")).toBeVisible();
     await screenshot(page, "03-cnpj-calculadora");
   });
@@ -543,7 +558,7 @@ test.describe("Nexo integracao final", () => {
     await clickNav(page, "Parceiros");
     await expect(page.getByText("Daniel").first()).toBeVisible();
     await expect(
-      page.getByText(/Debitos no Supabase|Por projeto/).first(),
+      page.getByText(/Repasses em aberto|Por projeto/).first(),
     ).toBeVisible();
     await screenshot(page, "04-metas-notas-planejamento-parceiros");
   });

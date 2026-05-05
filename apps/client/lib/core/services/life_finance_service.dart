@@ -176,7 +176,8 @@ class LifeFinanceService {
   }) {
     final balances = <String, double>{
       'BTG': 0,
-      'Cora': 0,
+      'Cora Pix': 0,
+      'Cora Cartao': 0,
       'Dinheiro': 0,
       'Outro': 0,
       'Indefinido': confirmedEntries,
@@ -738,7 +739,7 @@ class LifeFinanceService {
         MoneyAlert(
           title: 'Casa e empresa misturadas',
           message:
-              '${mixedExpenses.length} gasto(s) parecem estar na conta errada. Corrija para saber o lucro real.',
+              '${mixedExpenses.length} gasto(s) parecem estar na conta errada. Corrija para saber o resultado real.',
           tone: NexoAlertTone.warning,
         ),
       );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design_system/nexo_colors.dart';
 import '../../../core/design_system/nexo_spacing.dart';
-import '../../../core/design_system/nexo_typography.dart';
 import 'nexo_card.dart';
 
 class NexoMetricCard extends StatelessWidget {
@@ -33,11 +32,14 @@ class NexoMetricCard extends StatelessWidget {
           const SizedBox(height: NexoSpacing.sm),
           Text(
             value,
-            style: NexoTypography.monoStyle(
-              size: 20,
-              height: 1.2,
-              weight: FontWeight.w700,
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  height: 1.2,
+                  fontWeight: FontWeight.w800,
+                  color: NexoColors.ink,
+                ),
           ),
           if (footnote != null) ...[
             const SizedBox(height: NexoSpacing.sm),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/design_system/nexo_colors.dart';
 import '../../../core/design_system/nexo_icons.dart';
 import '../../../core/design_system/nexo_spacing.dart';
-import '../../../core/design_system/nexo_typography.dart';
 import 'nexo_list_tile_card.dart';
 
 class NexoMovementListItem extends StatelessWidget {
@@ -30,11 +29,13 @@ class NexoMovementListItem extends StatelessWidget {
         children: [
           Text(
             '${isExpense ? '-' : '+'}$amount',
-            style: NexoTypography.monoStyle(
-              size: 15,
-              weight: FontWeight.w600,
-              color: NexoColors.ink,
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: NexoColors.ink,
+                ),
           ),
           const SizedBox(height: NexoSpacing.xxs),
           Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/id_generator.dart';
+import '../../../core/utils/production_data_guard.dart';
 import '../data/repositories/clients_repository.dart';
 import '../models/client_model.dart';
 
@@ -15,7 +16,15 @@ class ClientsService extends ChangeNotifier {
   bool _initialized = false;
   String? _errorMessage;
 
-  List<ClientModel> get clients => _clients;
+  List<ClientModel> get clients => _clients
+      .where((client) => ProductionDataGuard.visible([
+            client.name,
+            client.legalName,
+            client.document,
+            client.notes,
+            client.origin,
+          ]))
+      .toList(growable: false);
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
   bool get isReady => _initialized;
@@ -49,7 +58,7 @@ class ClientsService extends ChangeNotifier {
     try {
       _clients = await _repository.refreshFromRemote();
     } catch (_) {
-      _errorMessage = 'Nao foi possivel atualizar clientes agora.';
+      _errorMessage = ProductionDataGuard.friendlySyncError('clientes');
     } finally {
       _isSyncing = false;
       notifyListeners();
@@ -112,7 +121,7 @@ class ClientsService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Cliente salvo localmente. A sincronizacao com Supabase falhou.';
+          'Cliente salvo no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }
@@ -131,7 +140,7 @@ class ClientsService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Cliente atualizado localmente. A sincronizacao com Supabase falhou.';
+          'Cliente atualizado no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }

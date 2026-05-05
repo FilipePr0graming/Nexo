@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/nexo_table_service.dart';
 import '../../../core/storage/local_json_store.dart';
 import '../../../core/utils/id_generator.dart';
+import '../../../core/utils/production_data_guard.dart';
 import '../models/goal_model.dart';
 
 class GoalsService extends ChangeNotifier {
@@ -26,7 +27,9 @@ class GoalsService extends ChangeNotifier {
 
   final NexoTableService<GoalModel> _store;
 
-  List<GoalModel> get goals => _store.items;
+  List<GoalModel> get goals => _store.items
+      .where((goal) => ProductionDataGuard.visible([goal.title]))
+      .toList(growable: false);
   bool get isLoading => _store.isLoading;
   bool get isSyncing => _store.isSyncing;
   String? get errorMessage => _store.errorMessage;

@@ -68,7 +68,8 @@ class FinanceScreen extends StatelessWidget {
 
         return NexoPageScaffold(
           title: 'Financeiro',
-          subtitle: 'Dinheiro livre, contas, casa, empresa e Daniel.',
+          subtitle:
+              'Veja entradas, gastos, contas e o que ainda esta reservado.',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -78,15 +79,15 @@ class FinanceScreen extends StatelessWidget {
                     child: NexoMetricCard(
                       label: 'Dinheiro livre',
                       value: MoneyUtils.format(summary.freeMoney),
-                      footnote: 'Pode usar com cuidado',
+                      footnote: 'Dinheiro que voce pode movimentar agora.',
                     ),
                   ),
                   const SizedBox(width: NexoSpacing.md),
                   Expanded(
                     child: NexoMetricCard(
-                      label: 'Dinheiro travado',
+                      label: 'Reservado',
                       value: MoneyUtils.format(summary.lockedMoney),
-                      footnote: 'Daniel + parcelas futuras',
+                      footnote: 'Contas, parceiros, parcelas e metas.',
                     ),
                   ),
                 ],
@@ -104,9 +105,10 @@ class FinanceScreen extends StatelessWidget {
                   const SizedBox(width: NexoSpacing.md),
                   Expanded(
                     child: NexoMetricCard(
-                      label: 'Lucro real',
+                      label: 'Resultado do mes',
                       value: MoneyUtils.format(summary.realProfit),
-                      footnote: 'Entradas - gastos - Daniel',
+                      footnote:
+                          'O que realmente sobrou depois de gastos e compromissos.',
                     ),
                   ),
                 ],
@@ -329,11 +331,20 @@ Future<void> _openFinanceItemSheet(
   _FinanceItem item,
 ) async {
   final titleController = TextEditingController(text: item.title);
+  final isCoraCard = item.title.toLowerCase().contains('cora');
   final amountController = TextEditingController(
-    text: item.details.originalAmount.toStringAsFixed(2).replaceAll('.', ','),
+    text: (isCoraCard
+            ? item.details.cardOriginalAmount ?? item.details.originalAmount
+            : item.details.originalAmount)
+        .toStringAsFixed(2)
+        .replaceAll('.', ','),
   );
   final paidController = TextEditingController(
-    text: item.details.paidAmount.toStringAsFixed(2).replaceAll('.', ','),
+    text: (isCoraCard
+            ? item.details.cardPaidWithInterest ?? item.details.paidAmount
+            : item.details.paidAmount)
+        .toStringAsFixed(2)
+        .replaceAll('.', ','),
   );
   final walletController = TextEditingController(
     text: item.details.wallet ?? item.wallet,
@@ -404,7 +415,7 @@ Future<void> _openFinanceItemSheet(
                           )
                           .toList(growable: false),
                     ),
-                    if (item.title.toLowerCase().contains('cora')) ...[
+                    if (isCoraCard) ...[
                       const SizedBox(height: NexoSpacing.md),
                       Text(
                         'Voce pagou ${MoneyUtils.format(interest.interestAmount)} de juros (${interest.interestPercent.toStringAsFixed(2)}%).',
@@ -424,29 +435,24 @@ Future<void> _openFinanceItemSheet(
                         FilledButton.icon(
                           onPressed: () async {
                             final service = NexoScope.of(context).expenses;
-                            final amount =
+                            final original =
                                 MoneyUtils.parseInput(amountController.text);
                             final paid =
                                 MoneyUtils.parseInput(paidController.text);
+                            final expenseAmount = isCoraCard ? paid : original;
                             final details = item.details.copyWith(
                               status: status,
-                              originalAmount: amount,
+                              originalAmount: original,
                               paidAmount: paid,
                               wallet: walletController.text,
-                              cardOriginalAmount:
-                                  item.title.toLowerCase().contains('cora')
-                                      ? amount
-                                      : null,
-                              cardPaidWithInterest:
-                                  item.title.toLowerCase().contains('cora')
-                                      ? paid
-                                      : null,
+                              cardOriginalAmount: isCoraCard ? original : null,
+                              cardPaidWithInterest: isCoraCard ? paid : null,
                             );
                             if (item.expense == null) {
                               await service.createExpense(
                                 title: titleController.text,
                                 category: item.category,
-                                amount: amount,
+                                amount: expenseAmount,
                                 scope: item.scope,
                                 accountName: walletController.text,
                                 expenseDate: details.dueDate.toUtc(),
@@ -461,6 +467,9 @@ Future<void> _openFinanceItemSheet(
                                 wallet: walletController.text,
                                 priority: item.priority,
                                 plannedPaymentMethod: item.plannedPaymentMethod,
+                                cardOriginalAmount:
+                                    isCoraCard ? original : null,
+                                cardPaidWithInterest: isCoraCard ? paid : null,
                               );
                             } else {
                               await service.updateExpenseDetails(
@@ -546,9 +555,13 @@ List<_FinanceItem> _defaultAccounts(
         wallet: 'Indefinido', status: ExpensePaymentStatus.paid, paid: 100),
     _FinanceSeed('Mae', 1000, 'Familia', ExpenseScope.personal, 18, 'Pendente',
         wallet: 'Indefinido'),
-    _FinanceSeed('Fatura cartao Cora', 449.52, 'Cartao de credito',
-        ExpenseScope.business, 20, 'Editar valor pago com juros',
-        wallet: 'Cora', status: ExpensePaymentStatus.paid, paid: 449.52),
+    _FinanceSeed('Fatura abril Cora', 531.17, 'Cartao de credito',
+        ExpenseScope.business, 4, 'Fatura paga. Limite liberado.',
+        wallet: 'Cora Cartao',
+        status: ExpensePaymentStatus.paid,
+        paid: 531.17,
+        cardOriginalAmount: 499.52,
+        cardPaidWithInterest: 531.17),
     _FinanceSeed('Serasa Giovanna', 2304.58, 'Limpar nome',
         ExpenseScope.personal, 22, 'Pessoa: Giovanna',
         wallet: 'Indefinido'),
@@ -609,6 +622,8 @@ class _FinanceSeed {
     this.paid = 0,
     this.priority,
     this.plannedPaymentMethod,
+    this.cardOriginalAmount,
+    this.cardPaidWithInterest,
   });
 
   final String title;
@@ -623,6 +638,8 @@ class _FinanceSeed {
   final double paid;
   final String? priority;
   final String? plannedPaymentMethod;
+  final double? cardOriginalAmount;
+  final double? cardPaidWithInterest;
 
   _FinanceItem toItem(DateTime now, List<ExpenseModel> expenses) {
     final existing = expenses.cast<ExpenseModel?>().firstWhere(
@@ -666,6 +683,8 @@ class _FinanceSeed {
         humanNote: note,
         priority: priority,
         plannedPaymentMethod: plannedPaymentMethod,
+        cardOriginalAmount: cardOriginalAmount,
+        cardPaidWithInterest: cardPaidWithInterest,
       ),
     );
   }

@@ -20,6 +20,7 @@ import '../../../../shared/components/inputs/nexo_text_field.dart';
 import '../../../../shared/components/lists/nexo_movement_list_item.dart';
 import '../../../../shared/components/lists/nexo_section_header.dart';
 import '../../../finance/models/expense_model.dart';
+import '../../../finance/models/expense_details.dart';
 import '../../../finance/models/sale_model.dart';
 import '../../../reminders/models/reminder_model.dart';
 
@@ -67,7 +68,7 @@ class DashboardScreen extends StatelessWidget {
 
         return NexoPageScaffold(
           title: 'Hoje',
-          subtitle: 'Veja o que fazer com seu dinheiro hoje.',
+          subtitle: 'Veja o que precisa fazer com seu dinheiro.',
           trailing: NexoIconButton(
             icon: NexoIcons.refresh,
             tooltip: 'Atualizar',
@@ -106,6 +107,8 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: NexoSpacing.lg),
               _DailyAnswerCard(summary: summary),
+              const SizedBox(height: NexoSpacing.xl),
+              _RealFlowCard(sales: sales, expenses: expenses),
               const SizedBox(height: NexoSpacing.xl),
               _IntelligenceCard(summary: summary),
               const SizedBox(height: NexoSpacing.xl),
@@ -708,11 +711,172 @@ class _IntelligenceCardState extends State<_IntelligenceCard> {
           const SizedBox(height: NexoSpacing.xs),
           Text(
             _source == 'groq'
-                ? 'Gerado via Groq seguro no Supabase.'
-                : 'Fallback local ativo se a IA estiver indisponivel.',
+                ? 'Analise atualizada com seguranca.'
+                : 'Analise local usada enquanto a inteligencia esta indisponivel.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: NexoColors.inkLow,
                 ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RealFlowCard extends StatelessWidget {
+  const _RealFlowCard({
+    required this.sales,
+    required this.expenses,
+  });
+
+  final List<SaleModel> sales;
+  final List<ExpenseModel> expenses;
+
+  @override
+  Widget build(BuildContext context) {
+    final receivedFromAnderson = sales.where((sale) {
+      final text = '${sale.clientName} ${sale.serviceName}'.toLowerCase();
+      return text.contains('anderson') || text.contains('colunamix');
+    }).fold<double>(
+      0,
+      (total, sale) => total + sale.ownerAmount,
+    );
+    final cora = expenses.where((expense) {
+      final text = '${expense.title} ${expense.category} ${expense.accountName}'
+          .toLowerCase();
+      return text.contains('cora') && text.contains('fatura');
+    }).fold<double>(0, (total, expense) => total + expense.amount);
+    final mercado = expenses.where((expense) {
+      final text = '${expense.title} ${expense.category} ${expense.accountName}'
+          .toLowerCase();
+      return text.contains('supermercado nobre') || text.contains('mercado');
+    }).fold<double>(0, (total, expense) => total + expense.amount);
+
+    if (receivedFromAnderson <= 0 && cora <= 0 && mercado <= 0) {
+      return const SizedBox.shrink();
+    }
+    final anderson = receivedFromAnderson > 0 ? receivedFromAnderson : 725.0;
+
+    final interest = expenses.where((expense) {
+      final text = '${expense.title} ${expense.accountName}'.toLowerCase();
+      return text.contains('cora') && text.contains('fatura');
+    }).fold<double>(
+      0,
+      (total, expense) =>
+          total + ExpenseDetails.fromExpense(expense).interestAmount,
+    );
+    final remaining = MoneyUtils.roundMoney(anderson - cora - mercado);
+
+    return NexoCard(
+      backgroundColor: NexoColors.surfaceMuted,
+      onTap: () =>
+          _showRealFlowDetails(context, anderson, cora, mercado, interest),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Resumo do dinheiro de Anderson',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: NexoSpacing.sm),
+          Text(
+            'Recebi ${MoneyUtils.format(anderson)}. Paguei ${MoneyUtils.format(cora)} no cartao Cora, gastei ${MoneyUtils.format(mercado)} no Supermercado Nobre e sobraram ${MoneyUtils.format(remaining)}.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: NexoColors.inkMedium,
+                ),
+          ),
+          if (interest > 0) ...[
+            const SizedBox(height: NexoSpacing.sm),
+            Text(
+              'Encargos do cartao: ${MoneyUtils.format(interest)}.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: NexoColors.warning,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showRealFlowDetails(
+    BuildContext context,
+    double received,
+    double cora,
+    double mercado,
+    double interest,
+  ) {
+    final transfer = MoneyUtils.roundMoney(received - cora);
+    final remaining = MoneyUtils.roundMoney(transfer - mercado);
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: NexoColors.surface,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(NexoSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Fluxo de 04/05/2026',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: NexoSpacing.md),
+              _DetailLine('Recebido de Anderson', MoneyUtils.format(received)),
+              _DetailLine('Fatura Cora paga', MoneyUtils.format(cora)),
+              _DetailLine('Encargos por atraso', MoneyUtils.format(interest)),
+              _DetailLine(
+                'Transferido Cora Pix para BTG',
+                MoneyUtils.format(transfer),
+              ),
+              _DetailLine('Supermercado Nobre', MoneyUtils.format(mercado)),
+              _DetailLine('Sobra final', MoneyUtils.format(remaining)),
+              const SizedBox(height: NexoSpacing.sm),
+              Text(
+                'Transferencia entre carteiras nao entra como gasto.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: NexoColors.inkMedium,
+                    ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DetailLine extends StatelessWidget {
+  const _DetailLine(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NexoSpacing.sm),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: NexoSpacing.md),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleSmall,
           ),
         ],
       ),

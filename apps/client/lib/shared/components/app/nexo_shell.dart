@@ -225,7 +225,7 @@ class _NexoShellState extends State<NexoShell> {
                 const SizedBox(width: 56),
                 Expanded(
                   child: _BottomNavItem(
-                    label: 'Financeiro',
+                    label: 'Finanças',
                     icon: NexoIcons.finance,
                     selected: _currentIndex == 3,
                     onTap: () => setState(() => _currentIndex = 3),
@@ -284,8 +284,14 @@ class _BottomNavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style:
-                  Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: color,
+                    fontSize: 11,
+                    height: 1.1,
+                  ),
             ),
           ],
         ),

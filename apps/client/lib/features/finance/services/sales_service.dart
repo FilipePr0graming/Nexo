@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/services/finance_calculator.dart';
 import '../../../core/utils/id_generator.dart';
+import '../../../core/utils/production_data_guard.dart';
 import '../../clients/models/client_model.dart';
 import '../data/repositories/sales_repository.dart';
 import '../models/sale_model.dart';
@@ -17,7 +18,16 @@ class SalesService extends ChangeNotifier {
   bool _initialized = false;
   String? _errorMessage;
 
-  List<SaleModel> get sales => _sales;
+  List<SaleModel> get sales => _sales
+      .where((sale) => ProductionDataGuard.visible([
+            sale.clientName,
+            sale.serviceName,
+            sale.projectGroup,
+            sale.serviceStage,
+            sale.notes,
+            sale.origin,
+          ]))
+      .toList(growable: false);
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
   String? get errorMessage => _errorMessage;
@@ -50,7 +60,7 @@ class SalesService extends ChangeNotifier {
     try {
       _sales = await _repository.refreshFromRemote();
     } catch (_) {
-      _errorMessage = 'Nao foi possivel atualizar vendas agora.';
+      _errorMessage = ProductionDataGuard.friendlySyncError('recebimentos');
     } finally {
       _isSyncing = false;
       notifyListeners();
@@ -133,7 +143,7 @@ class SalesService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Venda salva localmente. A sincronizacao com Supabase falhou.';
+          'Recebimento salvo no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }
@@ -231,7 +241,7 @@ class SalesService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Recebimento marcado localmente. A sincronizacao com Supabase falhou.';
+          'Recebimento marcado no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }
@@ -266,7 +276,7 @@ class SalesService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Venda atualizada localmente. A sincronizacao com Supabase falhou.';
+          'Recebimento atualizado no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }

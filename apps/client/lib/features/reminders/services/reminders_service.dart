@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/nexo_table_service.dart';
 import '../../../core/storage/local_json_store.dart';
 import '../../../core/utils/id_generator.dart';
+import '../../../core/utils/production_data_guard.dart';
 import '../models/reminder_model.dart';
 import 'local_reminder_notifications.dart';
 
@@ -31,7 +32,14 @@ class RemindersService extends ChangeNotifier {
   final LocalReminderNotifications _notifications =
       LocalReminderNotifications();
 
-  List<ReminderModel> get reminders => _store.items;
+  List<ReminderModel> get reminders => _store.items
+      .where((reminder) => ProductionDataGuard.visible([
+            reminder.title,
+            reminder.description,
+            reminder.relatedTable,
+            reminder.relatedId,
+          ]))
+      .toList(growable: false);
   bool get isLoading => _store.isLoading;
   bool get isSyncing => _store.isSyncing;
   String? get errorMessage => _store.errorMessage;

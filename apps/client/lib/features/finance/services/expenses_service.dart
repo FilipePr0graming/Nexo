@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/id_generator.dart';
 import '../../../core/utils/money_utils.dart';
+import '../../../core/utils/production_data_guard.dart';
 import '../models/expense_details.dart';
 import '../data/repositories/expenses_repository.dart';
 import '../models/expense_model.dart';
@@ -17,7 +18,15 @@ class ExpensesService extends ChangeNotifier {
   bool _initialized = false;
   String? _errorMessage;
 
-  List<ExpenseModel> get expenses => _expenses;
+  List<ExpenseModel> get expenses => _expenses
+      .where((expense) => ProductionDataGuard.visible([
+            expense.title,
+            expense.category,
+            expense.subcategory,
+            expense.accountName,
+            expense.notes,
+          ]))
+      .toList(growable: false);
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
   String? get errorMessage => _errorMessage;
@@ -51,7 +60,7 @@ class ExpensesService extends ChangeNotifier {
     try {
       _expenses = await _repository.refreshFromRemote();
     } catch (_) {
-      _errorMessage = 'Nao foi possivel atualizar gastos agora.';
+      _errorMessage = ProductionDataGuard.friendlySyncError('gastos');
     } finally {
       _isSyncing = false;
       notifyListeners();
@@ -138,7 +147,7 @@ class ExpensesService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Gasto salvo localmente. A sincronizacao com Supabase falhou.';
+          'Gasto salvo no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }
@@ -200,7 +209,7 @@ class ExpensesService extends ChangeNotifier {
       _errorMessage = null;
     } catch (_) {
       _errorMessage =
-          'Gasto atualizado localmente. A sincronizacao com Supabase falhou.';
+          'Gasto atualizado no aparelho. A nuvem sera atualizada quando a conexao voltar.';
     } finally {
       notifyListeners();
     }
@@ -219,7 +228,9 @@ class ExpensesService extends ChangeNotifier {
     );
     return updateExpense(
       expense.copyWith(
-        amount: MoneyUtils.roundMoney(nextDetails.originalAmount),
+        amount: MoneyUtils.roundMoney(
+          nextDetails.cardPaidWithInterest ?? nextDetails.originalAmount,
+        ),
         expenseDate: nextDetails.dueDate.toUtc(),
         accountName: nextDetails.wallet ?? expense.accountName,
         recurrence: nextDetails.recurrenceKind.legacyStorage,
